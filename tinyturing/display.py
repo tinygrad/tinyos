@@ -53,15 +53,16 @@ class Display:
   def blit(self, source, dest=(0, 0), area=None):
     print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
     self.framebuffer.blit(source, dest, area)
-    if area is None: self.framebuffer_dirty[dest[1]:dest[1]+source.get_height()][dest[0]:dest[0]+source.get_width()] = [[True] * source.get_width() for _ in range(source.get_height())]
-    else: self.framebuffer_dirty[dest[1]:dest[1]+area.height][dest[0]:dest[0]+area.width] = [[True] * area.width for _ in range(area.height)]
+    if area is None: area = source.get_rect()
+    for x in range(dest[0], dest[0] + area.width):
+      for y in range(dest[1], dest[1] + area.height):
+        self.framebuffer_dirty[y][x] = True
   def clear(self):
     pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
     self.framebuffer_dirty = [[True] * WIDTH for _ in range(HEIGHT)]
 
   def flip(self):
     if not any(any(row) for row in self.framebuffer_dirty):
-      print(self.framebuffer_dirty)
       print("[D] Skipping flip because framebuffer is clean")
       return
     print("[D] Flipping framebuffer")
