@@ -16,4 +16,10 @@ if [ -z "$IS_NVIDIA_GPU" ]; then
 else
   echo "NVIDIA GPU found."
   # Install NVIDIA drivers
+  pushd /tmp
+  wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+  dpkg -i cuda-keyring_1.1-1_all.deb
+  apt update -y
+  apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
+  popd
 fi
