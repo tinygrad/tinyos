@@ -53,6 +53,8 @@ customization:
         destination: /etc/systemd/system/tinybox-bootup.service
       - source: ./setup/firstboot.py
         destination: /opt/tinybox/setup/firstboot.py
+      - source: ./setup/update.sh
+        destination: /opt/tinybox/setup/update.sh
       - source: ./setup/raidsetup.sh
         destination: /opt/tinybox/setup/raidsetup.sh
       - source: ./setup/driverinstall.sh
@@ -69,6 +71,8 @@ customization:
         destination: /opt/tinybox/monitoring/monitoring.py
       - source: ./tools/fan-control
         destination: /usr/bin/fan-control
+      - source: ./tools/fan-control_completion.sh
+        destination: /etc/bash_completion.d/fan-control_completion.sh
   cloud-init:
     meta-data: |
       #cloud-config
