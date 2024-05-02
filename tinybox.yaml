@@ -64,6 +64,7 @@ customization:
       #cloud-config
   extra-packages:
     - name: grub-efi-amd64
+    - name: ipmitool
     - name: python3
     - name: python3-pip
     - name: python3-numpy
