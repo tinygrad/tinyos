@@ -87,6 +87,7 @@ customization:
     - name: python3-serial
     - name: python3-pygame
     - name: build-essential
+    - name: bash-completion
   extra-snaps:
     - name: core
     - name: core20
