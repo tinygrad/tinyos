@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# echo to stderr
+function ercho { printf "%s\n" "$*" >&2; }
+
+function main {
+  local mode="$1"
+  if [ -z "$mode" ]; then
+    ercho "Mode not provided"
+    exit 1
+  fi
+  case "$mode" in
+    auto)
+      ipmitool raw 0x3a 0xd8 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
+      ;;
+    manual)
+      local fan_speed="$2"
+      if [ -z "$fan_speed" ]; then
+        ercho "Fan speed not provided"
+        exit 1
+      fi
+      if ((fan_speed < 0 || fan_speed > 100)); then
+        ercho "Invalid fan speed: $fan_speed"
+        ercho "Valid range: 0-100"
+        exit 1
+      fi
+      # convert fan speed to hex
+      local fan_speed_hex
+      fan_speed_hex=$(printf "%02x" "$fan_speed")
+      ipmitool raw 0x3a 0xd8 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1
+      ipmitool raw 0x3a 0xd6 $(printf "0x$fan_speed_hex %.0s" {1..16})
+      ;;
+    *)
+      ercho "Invalid mode: $mode"
+      ercho "Valid modes: auto, manual"
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

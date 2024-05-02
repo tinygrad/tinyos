@@ -63,8 +63,12 @@ customization:
         destination: /opt/tinybox/setup/firstsetup.py
       - source: ./setup/firstsetup.service
         destination: /etc/systemd/system/firstsetup.service
+      - source: ./setup/correctperms.sh
+        destination: /opt/tinybox/setup/correctperms.sh
       - source: ./monitoring/monitoring.py
         destination: /opt/tinybox/monitoring/monitoring.py
+      - source: ./tools/fan-control
+        destination: /usr/bin/fan-control
   cloud-init:
     meta-data: |
       #cloud-config
