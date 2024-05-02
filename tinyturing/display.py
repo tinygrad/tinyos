@@ -61,6 +61,7 @@ class Display:
 
   def flip(self):
     if not any(any(row) for row in self.framebuffer_dirty):
+      print(self.framebuffer_dirty)
       print("[D] Skipping flip because framebuffer is clean")
       return
     print("[D] Flipping framebuffer")
