@@ -46,6 +46,7 @@ def display_thread():
   while display_thread_alive:
     if not control_queue.empty():
       command, args = control_queue.get()
+      print(f"[DT] Received command {command} with args {args}")
       match command:
         case "text":
           display_state = DisplayState.TEXT
@@ -53,7 +54,7 @@ def display_thread():
     else:
       # reset display state if inactive for 60 seconds
       if time.monotonic() - display_last_active > 60 and display_state == DisplayState.STATUS:
-        print("Display inactive for 60 seconds, switching back to sleep text state")
+        print("[DT] Display inactive for 60 seconds, switching back to sleep text state")
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
 
@@ -79,7 +80,7 @@ class ControlHandler(StreamRequestHandler):
   def handle(self):
     data = self.rfile.readline().strip().decode()
     command, *args = data.split(",")
-    print(f"Received command {command} with args {args}")
+    print(f"[CH] Received command {command} with args {args}")
     match command:
       case "text":
         control_queue.put(("text", Text("\n".join(args))))
@@ -93,7 +94,7 @@ if __name__ == "__main__":
 
   # handle exit signals
   def signal_handler(sig, frame):
-    print("Exiting...")
+    print("[M] Exiting...")
     global display_thread_alive
     display_thread_alive = False
     os.remove("/run/tinybox-screen.sock")

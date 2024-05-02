@@ -35,13 +35,13 @@ class Display:
   def __del__(self): self.lcd.close()
 
   def send_command(self, command, payload=None):
-    print(f"Sending command {command}")
+    print(f"[D] Sending command {command}")
     if payload is not None: command += payload
     padding = 0 if command[0] != 0x2c else 0x2c
     if not ((cmd_len:=len(command)) / 250).is_integer(): command += bytearray([padding] * (250 * math.ceil(cmd_len / 250) - cmd_len))
     try: self.lcd.write(command)
     except serial.SerialTimeoutException:
-      print("Serial write timeout, resetting usb device and retrying")
+      print("[D] Serial write timeout, resetting usb device and retrying")
       subprocess.run(["usbreset", "1d6b:0106"])
       time.sleep(2)
       self.lcd = serial.Serial(self.lcd.port, self.lcd.baudrate, timeout=5, write_timeout=5)
@@ -51,7 +51,7 @@ class Display:
     if size not in self.font_cache: self.font_cache[size] = pygame.font.Font(None, size)
     return self.font_cache[size].render(text, *args, **kwargs)
   def blit(self, source, dest=(0, 0), area=None):
-    print(f"Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
+    print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
     self.framebuffer.blit(source, dest, area)
     if area is None: self.framebuffer_dirty[dest[1]:dest[1]+source.get_height()][dest[0]:dest[0]+source.get_width()] = [[True] * source.get_width() for _ in range(source.get_height())]
     else: self.framebuffer_dirty[dest[1]:dest[1]+area.height][dest[0]:dest[0]+area.width] = [[True] * area.width for _ in range(area.height)]
@@ -61,13 +61,13 @@ class Display:
 
   def flip(self):
     if not any(any(row) for row in self.framebuffer_dirty):
-      print("Skipping flip because framebuffer is clean")
+      print("[D] Skipping flip because framebuffer is clean")
       return
-    print("Flipping framebuffer")
+    print("[D] Flipping framebuffer")
     self.send_command(PRE_UPDATE_BITMAP)
     self.send_command(START_DISPLAY_BITMAP)
     self.send_command(DISPLAY_BITMAP)
     framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose().tobytes()
     self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
-    print(self.lcd.read(1024)[:0x20])
+    print(f"[D] {self.lcd.read(1024)[:0x20]}")
     self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
