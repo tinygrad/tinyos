@@ -57,6 +57,8 @@ customization:
         destination: /opt/tinybox/setup/driverinstall.sh
       - source: ./setup/firstsetup.py
         destination: /opt/tinybox/setup/firstsetup.py
+      - source: ./setup/firstsetup.service
+        destination: /etc/systemd/system/firstsetup.service
       - source: ./monitoring/monitoring.py
         destination: /opt/tinybox/monitoring/monitoring.py
   cloud-init:

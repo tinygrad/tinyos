@@ -1,0 +1,12 @@
+[Unit]
+Description=First Setup Service
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=python3 /opt/tinybox/setup/firstsetup.py
+
+[Install]
+WantedBy=multi-user.target
