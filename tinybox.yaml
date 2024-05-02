@@ -52,7 +52,7 @@ customization:
       - source: ./monitoring/monitoring.py
         destination: /opt/tinybox/monitoring/monitoring.py
   cloud-init:
-    user-data: |
+    meta-data: |
       #cloud-config
   extra-packages:
     - name: grub-efi-amd64
