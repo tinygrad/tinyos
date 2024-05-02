@@ -62,3 +62,4 @@ class Display:
     framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose().tobytes()
     self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
     self.lcd.read(1024)
+    self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]

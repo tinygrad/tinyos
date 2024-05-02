@@ -72,7 +72,7 @@ def display_thread():
     display.flip()
 
     # sleep
-    time.sleep(0.5)
+    time.sleep(1)
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):
@@ -101,6 +101,3 @@ if __name__ == "__main__":
   # start control server
   server = UnixStreamServer("/run/tinybox-screen.sock", ControlHandler)
   server.serve_forever()
-
-  display_thread_alive = False
-  dt.join()
