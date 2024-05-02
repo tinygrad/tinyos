@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 # Check which gpus are installed
 IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
@@ -17,9 +18,20 @@ else
   echo "NVIDIA GPU found."
   # Install NVIDIA drivers
   pushd /tmp
+
   wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
   dpkg -i cuda-keyring_1.1-1_all.deb
   apt update -y
   apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
+
+  # install patched p2p kernel module
+  git clone https://github.com/tinygrad/open-gpu-kernel-modules
+  pushd open-gpu-kernel-modules
+  rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia -f
+  make modules -j"$(nproc)"
+  make modules_install -j"$(nproc)"
+  depmod -a
+  popd
+
   popd
 fi
