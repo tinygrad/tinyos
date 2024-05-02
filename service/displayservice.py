@@ -99,10 +99,7 @@ if __name__ == "__main__":
 
   # start control server
   server = UnixStreamServer("/run/tinybox-screen.sock", ControlHandler)
-
-  try: server.serve_forever()
-  except KeyboardInterrupt: print("Exiting...")
-  finally: os.remove("/run/tinybox-screen.sock")
+  server.serve_forever()
 
   display_thread_alive = False
   dt.join()
