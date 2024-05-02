@@ -6,9 +6,8 @@ series: jammy
 class: preinstalled
 kernel: linux-image-generic
 gadget:
-  url: https://github.com/snapcore/pc-gadget.git
-  branch: classic
-  type: git
+  url: file://./pc-gadget/
+  type: directory
 rootfs:
   components:
     - main
@@ -41,6 +40,8 @@ customization:
     copy-file:
       - source: ./tinybox.cfg
         destination: /etc/cloud/cloud.cfg.d/tinybox.cfg
+      - source: ./misc/grub
+        destination: /etc/default/grub
       - source: ./tinyturing/display.py
         destination: /opt/tinybox/screen/display.py
       - source: ./tinyturing/logo.png
