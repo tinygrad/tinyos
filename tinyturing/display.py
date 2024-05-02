@@ -56,11 +56,12 @@ class Display:
     return self.font_cache[size].render(text, *args, **kwargs)
   def blit(self, source, dest=(0, 0), area=None):
     print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
+    old_framebuffer = self.framebuffer.copy()
     self.framebuffer.blit(source, dest, area)
     if area is None: area = source.get_rect()
     for x in range(dest[0], dest[0] + area.width):
       for y in range(dest[1], dest[1] + area.height):
-        self.framebuffer_dirty[y][x] = True
+        if old_framebuffer.get_at((x, y)) != self.framebuffer.get_at((x, y)): self.framebuffer_dirty[y][x] = True
   def clear(self):
     pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
     self.framebuffer_dirty = [[True] * WIDTH for _ in range(HEIGHT)]
