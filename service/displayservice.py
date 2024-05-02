@@ -90,6 +90,7 @@ if __name__ == "__main__":
 
   # handle control-c
   def signal_handler(sig, frame):
+    global display_thread_alive
     display_thread_alive = False
     sys.exit(0)
   signal.signal(signal.SIGINT, signal_handler)
