@@ -44,12 +44,12 @@ class Display:
       print("[D] Serial write timeout, resetting usb device and retrying")
       port, baudrate = self.lcd.port, self.lcd.baudrate
       self.lcd.close()
+      time.sleep(1)
       subprocess.run(["usbreset", "1d6b:0106"])
-      print("[D] Waiting 10 seconds for usb device to reset")
-      time.sleep(10)
+      print("[D] Waiting 5 seconds for usb device to reset")
+      time.sleep(5)
       self.lcd = serial.Serial(port, baudrate, timeout=5, write_timeout=5)
       self.lcd.write(command)
-    time.sleep(0.1)
 
   def text(self, text, size, *args, **kwargs):
     if size not in self.font_cache: self.font_cache[size] = pygame.font.Font(None, size)
