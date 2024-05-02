@@ -29,11 +29,6 @@ customization:
     - restricted
   pocket: updates
   manual:
-    add-user:
-      - name: root
-        id: 0
-        password: pass
-        password-type: text
     make-dirs:
       - path: /opt/tinybox/screen/
         permissions: 0755
