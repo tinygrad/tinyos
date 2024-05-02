@@ -22,6 +22,7 @@ class Display:
     pygame.font.init()
     self.font_cache = {}
     self.framebuffer = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
+    self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
 
     # initialize
     self.send_command(HELLO)
@@ -45,9 +46,13 @@ class Display:
   def text(self, text, size, *args, **kwargs):
     if size not in self.font_cache: self.font_cache[size] = pygame.font.Font(None, size)
     return self.font_cache[size].render(text, *args, **kwargs)
-  def blit(self, source, dest=(0, 0), area=None): self.framebuffer.blit(source, dest, area)
+  def blit(self, source, dest=(0, 0), area=None):
+    self.framebuffer.blit(source, dest, area)
+    if area is None: self.framebuffer_dirty[dest[1]:dest[1]+source.get_height()][dest[0]:dest[0]+source.get_width()] = [[True] * source.get_width() for _ in range(source.get_height())]
+    else: self.framebuffer_dirty[dest[1]:dest[1]+area.height][dest[0]:dest[0]+area.width] = [[True] * area.width for _ in range(area.height)]
 
   def flip(self):
+    if not any(any(row) for row in self.framebuffer_dirty): return
     self.send_command(PRE_UPDATE_BITMAP)
     self.send_command(START_DISPLAY_BITMAP)
     self.send_command(DISPLAY_BITMAP)
