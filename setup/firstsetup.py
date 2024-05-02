@@ -9,7 +9,7 @@ from display import Display
 display = Display("/dev/ttyACM1")
 
 # logo
-logo = pygame.image.load("logo.png")
+logo = pygame.image.load("/opt/tinybox/screen/logo.png")
 logo = pygame.transform.scale(logo, (400, 240))
 display.blit(logo, (200, 25))
 

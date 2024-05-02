@@ -48,6 +48,8 @@ customization:
         destination: /opt/tinybox/screen/logo.png
       - source: ./setup/bootup.py
         destination: /opt/tinybox/setup/bootup.py
+      - source: ./setup/firstboot.py
+        destination: /opt/tinybox/setup/firstboot.py
       - source: ./setup/firstsetup.py
         destination: /opt/tinybox/setup/firstsetup.py
       - source: ./monitoring/monitoring.py
