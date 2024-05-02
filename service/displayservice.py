@@ -53,6 +53,7 @@ def display_thread():
     else:
       # reset display state if inactive for 60 seconds
       if time.monotonic() - display_last_active > 60 and display_state == DisplayState.STATUS:
+        print("Display inactive for 60 seconds, switching back to sleep text state")
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
 
@@ -78,6 +79,7 @@ class ControlHandler(StreamRequestHandler):
   def handle(self):
     data = self.rfile.readline().strip().decode()
     command, *args = data.split(",")
+    print(f"Received command {command} with args {args}")
     match command:
       case "text":
         control_queue.put(("text", Text("\n".join(args))))
