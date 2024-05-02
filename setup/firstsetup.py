@@ -20,7 +20,7 @@ ip_text = display.text(f"IP: {ip}", 70, True, (255, 255, 255))
 display.blit(ip_text, (400 - ip_text.get_width() // 2, 200 + (120 - ip_text.get_height() // 2)))
 
 # random password
-passwd = "".join(random.choices("abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789", k=8))
+passwd = "".join(random.choices("abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789", k=5))
 p = subprocess.Popen(["chpasswd"], stdin=subprocess.PIPE, text=True)
 p.communicate(input=f"tiny:{passwd}")
 passwd_text = display.text(f"Password: {passwd}", 70, True, (255, 255, 255))
