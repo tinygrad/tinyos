@@ -3,7 +3,7 @@ sys.path.insert(0, "/opt/tinybox/screen/")
 
 from display import Display
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time
+import threading, time, signal
 from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
@@ -28,6 +28,7 @@ class AText(Displayable):
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
+display_thread_alive = True
 def display_thread():
   # initialize display
   display = Display("/dev/ttyACM0")
@@ -40,7 +41,7 @@ def display_thread():
   display_last_active = time.monotonic()
   to_display: Displayable | None = None
 
-  while True:
+  while display_thread_alive:
     if not control_queue.empty():
       command, args = control_queue.get()
       match command:
@@ -82,12 +83,20 @@ class ControlHandler(StreamRequestHandler):
         control_queue.put(("text", AText(args)))
 
 if __name__ == "__main__":
+
   # start display thread
   dt = threading.Thread(target=display_thread)
   dt.start()
+
+  # handle control-c
+  def signal_handler(sig, frame):
+    display_thread_alive = False
+    sys.exit(0)
+  signal.signal(signal.SIGINT, signal_handler)
 
   # start control server
   server = UnixStreamServer("/run/tinybox-screen.sock", ControlHandler)
   server.serve_forever()
 
+  display_thread_alive = False
   dt.join()
