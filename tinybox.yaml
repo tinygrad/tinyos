@@ -53,6 +53,8 @@ customization:
         destination: /etc/systemd/system/tinybox-bootup.service
       - source: ./setup/firstboot.py
         destination: /opt/tinybox/setup/firstboot.py
+      - source: ./setup/raidsetup.sh
+        destination: /opt/tinybox/setup/raidsetup.sh
       - source: ./setup/driverinstall.sh
         destination: /opt/tinybox/setup/driverinstall.sh
       - source: ./setup/firstsetup.py
