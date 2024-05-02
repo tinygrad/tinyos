@@ -16,7 +16,7 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 WIDTH, HEIGHT = 800, 480
 class Display:
   def __init__(self, port):
-    self.lcd = serial.Serial(port, 115200, timeout=2, write_timeout=2)
+    self.lcd = serial.Serial(port, 115200, timeout=5, write_timeout=5)
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     pygame.init()
     pygame.font.init()
@@ -43,9 +43,11 @@ class Display:
     except serial.SerialTimeoutException:
       print("[D] Serial write timeout, resetting usb device and retrying")
       subprocess.run(["usbreset", "1d6b:0106"])
-      time.sleep(2)
+      print("[D] Waiting 10 seconds for usb device to reset")
+      time.sleep(10)
       self.lcd = serial.Serial(self.lcd.port, self.lcd.baudrate, timeout=5, write_timeout=5)
       self.lcd.write(command)
+    time.sleep(0.1)
 
   def text(self, text, size, *args, **kwargs):
     if size not in self.font_cache: self.font_cache[size] = pygame.font.Font(None, size)
