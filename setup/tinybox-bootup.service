@@ -1,7 +1,6 @@
 [Unit]
 Description=Bootup Screen
-Before=basic.target
-After=local-fs.target sysinit.target
+After=local-fs.target
 DefaultDependencies=no
 
 [Service]
@@ -11,4 +10,4 @@ Group=root
 ExecStart=python3 /opt/tinybox/setup/bootup.py
 
 [Install]
-WantedBy=basic.target
+WantedBy=sysinit.target
