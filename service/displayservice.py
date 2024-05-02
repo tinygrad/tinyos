@@ -61,7 +61,9 @@ def display_thread():
       match display_state:
         case DisplayState.TEXT:
           display.blit(logo, (200, 25))
-          if to_display is not None: to_display.display(display)
+          if to_display is not None:
+            print(f"[DT] Displaying: {to_display}")
+            to_display.display(display)
           else: Text("zZzZz").display(display)
         case DisplayState.STATUS:
           pass
