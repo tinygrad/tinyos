@@ -50,6 +50,9 @@ class Display:
     self.framebuffer.blit(source, dest, area)
     if area is None: self.framebuffer_dirty[dest[1]:dest[1]+source.get_height()][dest[0]:dest[0]+source.get_width()] = [[True] * source.get_width() for _ in range(source.get_height())]
     else: self.framebuffer_dirty[dest[1]:dest[1]+area.height][dest[0]:dest[0]+area.width] = [[True] * area.width for _ in range(area.height)]
+  def clear(self):
+    pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
+    self.framebuffer_dirty = [[True] * WIDTH for _ in range(HEIGHT)]
 
   def flip(self):
     if not any(any(row) for row in self.framebuffer_dirty): return

@@ -33,6 +33,7 @@ display_thread_alive = True
 def display_thread():
   # initialize display
   display = Display("/dev/ttyACM0")
+  display.clear()
 
   # load assets
   logo = pg.image.load("/opt/tinybox/screen/logo.png")
