@@ -1,0 +1,93 @@
+import sys
+sys.path.insert(0, "/opt/tinybox/screen/")
+
+from display import Display
+from socketserver import UnixStreamServer, StreamRequestHandler
+import threading, time
+from enum import Enum
+from abc import ABC, abstractmethod
+from queue import Queue
+import pygame as pg
+
+class Displayable(ABC):
+  @abstractmethod
+  def display(self, display: Display) -> None: pass
+
+class Text(Displayable):
+  def __init__(self, text: str): self.text = text
+  def display(self, display: Display):
+    text = display.text(self.text, 100, True, (255, 255, 255))
+    display.blit(text, (400 - text.get_width() // 2, 225 + (120 - text.get_height() // 2)))
+
+class AText(Displayable):
+  def __init__(self, text_states: list[str]): self.text_states, self.current_state = text_states, 0
+  def display(self, display: Display):
+    text = display.text(self.text_states[self.current_state], 100, True, (255, 255, 255))
+    display.blit(text, (400 - text.get_width() // 2, 225 + (120 - text.get_height() // 2)))
+    self.current_state = (self.current_state + 1) % len(self.text_states)
+
+DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
+control_queue = Queue()
+def display_thread():
+  # initialize display
+  display = Display("/dev/ttyACM0")
+
+  # load assets
+  logo = pg.image.load("/opt/tinybox/screen/logo.png")
+  logo = pg.transform.scale(logo, (400, 240))
+
+  display_state = DisplayState.TEXT
+  display_last_active = time.monotonic()
+  to_display: Displayable | None = None
+
+  while True:
+    if not control_queue.empty():
+      command, args = control_queue.get()
+      match command:
+        case "text":
+          display_state = DisplayState.TEXT
+          to_display = args
+    else:
+      # reset display state if inactive for 60 seconds
+      if time.monotonic() - display_last_active > 60 and display_state == DisplayState.STATUS:
+        display_state, to_display = DisplayState.TEXT, None
+        display_last_active = time.monotonic()
+
+      match display_state:
+        case DisplayState.TEXT:
+          display.blit(logo, (200, 25))
+          if to_display is not None: to_display.display(display)
+          else: Text("zZzZz").display(display)
+        case DisplayState.STATUS:
+          pass
+
+      if display_state == DisplayState.TEXT:
+        # check gpu utilization to see if we should switch to status
+        pass
+
+    # update display
+    display.flip()
+
+    # sleep
+    time.sleep(0.5)
+
+class ControlHandler(StreamRequestHandler):
+  def handle(self):
+    data = self.rfile.readline().strip().decode()
+    command, *args = data.split(",")
+    match command:
+      case "text":
+        control_queue.put(("text", Text("\n".join(args))))
+      case "atext":
+        control_queue.put(("text", AText(args)))
+
+if __name__ == "__main__":
+  # start display thread
+  dt = threading.Thread(target=display_thread)
+  dt.start()
+
+  # start control server
+  server = UnixStreamServer("/run/tinybox-screen.sock", ControlHandler)
+  server.serve_forever()
+
+  dt.join()
