@@ -93,6 +93,7 @@ if __name__ == "__main__":
 
   # handle exit signals
   def signal_handler(sig, frame):
+    print("Exiting...")
     global display_thread_alive
     display_thread_alive = False
     os.remove("/run/tinybox-screen.sock")
