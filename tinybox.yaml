@@ -59,14 +59,16 @@ customization:
         destination: /opt/tinybox/setup/raidsetup.sh
       - source: ./setup/driverinstall.sh
         destination: /opt/tinybox/setup/driverinstall.sh
-      - source: ./setup/rebooting.py
-        destination: /opt/tinybox/setup/rebooting.py
+      - source: ./setup/initialpackage.sh
+        destination: /opt/tinybox/setup/initialpackage.sh
+      - source: ./setup/correctperms.sh
+        destination: /opt/tinybox/setup/correctperms.sh
       - source: ./setup/firstsetup.py
         destination: /opt/tinybox/setup/firstsetup.py
       - source: ./setup/firstsetup.service
         destination: /etc/systemd/system/firstsetup.service
-      - source: ./setup/correctperms.sh
-        destination: /opt/tinybox/setup/correctperms.sh
+      - source: ./setup/rebooting.py
+        destination: /opt/tinybox/setup/rebooting.py
       - source: ./monitoring/monitoring.py
         destination: /opt/tinybox/monitoring/monitoring.py
       - source: ./tools/fan-control
