@@ -57,6 +57,8 @@ customization:
         destination: /opt/tinybox/setup/raidsetup.sh
       - source: ./setup/driverinstall.sh
         destination: /opt/tinybox/setup/driverinstall.sh
+      - source: ./setup/rebooting.py
+        destination: /opt/tinybox/setup/rebooting.py
       - source: ./setup/firstsetup.py
         destination: /opt/tinybox/setup/firstsetup.py
       - source: ./setup/firstsetup.service
