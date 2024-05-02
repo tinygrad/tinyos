@@ -20,9 +20,9 @@ function main {
         ercho "Fan speed not provided"
         exit 1
       fi
-      if ((fan_speed < 0 || fan_speed > 100)); then
+      if ((fan_speed < 20 || fan_speed > 100)); then
         ercho "Invalid fan speed: $fan_speed"
-        ercho "Valid range: 0-100"
+        ercho "Valid range: 20-100"
         exit 1
       fi
       # convert fan speed to hex
