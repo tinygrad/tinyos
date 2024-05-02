@@ -6,7 +6,7 @@ import pygame
 from display import Display
 
 # initialize
-display = Display("/dev/ttyACM1")
+display = Display("/dev/ttyACM0")
 
 # logo
 logo = pygame.image.load("/opt/tinybox/screen/logo.png")

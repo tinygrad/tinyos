@@ -19,6 +19,7 @@ rootfs:
       - git://git.launchpad.net/~ubuntu-core-dev/ubuntu-seeds/+git/
     branch: jammy
     names:
+      - server
       - server-minimal
   sources-list-deb822: true
 customization:
@@ -48,6 +49,8 @@ customization:
         destination: /opt/tinybox/screen/logo.png
       - source: ./setup/bootup.py
         destination: /opt/tinybox/setup/bootup.py
+      - source: ./setup/tinybox-bootup.service
+        destination: /etc/systemd/system/tinybox-bootup.service
       - source: ./setup/firstboot.py
         destination: /opt/tinybox/setup/firstboot.py
       - source: ./setup/driverinstall.sh
