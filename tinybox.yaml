@@ -68,6 +68,7 @@ customization:
     - name: python3-pygame
     - name: build-essential
   extra-snaps:
+    - name: core
     - name: core20
 artifacts:
   img:
