@@ -50,6 +50,8 @@ customization:
         destination: /opt/tinybox/setup/bootup.py
       - source: ./setup/firstboot.py
         destination: /opt/tinybox/setup/firstboot.py
+      - source: ./setup/driverinstall.sh
+        destination: /opt/tinybox/setup/driverinstall.sh
       - source: ./setup/firstsetup.py
         destination: /opt/tinybox/setup/firstsetup.py
       - source: ./monitoring/monitoring.py
