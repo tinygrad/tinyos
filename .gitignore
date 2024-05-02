@@ -1,0 +1,15 @@
+# for local builds
+install/
+# for snap builds
+parts/
+prime/
+stage/
+# generated gadget.yaml
+gadget.yaml
+# local snap builds
+pc_*.snap
+# intermediate objects
+grub*.efi
+pc-boot.img
+pc-core.img
+shim.efi.signed
