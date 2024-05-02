@@ -1,9 +1,10 @@
+from math import e
 import sys
 sys.path.insert(0, "/opt/tinybox/screen/")
 
 from display import Display
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal
+import threading, time, signal, os
 from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
@@ -83,21 +84,25 @@ class ControlHandler(StreamRequestHandler):
         control_queue.put(("text", AText(args)))
 
 if __name__ == "__main__":
-
   # start display thread
   dt = threading.Thread(target=display_thread)
   dt.start()
 
-  # handle control-c
+  # handle exit signals
   def signal_handler(sig, frame):
     global display_thread_alive
     display_thread_alive = False
+    os.remove("/run/tinybox-screen.sock")
     sys.exit(0)
   signal.signal(signal.SIGINT, signal_handler)
+  signal.signal(signal.SIGTERM, signal_handler)
 
   # start control server
   server = UnixStreamServer("/run/tinybox-screen.sock", ControlHandler)
-  server.serve_forever()
+
+  try: server.serve_forever()
+  except KeyboardInterrupt: print("Exiting...")
+  finally: os.remove("/run/tinybox-screen.sock")
 
   display_thread_alive = False
   dt.join()
