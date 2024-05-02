@@ -1,4 +1,5 @@
 import math, os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import serial, pygame
 
 # commands

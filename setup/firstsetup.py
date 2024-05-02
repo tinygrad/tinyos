@@ -2,8 +2,8 @@ import sys
 sys.path.insert(0, "/opt/tinybox/screen/")
 
 import subprocess, random
-import pygame
 from display import Display
+import pygame
 
 # initialize
 display = Display("/dev/ttyACM0")
