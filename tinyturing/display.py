@@ -27,6 +27,8 @@ class Display:
     pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
     self.flip()
 
+  def __del__(self): self.lcd.close()
+
   def send_command(self, command, payload=None):
     if payload is not None: command += payload
     padding = 0 if command[0] != 0x2c else 0x2c
