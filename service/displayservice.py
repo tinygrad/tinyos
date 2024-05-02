@@ -101,5 +101,5 @@ if __name__ == "__main__":
   signal.signal(signal.SIGTERM, signal_handler)
 
   # start control server
-  server = UnixStreamServer("/run/tinybox-screen.sock", ControlHandler)
-  server.serve_forever()
+  with UnixStreamServer("/run/tinybox-screen.sock", ControlHandler) as server:
+    server.serve_forever()
