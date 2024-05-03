@@ -34,6 +34,7 @@ def display_thread():
   # initialize display
   display = Display("/dev/ttyACM0")
   display.clear()
+  display.flip()
 
   # load assets
   logo = pg.image.load("/opt/tinybox/screen/logo.png")
@@ -58,6 +59,7 @@ def display_thread():
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
 
+      display.clear()
       match display_state:
         case DisplayState.TEXT:
           display.blit(logo, (200, 25))
