@@ -128,7 +128,7 @@ def display_thread():
           VerticalProgressBar(utilization, 100, 50, 380, 50 + 75 * i).display(display)
         power_draws = get_gpu_power_draw()
         total_power_draw = sum(power_draws)
-        PositionableText(f"{total_power_draw}W", (600, 240), 100).display(display)
+        PositionableText(f"{total_power_draw}W", (625, 240), 100).display(display)
 
     # update display
     display.flip()
