@@ -60,6 +60,18 @@ class Image(Displayable):
     self.x, self.y = xy
   def display(self, display: Display): display.blit(self.image, (self.x, self.y))
 
+def lerp(a: float, b: float, t: float) -> float: return a + (b - a) * t
+class LerpedImage(Displayable):
+  def __init__(self, path: str, start_xy: tuple[int, int], end_xy: tuple[int, int], start_scale: tuple[int, int], end_scale: tuple[int, int], duration: int):
+    self.image = pg.image.load(path)
+    self.start_xy, self.end_xy, self.start_scale, self.end_scale, self.duration, self.t = start_xy, end_xy, start_scale, end_scale, duration, 0
+  def display(self, display: Display):
+    xy = (int(lerp(self.start_xy[0], self.end_xy[0], self.t)), int(lerp(self.start_xy[1], self.end_xy[1], self.t)))
+    scale = (int(lerp(self.start_scale[0], self.end_scale[0], self.t)), int(lerp(self.start_scale[1], self.end_scale[1], self.t)))
+    image = pg.transform.scale(self.image, scale)
+    display.blit(image, xy)
+    self.t = min(1, self.t + 1 / self.duration)
+
 def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
   for i in range(1, 7):
@@ -85,7 +97,7 @@ def display_thread():
 
   # load assets
   logo = Image("/opt/tinybox/screen/logo.png", (200, 25), (400, 240))
-  sleep_text = AText(["=--------", "-=-------", "--=------", "---=-----", "----=----", "-----=---", "------=--", "-------=-", "--------=", "-------=-", "------=--", "-----=---", "----=----", "---=-----", "--=------", "-=-------"])
+  logo_sleep = LerpedImage("/opt/tinybox/screen/logo.png", (200, 25), (0, 0), (400, 240), (800, 480), 60)
 
   display_state = DisplayState.TEXT
   display_last_active = time.monotonic()
@@ -107,6 +119,7 @@ def display_thread():
         print("[DT] Display inactive for 15 seconds, switching back to sleep text state")
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
+        logo_sleep.t = 0
 
       # check if display should be in status state
       gpu_utilizations = get_gpu_utilizations()
@@ -122,7 +135,7 @@ def display_thread():
         if to_display is not None:
           print(f"[DT] Displaying: {to_display}")
           to_display.display(display)
-        else: sleep_text.display(display)
+        else: logo_sleep.display(display)
       elif display_state == DisplayState.STATUS:
         for i, utilization in enumerate(gpu_utilizations):
           VerticalProgressBar(utilization, 100, 50, 380, 50 + 75 * i).display(display)
