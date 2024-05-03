@@ -31,6 +31,13 @@ class AText(Displayable):
     display.blit(text, (400 - text.get_width() // 2, 225 + (120 - text.get_height() // 2)))
     self.current_state = (self.current_state + 1) % len(self.text_states)
 
+class PositionableText(Displayable):
+  def __init__(self, text: str, xy: tuple[int, int], size: int):
+    self.text, self.x, self.y, self.size = text, xy[0], xy[1], size
+  def display(self, display: Display):
+    text = display.text(self.text, self.size, True, (255, 255, 255))
+    display.blit(text, (self.x - text.get_width() // 2, self.y - text.get_height() // 2))
+
 class VerticalProgressBar(Displayable):
   def __init__(self, value: float, max_value: float, width: int, height: int, x: int):
     self.value, self.max_value, self.width, self.height, self.x = value, max_value, width, height, x
@@ -59,6 +66,13 @@ def get_gpu_utilizations() -> list[float]:
     with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
       gpu_utilizations.append(int(f.read().strip()))
   return gpu_utilizations
+
+def get_gpu_power_draw() -> list[int]:
+  gpu_power_draws = []
+  for i in range(1, 7):
+    with open(f"/sys/class/drm/card{i}/device/hwmon/hwmon{i+4}/power1_average", "r") as f:
+      gpu_power_draws.append(int(f.read().strip()))
+  return gpu_power_draws
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
@@ -112,6 +126,9 @@ def display_thread():
       elif display_state == DisplayState.STATUS:
         for i, utilization in enumerate(gpu_utilizations):
           VerticalProgressBar(utilization, 100, 50, 380, 50 + 75 * i).display(display)
+        power_draws = get_gpu_power_draw()
+        total_power_draw = sum(power_draws)
+        PositionableText(f"{total_power_draw}W", (650, 240), 50).display(display)
 
     # update display
     display.flip()
