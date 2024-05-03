@@ -43,6 +43,7 @@ def display_thread():
   # load assets
   logo = pg.image.load("/opt/tinybox/screen/logo.png")
   logo = pg.transform.scale(logo, (400, 240))
+  sleep_text = AText(["zZzZz", "ZzZzZ"])
 
   display_state = DisplayState.TEXT
   display_last_active = time.monotonic()
@@ -70,7 +71,7 @@ def display_thread():
           if to_display is not None:
             print(f"[DT] Displaying: {to_display}")
             to_display.display(display)
-          else: Text("zZzZz").display(display)
+          else: sleep_text.display(display)
         case DisplayState.STATUS:
           pass
 
