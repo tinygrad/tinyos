@@ -32,9 +32,9 @@ customization:
     make-dirs:
       - path: /opt/tinybox/screen/
         permissions: 0755
-      - path: /opt/tinybox/setup/
+      - path: /opt/tinybox/service/
         permissions: 0755
-      - path: /opt/tinybox/monitoring/
+      - path: /opt/tinybox/setup/
         permissions: 0755
       - path: /raid/
         permissions: 0777
@@ -47,12 +47,14 @@ customization:
         destination: /opt/tinybox/screen/display.py
       - source: ./tinyturing/logo.png
         destination: /opt/tinybox/screen/logo.png
-      - source: ./setup/bootup.py
-        destination: /opt/tinybox/setup/bootup.py
-      - source: ./setup/tinybox-bootup.service
-        destination: /etc/systemd/system/tinybox-bootup.service
-      - source: ./setup/firstboot.py
-        destination: /opt/tinybox/setup/firstboot.py
+      - source: ./service/displayservice.py
+        destination: /opt/tinybox/service/displayservice.py
+      - source: ./service/displayservice.service
+        destination: /etc/systemd/system/displayservice.service
+      - source: ./service/bootup.sh
+        destination: /opt/tinybox/service/bootup.sh
+      - source: ./service/reboot.sh
+        destination: /opt/tinybox/service/reboot.sh
       - source: ./setup/update.sh
         destination: /opt/tinybox/setup/update.sh
       - source: ./setup/raidsetup.sh
@@ -63,14 +65,10 @@ customization:
         destination: /opt/tinybox/setup/initialpackage.sh
       - source: ./setup/correctperms.sh
         destination: /opt/tinybox/setup/correctperms.sh
-      - source: ./setup/firstsetup.py
-        destination: /opt/tinybox/setup/firstsetup.py
+      - source: ./setup/firstsetup.sh
+        destination: /opt/tinybox/setup/firstsetup.sh
       - source: ./setup/firstsetup.service
         destination: /etc/systemd/system/firstsetup.service
-      - source: ./setup/rebooting.py
-        destination: /opt/tinybox/setup/rebooting.py
-      - source: ./monitoring/monitoring.py
-        destination: /opt/tinybox/monitoring/monitoring.py
       - source: ./tools/fan-control
         destination: /usr/bin/fan-control
       - source: ./tools/fan-control_completion.sh

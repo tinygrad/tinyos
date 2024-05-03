@@ -1,0 +1,15 @@
+[Unit]
+Description=tinybox Display Service
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=python3 /opt/tinybox/service/displayservice.py
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=sysinit.target

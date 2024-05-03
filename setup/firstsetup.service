@@ -6,7 +6,7 @@ After=network.target
 Type=oneshot
 User=root
 Group=root
-ExecStart=python3 /opt/tinybox/setup/firstsetup.py
+ExecStart=bash /opt/tinybox/setup/firstsetup.sh
 
 [Install]
 WantedBy=multi-user.target

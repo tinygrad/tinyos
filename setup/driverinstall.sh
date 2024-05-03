@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "atext,Installing Drivers.. ,Installing Drivers ..,Installing Drivers. ." | nc -U /run/tinybox-screen.sock
+
 # Check which gpus are installed
 IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 
