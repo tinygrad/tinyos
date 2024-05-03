@@ -22,7 +22,7 @@ class Text(Displayable):
     starting_offset = 225 - 50 * (len(lines) - 1)
     for i, line in enumerate(lines):
       text = display.text(line, 100, True, (255, 255, 255))
-      display.blit(text, (400 - text.get_width() // 2, 225 + (120 - text.get_height() // 2) + i * 50))
+      display.blit(text, (400 - text.get_width() // 2, starting_offset + (120 - text.get_height() // 2) + i * 50))
 
 class AText(Displayable):
   def __init__(self, text_states: list[str]): self.text_states, self.current_state = text_states, 0
