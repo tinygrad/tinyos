@@ -43,7 +43,7 @@ class VerticalProgressBar(Displayable):
     bar_height = self.height * self.value // self.max_value
     bar = pg.Surface((self.width, bar_height))
     pg.draw.rect(bar, (255, 255, 255), (0, 0, self.width, bar_height))
-    display.blit(bar, (self.x - self.width // 2, 225 - self.height // 2))
+    display.blit(bar, (self.x - self.width // 2, 225 - bar_height // 2))
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
@@ -99,7 +99,7 @@ def display_thread():
           print(f"[DT] GPU Utilizations: {gpu_utilizations}")
           # display gpu utilization
           for i, utilization in enumerate(gpu_utilizations):
-            VerticalProgressBar(utilization, 100, 50, 200, 100 + 100 * i).display(display)
+            VerticalProgressBar(utilization, 100, 50, 400, 150 + 100 * i).display(display)
 
       if display_state == DisplayState.TEXT:
         # check gpu utilization to see if we should switch to status
