@@ -26,7 +26,6 @@ class Display:
 
     # initialize pygame
     os.environ["SDL_VIDEODRIVER"] = "dummy"
-    pygame.init()
     pygame.font.init()
     self.font_cache = {}
     self.framebuffer = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
