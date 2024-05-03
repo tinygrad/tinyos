@@ -111,7 +111,7 @@ def display_thread():
         else: sleep_text.display(display)
       elif display_state == DisplayState.STATUS:
         for i, utilization in enumerate(gpu_utilizations):
-          VerticalProgressBar(utilization, 100, 25, 400, 100 + 50 * i).display(display)
+          VerticalProgressBar(utilization, 100, 50, 480, 50 + 50 * i).display(display)
 
     # update display
     display.flip()
