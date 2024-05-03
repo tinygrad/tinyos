@@ -63,8 +63,10 @@ class Display:
     self.framebuffer.blit(source, dest, area)
     for x in range(WIDTH):
       for y in range(HEIGHT):
-        if self.framebuffer.get_at((x, y)) != old_framebuffer.get_at((x, y)):
-          self.framebuffer_dirty[y][x] = True
+        pixel_old = old_framebuffer.get_at((x, y))
+        pixel_new = self.framebuffer.get_at((x, y))
+        if pixel_old[0] == pixel_new[0] and pixel_old[1] == pixel_new[1] and pixel_old[2] == pixel_new[2]: continue
+        else: self.framebuffer_dirty[y][x] = True
   def clear(self):
     pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
     self.framebuffer_dirty = [[True] * WIDTH for _ in range(HEIGHT)]
