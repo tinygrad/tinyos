@@ -165,4 +165,5 @@ if __name__ == "__main__":
 
   # start control server
   with UnixStreamServer("/run/tinybox-screen.sock", ControlHandler) as server:
+    os.chmod("/run/tinybox-screen.sock", 0o777)
     server.serve_forever()

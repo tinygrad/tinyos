@@ -16,7 +16,7 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 WIDTH, HEIGHT = 800, 480
 class Display:
   def __init__(self, port):
-    self.lcd = serial.Serial(port, 912600, timeout=5, write_timeout=5)
+    self.lcd = serial.Serial(port, 912600 * 2, timeout=5, write_timeout=5)
 
     # initialize display
     self.send_command(HELLO)
@@ -62,8 +62,7 @@ class Display:
     print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
     self.framebuffer.blit(source, dest, area)
 
-  def flip(self):
-    # track damage
+  def _track_damage(self):
     old_framebuffer = pygame.PixelArray(self.old_framebuffer)
     framebuffer = pygame.PixelArray(self.framebuffer)
     for x in range(WIDTH):
@@ -73,6 +72,10 @@ class Display:
         if pixel_old == pixel_new: self.framebuffer_dirty[y][x] = False
         else: self.framebuffer_dirty[y][x] = True
     old_framebuffer.close()
+    framebuffer.close()
+
+  def flip(self):
+    self._track_damage()
 
     if not any(any(row) for row in self.framebuffer_dirty):
       print("[D] Skipping flip because framebuffer is clean")
@@ -92,6 +95,7 @@ class Display:
     else:
       print("[D] Flipping partial framebuffer")
       update = bytearray()
+      framebuffer = pygame.PixelArray(self.framebuffer)
       for y in range(HEIGHT):
         if not any(self.framebuffer_dirty[y]): continue
         # find first dirty pixel
@@ -100,13 +104,14 @@ class Display:
         # find last dirty pixel
         end = WIDTH - 1
         while not self.framebuffer_dirty[y][end]: end -= 1
-        update += (y * WIDTH + start).to_bytes(3, "big") + (end - start).to_bytes(2, "big")
-        for x in range(start, end):
+        update += (y * WIDTH + start).to_bytes(3, "big") + (end - start + 1).to_bytes(2, "big")
+        for x in range(start, end + 1):
           pixel = framebuffer[x, y]
           update += (pixel & 0xffffff).to_bytes(3, "little")
+      framebuffer.close()
       update_size = (len(update) + 2).to_bytes(3, "big")
       payload = UPDATE_BITMAP + update_size + bytearray(3) + self.partial_update_count.to_bytes(4, "big")
-      if len(update) > 250: update = b"\x00".join(update[i:i + 249] for i in range(0, len(update), 249))
+      update = b"\x00".join(update[i:i + 249] for i in range(0, len(update), 249))
       update += bytearray([0xef, 0x69])
 
       self.send_command(bytearray([0xff]), payload)
