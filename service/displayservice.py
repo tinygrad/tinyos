@@ -38,12 +38,12 @@ class VerticalProgressBar(Displayable):
     # draw background
     background = pg.Surface((self.width, self.height))
     pg.draw.rect(background, (25, 25, 25), (0, 0, self.width, self.height))
-    display.blit(background, (self.x - self.width // 2, 225 - self.height // 2))
+    display.blit(background, (self.x - self.width // 2, 240 - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
     bar = pg.Surface((self.width, bar_height))
     pg.draw.rect(bar, (255, 255, 255), (0, 0, self.width, bar_height))
-    display.blit(bar, (self.x - self.width // 2, 225 - bar_height // 2))
+    display.blit(bar, (self.x - self.width // 2, 240 - bar_height // 2))
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
