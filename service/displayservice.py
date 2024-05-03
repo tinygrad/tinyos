@@ -37,7 +37,7 @@ class VerticalProgressBar(Displayable):
   def display(self, display: Display):
     # draw background
     background = pg.Surface((self.width, self.height))
-    pg.draw.rect(background, (25, 25, 25), (0, 0, self.width, self.height))
+    pg.draw.rect(background, (20, 20, 20), (0, 0, self.width, self.height))
     display.blit(background, (self.x - self.width // 2, 240 - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
