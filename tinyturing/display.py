@@ -17,25 +17,29 @@ WIDTH, HEIGHT = 800, 480
 class Display:
   def __init__(self, port):
     self.lcd = serial.Serial(port, 115200, timeout=5, write_timeout=5)
+
+    # initialize display
+    self.send_command(HELLO)
+    print(self.lcd.read(22))
+    self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
+    self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
+
+    # initialize pygame
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     pygame.init()
     pygame.font.init()
     self.font_cache = {}
     self.framebuffer = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
-    self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
 
-    # initialize
-    self.send_command(HELLO)
-    print(self.lcd.read(22))
-    self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
-    self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
     pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
+    self.framebuffer_dirty = [[True] * WIDTH for _ in range(HEIGHT)]
     self.flip()
 
   def __del__(self): self.lcd.close()
 
   def send_command(self, command, payload=None):
     print(f"[D] Sending command {command}")
+    command = command.copy()
     if payload is not None: command += payload
     padding = 0 if command[0] != 0x2c else 0x2c
     if not ((cmd_len:=len(command)) / 250).is_integer(): command += bytearray([padding] * (250 * math.ceil(cmd_len / 250) - cmd_len))
@@ -56,13 +60,12 @@ class Display:
     return self.font_cache[size].render(text, *args, **kwargs)
   def blit(self, source, dest=(0, 0), area=None):
     print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
-    old_framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose()
+    old_framebuffer = self.framebuffer.copy()
     self.framebuffer.blit(source, dest, area)
-    new_framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose()
-    diff = old_framebuffer - new_framebuffer
-    for y, row in enumerate(diff):
-      for x, pixel in enumerate(row):
-        if pixel != 0: self.framebuffer_dirty[y][x] = True
+    for x in range(WIDTH):
+      for y in range(HEIGHT):
+        if self.framebuffer.get_at((x, y)) != old_framebuffer.get_at((x, y)):
+          self.framebuffer_dirty[y][x] = True
   def clear(self):
     pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
     self.framebuffer_dirty = [[True] * WIDTH for _ in range(HEIGHT)]
