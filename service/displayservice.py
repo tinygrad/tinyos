@@ -45,6 +45,13 @@ class VerticalProgressBar(Displayable):
     pg.draw.rect(bar, (255, 255, 255), (0, 0, self.width, bar_height))
     display.blit(bar, (self.x - self.width // 2, 240 - bar_height // 2))
 
+def get_gpu_utilizations() -> list[float]:
+  gpu_utilizations = []
+  for i in range(1, 7):
+    with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
+      gpu_utilizations.append(int(f.read().strip()))
+  return gpu_utilizations
+
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
 display_thread_alive = True
@@ -74,11 +81,10 @@ def display_thread():
         case "status":
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
-          to_display = None
     else:
-      # reset display state if inactive for 60 seconds
-      if time.monotonic() - display_last_active > 60 and display_state == DisplayState.STATUS:
-        print("[DT] Display inactive for 60 seconds, switching back to sleep text state")
+      # reset display state if inactive for 30 seconds
+      if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
+        print("[DT] Display inactive for 30 seconds, switching back to sleep text state")
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
 
@@ -92,24 +98,24 @@ def display_thread():
           else: sleep_text.display(display)
         case DisplayState.STATUS:
           # get gpu utilization
-          gpu_utilizations = []
-          for i in range(1, 7):
-            with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
-              gpu_utilizations.append(int(f.read().strip()))
+          gpu_utilizations = get_gpu_utilizations()
           print(f"[DT] GPU Utilizations: {gpu_utilizations}")
           # display gpu utilization
           for i, utilization in enumerate(gpu_utilizations):
             VerticalProgressBar(utilization, 100, 50, 400, 150 + 100 * i).display(display)
 
-      if display_state == DisplayState.TEXT:
-        # check gpu utilization to see if we should switch to status
-        pass
+      # check if display should be in status state
+      gpu_utilizations = get_gpu_utilizations()
+      mean_gpu_utilization = sum(gpu_utilizations) / len(gpu_utilizations)
+      if mean_gpu_utilization > 10:
+        display_state = DisplayState.STATUS
+        display_last_active = time.monotonic()
 
     # update display
     display.flip()
 
     # sleep
-    time.sleep(0.5)
+    time.sleep(1)
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):
