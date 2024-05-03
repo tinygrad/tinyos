@@ -1,6 +1,7 @@
 import math, os, subprocess, time
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import serial, pygame
+from numba import jit
 
 # commands
 HELLO = bytearray([0x01, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xc5, 0xd3])
@@ -62,6 +63,7 @@ class Display:
     print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
     self.framebuffer.blit(source, dest, area)
 
+  @jit
   def _track_damage(self):
     old_framebuffer = pygame.PixelArray(self.old_framebuffer)
     framebuffer = pygame.PixelArray(self.framebuffer)
