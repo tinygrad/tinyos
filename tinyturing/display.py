@@ -94,8 +94,14 @@ class Display:
       update = bytearray()
       for y in range(HEIGHT):
         if not any(self.framebuffer_dirty[y]): continue
-        update += (y * WIDTH).to_bytes(3, "big") + WIDTH.to_bytes(2, "big")
-        for x in range(WIDTH):
+        # find first dirty pixel
+        start = 0
+        while not self.framebuffer_dirty[y][start]: start += 1
+        # find last dirty pixel
+        end = WIDTH - 1
+        while not self.framebuffer_dirty[y][end]: end -= 1
+        update += (y * WIDTH + start).to_bytes(3, "big") + (end - start).to_bytes(2, "big")
+        for x in range(start, end):
           pixel = framebuffer[x, y]
           update += (pixel & 0xffffff).to_bytes(3, "little")
       update_size = (len(update) + 2).to_bytes(3, "big")
