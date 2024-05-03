@@ -72,7 +72,7 @@ class LerpedImage(Displayable):
     self.t = min(1, self.t + 1 / self.duration)
 
 class DVDImage(Displayable):
-  def __init__(self, path: str, scale: tuple[int, int], speed: float = 4):
+  def __init__(self, path: str, scale: tuple[int, int], speed: float = 1):
     self.image = pg.image.load(path)
     self.image = pg.transform.scale(self.image, scale)
     self.x_speed, self.y_speed = speed, speed
@@ -160,7 +160,7 @@ def display_thread():
     display.flip()
 
     # sleep
-    time.sleep(0.001)
+    time.sleep(0.02)
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):

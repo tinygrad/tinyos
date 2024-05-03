@@ -31,7 +31,7 @@ class Display:
     pygame.font.init()
     self.font_cache = {}
     self.framebuffer = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
-    self.old_framebuffer = pygame.surfarray.array2d(self.framebuffer)
+    self.old_framebuffer = self.framebuffer.copy()
     self.partial_update_count = 0
 
   def __del__(self): self.lcd.close()
@@ -57,14 +57,13 @@ class Display:
     if size not in self.font_cache: self.font_cache[size] = pygame.font.Font(None, size)
     return self.font_cache[size].render(text, *args, **kwargs)
   def clear(self):
-    self.old_framebuffer = pygame.surfarray.array2d(self.framebuffer)
+    self.old_framebuffer = self.framebuffer.copy()
     pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
   def blit(self, source, dest=(0, 0), area=None):
-    # print(f"Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
     self.framebuffer.blit(source, dest, area)
 
   def flip(self):
-    dirty = _track_damage(self.old_framebuffer, pygame.surfarray.pixels2d(self.framebuffer))
+    dirty = _track_damage(pygame.surfarray.pixels2d(self.old_framebuffer), pygame.surfarray.pixels2d(self.framebuffer))
 
     if not np.any(dirty):
       logging.debug("Skipping flip because framebuffer is clean")
