@@ -108,6 +108,11 @@ class Display:
       self.send_command(bytearray([0xff]), payload)
       self.send_command(bytearray([0xff]), bytearray.fromhex(update))
       self.send_command(QUERY_STATUS)
-      print(f"[D] {self.lcd.read(1024)[:0x20]}")
+      res = self.lcd.read(1024)[:0x20]
+      print(f"[D] {res}")
+      if res == b"\x00":
+        print("[D] Partial update failed, retrying")
+        self.send_command(bytearray([0xff]), payload)
+        self.send_command(bytearray([0xff]), bytearray.fromhex(update))
       self.partial_update_count += 1
     self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
