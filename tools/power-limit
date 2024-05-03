@@ -18,7 +18,7 @@ function main {
   fi
 
   if [ -z "$IS_NVIDIA_GPU" ]; then
-    echo "$limit""000000" > /sys/class/drm/card{1..6}/device/hwmon/hwmon*/power1_cap
+    echo "$limit""000000" | tee /sys/class/drm/card{1..6}/device/hwmon/hwmon*/power1_cap
   else
     ercho "not implemented"
   fi
