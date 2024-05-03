@@ -64,12 +64,18 @@ class Display:
     self.framebuffer.blit(source, dest, area)
 
   def flip(self):
+    # track damage
+    old_framebuffer = pygame.PixelArray(self.old_framebuffer)
+    framebuffer = pygame.PixelArray(self.framebuffer)
     for x in range(WIDTH):
       for y in range(HEIGHT):
-        pixel_old = self.old_framebuffer.get_at((x, y))
-        pixel_new = self.framebuffer.get_at((x, y))
-        if pixel_old[0] == pixel_new[0] and pixel_old[1] == pixel_new[1] and pixel_old[2] == pixel_new[2]: continue
+        pixel_old = old_framebuffer[x, y]
+        pixel_new = framebuffer[x, y]
+        if pixel_old == pixel_new: self.framebuffer_dirty[y][x] = False
         else: self.framebuffer_dirty[y][x] = True
+    old_framebuffer.close()
+    framebuffer.close()
+
     if not any(any(row) for row in self.framebuffer_dirty):
       print("[D] Skipping flip because framebuffer is clean")
       return
