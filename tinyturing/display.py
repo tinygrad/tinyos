@@ -60,7 +60,7 @@ class Display:
     self.old_framebuffer = self.framebuffer.copy()
     pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
   def blit(self, source, dest=(0, 0), area=None):
-    print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
+    # print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
     self.framebuffer.blit(source, dest, area)
 
   def flip(self):
