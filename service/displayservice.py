@@ -75,13 +75,15 @@ class DVDImage(Displayable):
   def __init__(self, path: str, scale: tuple[int, int], speed: float = 4):
     self.image = pg.image.load(path)
     self.image = pg.transform.scale(self.image, scale)
-    self.x, self.y, self.x_speed, self.y_speed = random.randint(0, 800 - scale[0]), random.randint(0, 480 - scale[1]), speed, speed
+    self.x_speed, self.y_speed = speed, speed
+    self.reset()
   def display(self, display: Display):
     if self.x + self.image.get_width() > 800 or self.x < 0: self.x_speed *= -1
     if self.y + self.image.get_height() > 480 or self.y < 0: self.y_speed *= -1
     self.x += self.x_speed
     self.y += self.y_speed
     display.blit(self.image, (self.x, self.y))
+  def reset(self): self.x, self.y = random.randint(0, 800 - self.image.get_width()), random.randint(0, 480 - self.image.get_height())
 
 def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
@@ -130,7 +132,7 @@ def display_thread():
         print("[DT] Display inactive for 15 seconds, switching back to sleep text state")
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
-        logo_sleep.t = 0
+        logo_sleep.reset()
 
       # check if display should be in status state
       gpu_utilizations = get_gpu_utilizations()
