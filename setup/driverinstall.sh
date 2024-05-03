@@ -15,6 +15,11 @@ if [ -z "$IS_NVIDIA_GPU" ]; then
   echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600 > /dev/null
   apt update -y
   apt install amdgpu-dkms rocm -y
+  tee --append /etc/ld.so.conf.d/rocm.conf <<EOF
+  /opt/rocm/lib
+  /opt/rocm/lib64
+  EOF
+  ldconfig
 else
   echo "NVIDIA GPU found."
   # Install NVIDIA drivers
