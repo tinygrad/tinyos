@@ -31,16 +31,13 @@ class Display:
     self.font_cache = {}
     self.framebuffer = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
     self.old_framebuffer = self.framebuffer.copy()
-
-    pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
     self.framebuffer_dirty = [[True] * WIDTH for _ in range(HEIGHT)]
-    self.flip()
 
   def __del__(self): self.lcd.close()
 
   def send_command(self, command, payload=None):
     print(f"[D] Sending command {command}")
-    command = command.copy()
+    command = command.copy() if command != bytearray([0xff]) else bytearray()
     if payload is not None: command += payload
     padding = 0 if command[0] != 0x2c else 0x2c
     if not ((cmd_len:=len(command)) / 250).is_integer(): command += bytearray([padding] * (250 * math.ceil(cmd_len / 250) - cmd_len))
@@ -75,13 +72,35 @@ class Display:
     if not any(any(row) for row in self.framebuffer_dirty):
       print("[D] Skipping flip because framebuffer is clean")
       return
-    print("[D] Flipping framebuffer")
-    self.send_command(PRE_UPDATE_BITMAP)
-    self.send_command(START_DISPLAY_BITMAP)
-    self.send_command(DISPLAY_BITMAP)
-    framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose().tobytes()
-    self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
-    print(f"[D] {self.lcd.read(1024)[:0x20]}")
-    self.send_command(QUERY_STATUS)
-    print(f"[D] {self.lcd.read(1024)[:0x20]}")
+
+    # check if the whole framebuffer is dirty
+    if all(all(row) for row in self.framebuffer_dirty):
+      print("[D] Flipping full framebuffer")
+      self.send_command(PRE_UPDATE_BITMAP)
+      self.send_command(START_DISPLAY_BITMAP)
+      self.send_command(DISPLAY_BITMAP)
+      framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose().tobytes()
+      self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
+      print(f"[D] {self.lcd.read(1024)[:0x20]}")
+      self.send_command(QUERY_STATUS)
+      print(f"[D] {self.lcd.read(1024)[:0x20]}")
+    else:
+      print("[D] Flipping partial framebuffer")
+      update = ""
+      for y in range(HEIGHT):
+        if not any(self.framebuffer_dirty[y]): continue
+        update += f"{(y * HEIGHT):06x}{WIDTH:04x}"
+        for x in range(WIDTH):
+          if self.framebuffer_dirty[y][x]:
+            pixel = self.framebuffer.get_at((x, y))
+            update += f"{pixel[2]:02x}{pixel[1]:02x}{pixel[0]:02x}"
+      update_size = f"{int((len(update) / 2) + 2):06x}"
+      payload = UPDATE_BITMAP + bytearray.fromhex(update_size) + bytearray(3) + int(0).to_bytes(4, "big")
+      if len(update) > 500: update = "00".join(update[i:i + 498] for i in range(0, len(update), 498))
+      update += "ef69"
+
+      self.send_command(bytearray([0xff]), payload)
+      self.send_command(bytearray([0xff]), bytearray.fromhex(update))
+      self.send_command(QUERY_STATUS)
+      print(f"[D] {self.lcd.read(1024)[:0x20]}")
     self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
