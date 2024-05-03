@@ -89,11 +89,10 @@ class Display:
       update = ""
       for y in range(HEIGHT):
         if not any(self.framebuffer_dirty[y]): continue
-        update += f"{(y * HEIGHT):06x}{WIDTH:04x}"
+        update += f"{(y * WIDTH):06x}{WIDTH:04x}"
         for x in range(WIDTH):
-          if self.framebuffer_dirty[y][x]:
-            pixel = self.framebuffer.get_at((x, y))
-            update += f"{pixel[2]:02x}{pixel[1]:02x}{pixel[0]:02x}"
+          pixel = self.framebuffer.get_at((x, y))
+          update += f"{pixel[2]:02x}{pixel[1]:02x}{pixel[0]:02x}"
       update_size = f"{int((len(update) / 2) + 2):06x}"
       payload = UPDATE_BITMAP + bytearray.fromhex(update_size) + bytearray(3) + int(0).to_bytes(4, "big")
       if len(update) > 500: update = "00".join(update[i:i + 498] for i in range(0, len(update), 498))
