@@ -72,7 +72,7 @@ class LerpedImage(Displayable):
     self.t = min(1, self.t + 1 / self.duration)
 
 class DVDImage(Displayable):
-  def __init__(self, path: str, scale: tuple[int, int], speed: float = 1):
+  def __init__(self, path: str, scale: tuple[int, int], speed: float = 4):
     self.image = pg.image.load(path)
     self.image = pg.transform.scale(self.image, scale)
     self.x_speed, self.y_speed = speed, speed
