@@ -97,7 +97,7 @@ class Display:
         update += (y * WIDTH).to_bytes(3, "big") + WIDTH.to_bytes(2, "big")
         for x in range(WIDTH):
           pixel = framebuffer[x, y]
-          update += (pixel & 0xffffff).to_bytes(3, "big")
+          update += (pixel & 0xffffff).to_bytes(3, "little")
       update_size = (len(update) + 2).to_bytes(3, "big")
       payload = UPDATE_BITMAP + update_size + bytearray(3) + self.partial_update_count.to_bytes(4, "big")
       if len(update) > 250: update = b"\x00".join(update[i:i + 249] for i in range(0, len(update), 249))
