@@ -81,6 +81,7 @@ class CDImage(Displayable):
     x = 400 + 200 * (self.t - 0.5)
     y = 240 + 100 * (self.t - 0.5)
     display.blit(self.image, (x, y))
+    self.t = (self.t + 0.01) % 1
 
 def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
