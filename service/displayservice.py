@@ -77,10 +77,10 @@ class DVDImage(Displayable):
     self.image = pg.transform.scale(self.image, scale)
     self.x, self.y, self.speed = random.randint(scale[0] // 2, 800 - scale[0] // 2), random.randint(scale[1] // 2, 480 - scale[1] // 2), speed
   def display(self, display: Display):
-    self.x += self.speed
-    self.y += self.speed
     if self.x + self.image.get_width() > 800 or self.x < 0: self.speed *= -1
     if self.y + self.image.get_height() > 480 or self.y < 0: self.speed *= -1
+    self.x += self.speed
+    self.y += self.speed
     display.blit(self.image, (self.x, self.y))
 
 def get_gpu_utilizations() -> list[float]:
