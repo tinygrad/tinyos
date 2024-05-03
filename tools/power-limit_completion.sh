@@ -14,3 +14,5 @@ _power-limit()
     return 0
   fi
 }
+
+complete -F _power-limit power-limit
