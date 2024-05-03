@@ -48,7 +48,7 @@ class VerticalProgressBar(Displayable):
 
 class Image(Displayable):
   def __init__(self, path: str, xy: tuple[int, int], scale: tuple[int, int]):
-    self.image = pg.image.load(path)
+    self.image = pg.image.load(path).convert()
     self.image = pg.transform.scale(self.image, scale)
     self.x, self.y = xy
   def display(self, display: Display): display.blit(self.image, (self.x, self.y))
