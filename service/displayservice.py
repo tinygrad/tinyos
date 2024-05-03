@@ -3,7 +3,7 @@ sys.path.insert(0, "/opt/tinybox/screen/")
 
 from display import Display
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal, os
+import threading, time, signal, os, random
 from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
@@ -71,17 +71,17 @@ class LerpedImage(Displayable):
     display.blit(image, xy)
     self.t = min(1, self.t + 1 / self.duration)
 
-class CDImage(Displayable):
-  def __init__(self, path: str, scale: tuple[int, int]):
+class DVDImage(Displayable):
+  def __init__(self, path: str, scale: tuple[int, int], speed: int = 1):
     self.image = pg.image.load(path)
     self.image = pg.transform.scale(self.image, scale)
-    self.t = 0
+    self.x, self.y, self.speed = random.randint(scale[0] // 2, 800 - scale[0] // 2), random.randint(scale[1] // 2, 480 - scale[1] // 2), speed
   def display(self, display: Display):
-    # bounce image around
-    x = 400 + 200 * (self.t - 0.5)
-    y = 240 + 100 * (self.t - 0.5)
-    display.blit(self.image, (x, y))
-    self.t = (self.t + 0.01) % 1
+    self.x += self.speed
+    self.y += self.speed
+    if self.x < 0 or self.x > 800: self.speed *= -1
+    if self.y < 0 or self.y > 480: self.speed *= -1
+    display.blit(self.image, (self.x, self.y))
 
 def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
@@ -108,7 +108,7 @@ def display_thread():
 
   # load assets
   logo = Image("/opt/tinybox/screen/logo.png", (200, 25), (400, 240))
-  logo_sleep = CDImage("/opt/tinybox/screen/logo.png", (400, 240))
+  logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 240))
 
   display_state = DisplayState.TEXT
   display_last_active = time.monotonic()
