@@ -134,7 +134,7 @@ def display_thread():
     display.flip()
 
     # sleep
-    time.sleep(0.01)
+    # time.sleep(0.01)
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):
