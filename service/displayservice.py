@@ -118,6 +118,8 @@ class ControlHandler(StreamRequestHandler):
         control_queue.put(("text", Text("\n".join(args))))
       case "atext":
         control_queue.put(("text", AText(args)))
+      case "status":
+        control_queue.put(("status", None))
 
 if __name__ == "__main__":
   # start display thread
