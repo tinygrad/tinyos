@@ -41,8 +41,9 @@ class VerticalProgressBar(Displayable):
     display.blit(background, (self.x - self.width // 2, 240 - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
+    color_sub = 255 - ((self.value / self.max_value) * 255)
     bar = pg.Surface((self.width, bar_height))
-    pg.draw.rect(bar, (255, 255, 255), (0, 0, self.width, bar_height))
+    pg.draw.rect(bar, (255, color_sub, color_sub), (0, 0, self.width, bar_height))
     display.blit(bar, (self.x - self.width // 2, 240 - bar_height // 2))
 
 def get_gpu_utilizations() -> list[float]:
@@ -115,7 +116,7 @@ def display_thread():
     display.flip()
 
     # sleep
-    time.sleep(1.5)
+    time.sleep(0.5)
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):
