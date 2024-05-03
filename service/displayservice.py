@@ -89,6 +89,14 @@ def display_thread():
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
 
+      # check if display should be in status state
+      gpu_utilizations = get_gpu_utilizations()
+      print(f"[DT] GPU Utilizations: {gpu_utilizations}")
+      mean_gpu_utilization = sum(gpu_utilizations) / len(gpu_utilizations)
+      if mean_gpu_utilization > 5:
+        display_state = DisplayState.STATUS
+        display_last_active = time.monotonic()
+
       display.clear()
       match display_state:
         case DisplayState.TEXT:
@@ -98,19 +106,8 @@ def display_thread():
             to_display.display(display)
           else: sleep_text.display(display)
         case DisplayState.STATUS:
-          # get gpu utilization
-          gpu_utilizations = get_gpu_utilizations()
-          print(f"[DT] GPU Utilizations: {gpu_utilizations}")
-          # display gpu utilization
           for i, utilization in enumerate(gpu_utilizations):
             VerticalProgressBar(utilization, 100, 50, 400, 150 + 100 * i).display(display)
-
-      # check if display should be in status state
-      gpu_utilizations = get_gpu_utilizations()
-      mean_gpu_utilization = sum(gpu_utilizations) / len(gpu_utilizations)
-      if mean_gpu_utilization > 5:
-        display_state = DisplayState.STATUS
-        display_last_active = time.monotonic()
 
     # update display
     display.flip()
