@@ -79,6 +79,10 @@ customization:
         destination: /usr/bin/fan-control
       - source: ./tools/fan-control_completion.sh
         destination: /etc/bash_completion.d/fan-control_completion.sh
+      - source: ./tools/power-limit
+        destination: /usr/bin/power-limit
+      - source: ./tools/power-limit_completion.sh
+        destination: /etc/bash_completion.d/power-limit_completion.sh
   cloud-init:
     meta-data: |
       #cloud-config

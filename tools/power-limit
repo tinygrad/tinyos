@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# echo to stderr
+function ercho { printf "%s\n" "$*" >&2; }
+
+IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+
+function main {
+  local limit="$1"
+  if [ -z "$limit" ]; then
+    echo "Limit not provided"
+    exit 1
+  fi
+  if ((limit < 100 || limit > 350)); then
+    echo "Invalid limit: $limit"
+    echo "Valid range: 100-350 W"
+    exit 1
+  fi
+
+  if [ -z "$IS_NVIDIA_GPU" ]; then
+    echo "$limit""000000" > /sys/class/drm/card{1..6}/device/hwmon/hwmon*/power1_cap
+  else
+    ercho "not implemented"
+  fi
+}
+
+# check sudo
+if [ "$(id -u)" -ne 0 ]; then
+  ercho "Please run as root"
+  exit 1
+fi
+
+main "$@"
