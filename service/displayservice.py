@@ -109,7 +109,7 @@ def display_thread():
   display.flip()
 
   # load assets
-  logo = Image("/opt/tinybox/screen/logo.png", (200, 25), (400, 240))
+  logo = LerpedImage("/opt/tinybox/screen/logo.png", (200, 25), (200, 25), (400, 240), (400, 240), 10)
   logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 240))
 
   display_state = DisplayState.TEXT
@@ -122,10 +122,17 @@ def display_thread():
       logging.info(f"Received command {command} with args {args}")
       if command == "text":
         display_state = DisplayState.TEXT
+        if to_display is None:
+          logo.start_xy = logo_sleep.x, logo_sleep.y
+          logo.t = 0
         to_display = args
-      elif command == "state":
+      elif command == "status":
         display_state = DisplayState.STATUS
         display_last_active = time.monotonic()
+      elif command == "sleep":
+        display_state = DisplayState.TEXT
+        to_display = None
+        logo_sleep.reset()
     else:
       # reset display state if inactive for 15 seconds
       if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
@@ -173,6 +180,8 @@ class ControlHandler(StreamRequestHandler):
       control_queue.put(("text", AText(args)))
     elif command == "status":
       control_queue.put(("status", None))
+    elif command == "sleep":
+      control_queue.put(("sleep", None))
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.INFO)
