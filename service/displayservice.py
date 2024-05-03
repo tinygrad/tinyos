@@ -164,10 +164,12 @@ def display_thread():
         PositionableText(f"{total_power_draw}W", (625, 240), 100).display(display)
 
     # update display
+    st = time.perf_counter()
     display.flip()
+    flip_time = time.perf_counter() - st
 
     # sleep
-    time.sleep(0.02)
+    if (sleep_time := 0.02 - flip_time) > 0: time.sleep(sleep_time)
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):
