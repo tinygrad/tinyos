@@ -17,8 +17,11 @@ class Displayable(ABC):
 class Text(Displayable):
   def __init__(self, text: str): self.text = text
   def display(self, display: Display):
-    text = display.text(self.text, 100, True, (255, 255, 255))
-    display.blit(text, (400 - text.get_width() // 2, 225 + (120 - text.get_height() // 2)))
+    # split text into lines
+    lines = self.text.split("\n")
+    for i, line in enumerate(lines):
+      text = display.text(line, 100, True, (255, 255, 255))
+      display.blit(text, (400 - text.get_width() // 2, 175 + (120 - text.get_height() // 2) + i * 50))
 
 class AText(Displayable):
   def __init__(self, text_states: list[str]): self.text_states, self.current_state = text_states, 0
