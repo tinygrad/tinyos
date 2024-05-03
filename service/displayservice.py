@@ -83,9 +83,9 @@ def display_thread():
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
     else:
-      # reset display state if inactive for 10 seconds
-      if time.monotonic() - display_last_active > 10 and display_state == DisplayState.STATUS:
-        print("[DT] Display inactive for 10 seconds, switching back to sleep text state")
+      # reset display state if inactive for 15 seconds
+      if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
+        print("[DT] Display inactive for 15 seconds, switching back to sleep text state")
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
 
@@ -108,7 +108,7 @@ def display_thread():
       # check if display should be in status state
       gpu_utilizations = get_gpu_utilizations()
       mean_gpu_utilization = sum(gpu_utilizations) / len(gpu_utilizations)
-      if mean_gpu_utilization > 10:
+      if mean_gpu_utilization > 5:
         display_state = DisplayState.STATUS
         display_last_active = time.monotonic()
 
