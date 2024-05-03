@@ -64,14 +64,14 @@ def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
   for i in range(1, 7):
     with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
-      gpu_utilizations.append(int(f.read().strip()) // 1000000)
+      gpu_utilizations.append(int(f.read().strip()))
   return gpu_utilizations
 
 def get_gpu_power_draw() -> list[int]:
   gpu_power_draws = []
   for i in range(1, 7):
     with open(f"/sys/class/drm/card{i}/device/hwmon/hwmon{i+4}/power1_average", "r") as f:
-      gpu_power_draws.append(int(f.read().strip()))
+      gpu_power_draws.append(int(f.read().strip()) // 1000000)
   return gpu_power_draws
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
