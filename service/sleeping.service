@@ -1,0 +1,12 @@
+[Unit]
+Description=Sleeping on Display
+After=cloud-final.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=bash /opt/tinybox/service/sleep.sh
+
+[Install]
+WantedBy=cloud-init.target
