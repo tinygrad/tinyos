@@ -75,7 +75,7 @@ class DVDImage(Displayable):
   def __init__(self, path: str, scale: tuple[int, int], speed: float = 2.5):
     self.image = pg.image.load(path)
     self.image = pg.transform.scale(self.image, scale)
-    self.x, self.y, self.speed = random.randint(scale[0] // 2, 800 - scale[0] // 2), random.randint(scale[1] // 2, 480 - scale[1] // 2), speed
+    self.x, self.y, self.speed = random.randint(0, 800 - scale[0]), random.randint(0, 480 - scale[1]), speed
   def display(self, display: Display):
     if self.x + self.image.get_width() > 800 or self.x < 0: self.speed *= -1
     if self.y + self.image.get_height() > 480 or self.y < 0: self.speed *= -1
