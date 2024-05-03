@@ -64,7 +64,7 @@ def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
   for i in range(1, 7):
     with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
-      gpu_utilizations.append(int(f.read().strip()))
+      gpu_utilizations.append(int(f.read().strip()) // 1000000)
   return gpu_utilizations
 
 def get_gpu_power_draw() -> list[int]:
