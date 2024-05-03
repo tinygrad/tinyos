@@ -90,7 +90,7 @@ def display_thread():
           # get gpu utilization
           gpu_utilizations = []
           for i in range(1, 7):
-            with open("/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
+            with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
               gpu_utilizations.append(int(f.read().strip()))
           print(f"[DT] GPU Utilizations: {gpu_utilizations}")
           # display gpu utilization
