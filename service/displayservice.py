@@ -1,4 +1,3 @@
-from math import e
 import sys
 sys.path.insert(0, "/opt/tinybox/screen/")
 
@@ -72,6 +71,17 @@ class LerpedImage(Displayable):
     display.blit(image, xy)
     self.t = min(1, self.t + 1 / self.duration)
 
+class CDImage(Displayable):
+  def __init__(self, path: str, scale: tuple[int, int]):
+    self.image = pg.image.load(path)
+    self.image = pg.transform.scale(self.image, scale)
+    self.t = 0
+  def display(self, display: Display):
+    # bounce image around
+    x = 400 + 200 * (self.t - 0.5)
+    y = 240 + 100 * (self.t - 0.5)
+    display.blit(self.image, (x, y))
+
 def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
   for i in range(1, 7):
@@ -97,7 +107,7 @@ def display_thread():
 
   # load assets
   logo = Image("/opt/tinybox/screen/logo.png", (200, 25), (400, 240))
-  logo_sleep = LerpedImage("/opt/tinybox/screen/logo.png", (200, 25), (0, 0), (400, 240), (800, 480), 60)
+  logo_sleep = CDImage("/opt/tinybox/screen/logo.png", (400, 240))
 
   display_state = DisplayState.TEXT
   display_last_active = time.monotonic()
@@ -131,8 +141,8 @@ def display_thread():
 
       display.clear()
       if display_state == DisplayState.TEXT:
-        logo.display(display)
         if to_display is not None:
+          logo.display(display)
           print(f"[DT] Displaying: {to_display}")
           to_display.display(display)
         else: logo_sleep.display(display)
