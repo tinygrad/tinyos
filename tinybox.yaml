@@ -86,6 +86,7 @@ customization:
     - name: python3-pygame
     - name: build-essential
     - name: bash-completion
+    - name: netcat-openbsd
   extra-snaps:
     - name: core
     - name: core20
