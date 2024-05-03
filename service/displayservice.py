@@ -169,7 +169,7 @@ def display_thread():
     flip_time = time.perf_counter() - st
 
     # sleep
-    if (sleep_time := 0.02 - flip_time) > 0: time.sleep(sleep_time)
+    if (sleep_time := 0.08 - flip_time) > 0: time.sleep(sleep_time)
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):
