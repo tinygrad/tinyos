@@ -83,9 +83,9 @@ def display_thread():
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
     else:
-      # reset display state if inactive for 30 seconds
-      if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
-        print("[DT] Display inactive for 30 seconds, switching back to sleep text state")
+      # reset display state if inactive for 10 seconds
+      if time.monotonic() - display_last_active > 10 and display_state == DisplayState.STATUS:
+        print("[DT] Display inactive for 10 seconds, switching back to sleep text state")
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
 
