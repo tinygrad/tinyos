@@ -3,7 +3,7 @@ sys.path.insert(0, "/opt/tinybox/screen/")
 
 from display import Display
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal, os, random
+import threading, time, signal, os, random, logging
 from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
@@ -119,7 +119,7 @@ def display_thread():
   while display_thread_alive:
     if not control_queue.empty():
       command, args = control_queue.get()
-      print(f"[DT] Received command {command} with args {args}")
+      logging.info(f"[DT] Received command {command} with args {args}")
       if command == "text":
         display_state = DisplayState.TEXT
         to_display = args
@@ -129,14 +129,14 @@ def display_thread():
     else:
       # reset display state if inactive for 15 seconds
       if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
-        print("[DT] Display inactive for 15 seconds, switching back to sleep text state")
+        logging.info("[DT] Display inactive for 15 seconds, switching back to sleep text state")
         display_state, to_display = DisplayState.TEXT, None
         display_last_active = time.monotonic()
         logo_sleep.reset()
 
       # check if display should be in status state
       gpu_utilizations = get_gpu_utilizations()
-      print(f"[DT] GPU Utilizations: {gpu_utilizations}")
+      logging.debug(f"[DT] GPU Utilizations: {gpu_utilizations}")
       mean_gpu_utilization = sum(gpu_utilizations) / len(gpu_utilizations)
       if mean_gpu_utilization > 5:
         display_state = DisplayState.STATUS
@@ -146,7 +146,7 @@ def display_thread():
       if display_state == DisplayState.TEXT:
         if to_display is not None:
           logo.display(display)
-          print(f"[DT] Displaying: {to_display}")
+          logging.debug(f"[DT] Displaying: {to_display}")
           to_display.display(display)
         else: logo_sleep.display(display)
       elif display_state == DisplayState.STATUS:
@@ -166,7 +166,7 @@ class ControlHandler(StreamRequestHandler):
   def handle(self):
     data = self.rfile.readline().strip(b"\r\n").decode()
     command, *args = data.split(",")
-    print(f"[CH] Received command {command} with args {args}")
+    logging.info(f"[CH] Received command {command} with args {args}")
     if command == "text":
       control_queue.put(("text", Text("\n".join(args))))
     elif command == "atext":
@@ -175,13 +175,15 @@ class ControlHandler(StreamRequestHandler):
       control_queue.put(("status", None))
 
 if __name__ == "__main__":
+  logging.basicConfig(level=logging.INFO)
+
   # start display thread
   dt = threading.Thread(target=display_thread)
   dt.start()
 
   # handle exit signals
   def signal_handler(sig, frame):
-    print("[M] Exiting...")
+    logging.info("[M] Exiting...")
     global display_thread_alive
     display_thread_alive = False
     os.remove("/run/tinybox-screen.sock")

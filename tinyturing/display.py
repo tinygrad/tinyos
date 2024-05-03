@@ -1,4 +1,4 @@
-import math, os, subprocess, time
+import math, os, subprocess, time, logging
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import serial, pygame
 import numpy as np
@@ -22,7 +22,7 @@ class Display:
 
     # initialize display
     self.send_command(HELLO)
-    print(self.lcd.read(22))
+    logging.debug(self.lcd.read(22))
     self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
     self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
 
@@ -37,18 +37,18 @@ class Display:
   def __del__(self): self.lcd.close()
 
   def send_command(self, command, payload=None):
-    print(f"[D] Sending command {command}")
+    logging.debug(f"[D] Sending command {command}")
     command = command.copy() if command != bytearray([0xff]) else bytearray()
     if payload is not None: command += payload
     padding = 0 if command[0] != 0x2c else 0x2c
     if not ((cmd_len:=len(command)) / 250).is_integer(): command += bytearray([padding] * (250 * math.ceil(cmd_len / 250) - cmd_len))
     try: self.lcd.write(command)
     except serial.SerialTimeoutException:
-      print("[D] Serial write timeout, resetting usb device and retrying")
+      logging.warning("[D] Serial write timeout, resetting usb device and retrying")
       port, baudrate = self.lcd.port, self.lcd.baudrate
       self.lcd.close()
       subprocess.run(["usbreset", "1d6b:0106"])
-      print("[D] Waiting 5 seconds for usb device to reset")
+      logging.warning("[D] Waiting 5 seconds for usb device to reset")
       time.sleep(5)
       self.lcd = serial.Serial(port, baudrate, timeout=5, write_timeout=5)
       self.lcd.write(command)
@@ -67,39 +67,39 @@ class Display:
     dirty = _track_damage(self.old_framebuffer, pygame.surfarray.pixels2d(self.framebuffer))
 
     if not np.any(dirty):
-      print("[D] Skipping flip because framebuffer is clean")
+      logging.debug("[D] Skipping flip because framebuffer is clean")
       return
 
     # check if the whole framebuffer is dirty
     if np.all(dirty):
-      print("[D] Flipping full framebuffer")
+      logging.debug("[D] Flipping full framebuffer")
       self.send_command(PRE_UPDATE_BITMAP)
       self.send_command(START_DISPLAY_BITMAP)
       self.send_command(DISPLAY_BITMAP)
       framebuffer = pygame.surfarray.pixels2d(self.framebuffer).transpose().tobytes()
       self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
-      print(f"[D] {self.lcd.read(1024)[:0x20]}")
+      logging.debug(f"[D] {self.lcd.read(1024)[:0x20]}")
       self.send_command(QUERY_STATUS)
-      print(f"[D] {self.lcd.read(1024)[:0x20]}")
+      logging.debug(f"[D] {self.lcd.read(1024)[:0x20]}")
     else:
-      print("[D] Flipping partial framebuffer")
+      logging.debug("[D] Flipping partial framebuffer")
       update, payload = _update_payload(dirty, pygame.PixelArray(self.framebuffer), self.partial_update_count)
 
       self.send_command(bytearray([0xff]), payload)
       self.send_command(bytearray([0xff]), update)
       self.send_command(QUERY_STATUS)
       res = self.lcd.read(1024)[:0x20]
-      print(f"[D] {res}")
+      logging.debug(f"[D] {res}")
       if res == b"\x00" or res == b"" or b"Send:1" in res:
-        print("[D] Partial update failed, full update required")
+        logging.debug("[D] Partial update failed, full update required")
         self.send_command(PRE_UPDATE_BITMAP)
         self.send_command(START_DISPLAY_BITMAP)
         self.send_command(DISPLAY_BITMAP)
         framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose().tobytes()
         self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
-        print(f"[D] {self.lcd.read(1024)[:0x20]}")
+        logging.debug(f"[D] {self.lcd.read(1024)[:0x20]}")
         self.send_command(QUERY_STATUS)
-        print(f"[D] {self.lcd.read(1024)[:0x20]}")
+        logging.debug(f"[D] {self.lcd.read(1024)[:0x20]}")
         self.partial_update_count = 0
       else:
         self.partial_update_count += 1
