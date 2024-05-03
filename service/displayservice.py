@@ -86,7 +86,7 @@ def display_thread():
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):
-    data = self.rfile.readline().strip().decode()
+    data = self.rfile.readline().decode()
     command, *args = data.split(",")
     print(f"[CH] Received command {command} with args {args}")
     match command:
