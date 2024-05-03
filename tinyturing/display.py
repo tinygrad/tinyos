@@ -1,7 +1,8 @@
 import math, os, subprocess, time
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import serial, pygame
-from numba import jit
+import numpy as np
+from numba import jit, njit
 
 # commands
 HELLO = bytearray([0x01, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xc5, 0xd3])
@@ -17,7 +18,7 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 WIDTH, HEIGHT = 800, 480
 class Display:
   def __init__(self, port):
-    self.lcd = serial.Serial(port, 912600 * 2, timeout=5, write_timeout=5)
+    self.lcd = serial.Serial(port, 1825200, timeout=5, write_timeout=5)
 
     # initialize display
     self.send_command(HELLO)
@@ -63,18 +64,8 @@ class Display:
     print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
     self.framebuffer.blit(source, dest, area)
 
-  @jit
   def _track_damage(self):
-    old_framebuffer = pygame.PixelArray(self.old_framebuffer)
-    framebuffer = pygame.PixelArray(self.framebuffer)
-    for x in range(WIDTH):
-      for y in range(HEIGHT):
-        pixel_old = old_framebuffer[x, y]
-        pixel_new = framebuffer[x, y]
-        if pixel_old == pixel_new: self.framebuffer_dirty[y][x] = False
-        else: self.framebuffer_dirty[y][x] = True
-    old_framebuffer.close()
-    framebuffer.close()
+    self.framebuffer_dirty = _track_damage(pygame.surfarray.pixels2d(self.old_framebuffer), pygame.surfarray.pixels2d(self.framebuffer))
 
   def flip(self):
     self._track_damage()
@@ -135,3 +126,7 @@ class Display:
       else:
         self.partial_update_count += 1
     self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
+
+@njit
+def _track_damage(old:np.ndarray, new:np.ndarray):
+  return np.where(old != new, 1, 0).T
