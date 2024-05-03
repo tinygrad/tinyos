@@ -48,7 +48,6 @@ class Display:
       print("[D] Serial write timeout, resetting usb device and retrying")
       port, baudrate = self.lcd.port, self.lcd.baudrate
       self.lcd.close()
-      time.sleep(1)
       subprocess.run(["usbreset", "1d6b:0106"])
       print("[D] Waiting 5 seconds for usb device to reset")
       time.sleep(5)
