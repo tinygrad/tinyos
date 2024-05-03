@@ -81,5 +81,7 @@ class Display:
     self.send_command(DISPLAY_BITMAP)
     framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose().tobytes()
     self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
-    print(f"[D] {self.lcd.read(1024)[:0x20]}")
+    print(f"[D] {self.lcd.read(1024)[:0x10]}")
+    self.send_command(QUERY_STATUS)
+    print(f"[D] {self.lcd.read(1024)[:0x10]}")
     self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
