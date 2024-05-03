@@ -10,6 +10,7 @@ Group=root
 ExecStart=python3 /opt/tinybox/service/displayservice.py
 Restart=on-failure
 RestartSec=2
+Nice=-10
 
 [Install]
 WantedBy=sysinit.target
