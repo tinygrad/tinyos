@@ -110,7 +110,7 @@ class Display:
       self.send_command(QUERY_STATUS)
       res = self.lcd.read(1024)[:0x20]
       print(f"[D] {res}")
-      if res == b"\x00":
+      if res == b"\x00" or res == b"" or b"Send:1" in res:
         print("[D] Partial update failed, full update required")
         self.send_command(PRE_UPDATE_BITMAP)
         self.send_command(START_DISPLAY_BITMAP)
