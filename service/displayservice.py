@@ -32,7 +32,7 @@ class AText(Displayable):
     self.current_state = (self.current_state + 1) % len(self.text_states)
 
 class VerticalProgressBar(Displayable):
-  def __init__(self, value:float, max_value:float, width:int, height:int, x:int):
+  def __init__(self, value: float, max_value: float, width: int, height: int, x: int):
     self.value, self.max_value, self.width, self.height, self.x = value, max_value, width, height, x
   def display(self, display: Display):
     # draw background
@@ -45,6 +45,13 @@ class VerticalProgressBar(Displayable):
     bar = pg.Surface((self.width, bar_height))
     pg.draw.rect(bar, (255, color_sub, color_sub), (0, 0, self.width, bar_height))
     display.blit(bar, (self.x - self.width // 2, 240 - bar_height // 2))
+
+class Image(Displayable):
+  def __init__(self, path: str, xy: tuple[int, int], scale: tuple[int, int]):
+    self.image = pg.image.load(path)
+    self.image = pg.transform.scale(self.image, scale)
+    self.x, self.y = xy
+  def display(self, display: Display): display.blit(self.image, (self.x, self.y))
 
 def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
@@ -63,8 +70,7 @@ def display_thread():
   display.flip()
 
   # load assets
-  logo = pg.image.load("/opt/tinybox/screen/logo.png")
-  logo = pg.transform.scale(logo, (400, 240))
+  logo = Image("/opt/tinybox/screen/logo.png", (200, 25), (400, 240))
   sleep_text = AText(["=--------", "-=-------", "--=------", "---=-----", "----=----", "-----=---", "------=--", "-------=-", "--------=", "-------=-", "------=--", "-----=---", "----=----", "---=-----", "--=------", "-=-------"])
 
   display_state = DisplayState.TEXT
@@ -75,13 +81,12 @@ def display_thread():
     if not control_queue.empty():
       command, args = control_queue.get()
       print(f"[DT] Received command {command} with args {args}")
-      match command:
-        case "text":
-          display_state = DisplayState.TEXT
-          to_display = args
-        case "status":
-          display_state = DisplayState.STATUS
-          display_last_active = time.monotonic()
+      if command == "text":
+        display_state = DisplayState.TEXT
+        to_display = args
+      elif command == "state":
+        display_state = DisplayState.STATUS
+        display_last_active = time.monotonic()
     else:
       # reset display state if inactive for 15 seconds
       if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
@@ -98,16 +103,15 @@ def display_thread():
         display_last_active = time.monotonic()
 
       display.clear()
-      match display_state:
-        case DisplayState.TEXT:
-          display.blit(logo, (200, 25))
-          if to_display is not None:
-            print(f"[DT] Displaying: {to_display}")
-            to_display.display(display)
-          else: sleep_text.display(display)
-        case DisplayState.STATUS:
-          for i, utilization in enumerate(gpu_utilizations):
-            VerticalProgressBar(utilization, 100, 50, 400, 150 + 100 * i).display(display)
+      if display_state == DisplayState.TEXT:
+        logo.display(display)
+        if to_display is not None:
+          print(f"[DT] Displaying: {to_display}")
+          to_display.display(display)
+        else: sleep_text.display(display)
+      elif display_state == DisplayState.STATUS:
+        for i, utilization in enumerate(gpu_utilizations):
+          VerticalProgressBar(utilization, 100, 50, 400, 150 + 100 * i).display(display)
 
     # update display
     display.flip()
@@ -120,13 +124,12 @@ class ControlHandler(StreamRequestHandler):
     data = self.rfile.readline().strip(b"\r\n").decode()
     command, *args = data.split(",")
     print(f"[CH] Received command {command} with args {args}")
-    match command:
-      case "text":
-        control_queue.put(("text", Text("\n".join(args))))
-      case "atext":
-        control_queue.put(("text", AText(args)))
-      case "status":
-        control_queue.put(("status", None))
+    if command == "text":
+      control_queue.put(("text", Text("\n".join(args))))
+    elif command == "atext":
+      control_queue.put(("text", AText(args)))
+    elif command == "status":
+      control_queue.put(("status", None))
 
 if __name__ == "__main__":
   # start display thread
