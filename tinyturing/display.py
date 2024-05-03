@@ -111,8 +111,16 @@ class Display:
       res = self.lcd.read(1024)[:0x20]
       print(f"[D] {res}")
       if res == b"\x00":
-        print("[D] Partial update failed, retrying")
-        self.send_command(bytearray([0xff]), payload)
-        self.send_command(bytearray([0xff]), bytearray.fromhex(update))
-      self.partial_update_count += 1
+        print("[D] Partial update failed, full update required")
+        self.send_command(PRE_UPDATE_BITMAP)
+        self.send_command(START_DISPLAY_BITMAP)
+        self.send_command(DISPLAY_BITMAP)
+        framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose().tobytes()
+        self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
+        print(f"[D] {self.lcd.read(1024)[:0x20]}")
+        self.send_command(QUERY_STATUS)
+        print(f"[D] {self.lcd.read(1024)[:0x20]}")
+        self.partial_update_count = 0
+      else:
+        self.partial_update_count += 1
     self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
