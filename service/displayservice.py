@@ -32,18 +32,18 @@ class AText(Displayable):
     self.current_state = (self.current_state + 1) % len(self.text_states)
 
 class VerticalProgressBar(Displayable):
-  def __init__(self, value: float, max_value: int, width: int, height: int, color: tuple[int, int, int]):
-    self.value, self.max_value, self.width, self.height, self.color = value, max_value, width, height, color
+  def __init__(self, value:float, max_value:float, width:int, height:int, x:int):
+    self.value, self.max_value, self.width, self.height, self.x = value, max_value, width, height, x
   def display(self, display: Display):
     # draw background
-    background = pg.Surface((self.width, self.height), pg.SRCALPHA)
-    pg.draw.rect(background, (50, 50, 50, 128), (0, 0, self.width, self.height))
-    display.blit(background, (400 - self.width // 2, 225 - self.height // 2))
+    background = pg.Surface((self.width, self.height))
+    pg.draw.rect(background, (25, 25, 25), (0, 0, self.width, self.height))
+    display.blit(background, (self.x - self.width // 2, 225 - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
-    bar = pg.Surface((self.width, bar_height), pg.SRCALPHA)
-    pg.draw.rect(bar, self.color, (0, 0, self.width, bar_height))
-    display.blit(bar, (400 - self.width // 2, 225 - bar_height // 2))
+    bar = pg.Surface((self.width, bar_height))
+    pg.draw.rect(bar, (255, 255, 255), (0, 0, self.width, bar_height))
+    display.blit(bar, (self.x - self.width // 2, 225 - self.height // 2))
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
@@ -98,9 +98,8 @@ def display_thread():
               gpu_utilizations.append(int(f.read().strip()))
           print(f"[DT] GPU Utilizations: {gpu_utilizations}")
           # display gpu utilization
-          mean_gpu_utilization = sum(gpu_utilizations) / len(gpu_utilizations)
-          print(f"[DT] Mean GPU Utilization: {mean_gpu_utilization}")
-          VerticalProgressBar(mean_gpu_utilization, 100, 50, 200, (255, 255, 255)).display(display)
+          for i, utilization in enumerate(gpu_utilizations):
+            VerticalProgressBar(utilization, 100, 50, 200, 100 + 100 * i).display(display)
 
       if display_state == DisplayState.TEXT:
         # check gpu utilization to see if we should switch to status
