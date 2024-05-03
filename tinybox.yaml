@@ -91,6 +91,7 @@ customization:
     - name: python3-serial
     - name: python3-pygame
     - name: build-essential
+    - name: clang
     - name: bash-completion
     - name: netcat-openbsd
   extra-snaps:
