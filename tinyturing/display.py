@@ -59,19 +59,21 @@ class Display:
     if size not in self.font_cache: self.font_cache[size] = pygame.font.Font(None, size)
     return self.font_cache[size].render(text, *args, **kwargs)
   def clear(self):
-    pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
     self.old_framebuffer = self.framebuffer.copy()
+    pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
   def blit(self, source, dest=(0, 0), area=None):
     print(f"[D] Blitting {source.get_width()}x{source.get_height()} image at {dest} with area {area}")
     self.framebuffer.blit(source, dest, area)
+
+  def flip(self):
     for x in range(WIDTH):
       for y in range(HEIGHT):
         pixel_old = self.old_framebuffer.get_at((x, y))
         pixel_new = self.framebuffer.get_at((x, y))
         if pixel_old[0] == pixel_new[0] and pixel_old[1] == pixel_new[1] and pixel_old[2] == pixel_new[2]: continue
-        else: self.framebuffer_dirty[y][x] = True
-
-  def flip(self):
+        else:
+          print(pixel_old, pixel_new)
+          self.framebuffer_dirty[y][x] = True
     if not any(any(row) for row in self.framebuffer_dirty):
       print("[D] Skipping flip because framebuffer is clean")
       return
