@@ -36,10 +36,14 @@ class VerticalProgressBar(Displayable):
     self.value, self.max_value, self.width, self.height, self.color = value, max_value, width, height, color
   def display(self, display: Display):
     # draw background
-    display.blit(pg.Surface((self.width, self.height), pg.SRCALPHA), (400 - self.width // 2, 225 - self.height // 2))
+    background = pg.Surface((self.width, self.height), pg.SRCALPHA)
+    pg.draw.rect(background, (50, 50, 50, 128), (0, 0, self.width, self.height))
+    display.blit(background, (400 - self.width // 2, 225 - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
-    display.blit(pg.Surface((self.width, bar_height), pg.SRCALPHA), (400 - self.width // 2, 225 - bar_height // 2))
+    bar = pg.Surface((self.width, bar_height), pg.SRCALPHA)
+    pg.draw.rect(bar, self.color, (0, 0, self.width, bar_height))
+    display.blit(bar, (400 - self.width // 2, 225 - bar_height // 2))
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
