@@ -32,6 +32,7 @@ class Display:
     self.framebuffer = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
     self.old_framebuffer = self.framebuffer.copy()
     self.framebuffer_dirty = [[True] * WIDTH for _ in range(HEIGHT)]
+    self.partial_update_count = 0
 
   def __del__(self): self.lcd.close()
 
@@ -94,7 +95,7 @@ class Display:
           pixel = self.framebuffer.get_at((x, y))
           update += f"{pixel[2]:02x}{pixel[1]:02x}{pixel[0]:02x}"
       update_size = f"{int((len(update) / 2) + 2):06x}"
-      payload = UPDATE_BITMAP + bytearray.fromhex(update_size) + bytearray(3) + int(0).to_bytes(4, "big")
+      payload = UPDATE_BITMAP + bytearray.fromhex(update_size) + bytearray(3) + self.partial_update_count.to_bytes(4, "big")
       if len(update) > 500: update = "00".join(update[i:i + 498] for i in range(0, len(update), 498))
       update += "ef69"
 
@@ -102,4 +103,5 @@ class Display:
       self.send_command(bytearray([0xff]), bytearray.fromhex(update))
       self.send_command(QUERY_STATUS)
       print(f"[D] {self.lcd.read(1024)[:0x20]}")
+      self.partial_update_count += 1
     self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
