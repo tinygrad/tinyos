@@ -73,7 +73,6 @@ class Display:
         if pixel_old == pixel_new: self.framebuffer_dirty[y][x] = False
         else: self.framebuffer_dirty[y][x] = True
     old_framebuffer.close()
-    framebuffer.close()
 
     if not any(any(row) for row in self.framebuffer_dirty):
       print("[D] Skipping flip because framebuffer is clean")
@@ -92,20 +91,20 @@ class Display:
       print(f"[D] {self.lcd.read(1024)[:0x20]}")
     else:
       print("[D] Flipping partial framebuffer")
-      update = ""
+      update = bytearray()
       for y in range(HEIGHT):
         if not any(self.framebuffer_dirty[y]): continue
-        update += f"{(y * WIDTH):06x}{WIDTH:04x}"
+        update += (y * WIDTH).to_bytes(3, "big") + WIDTH.to_bytes(2, "big")
         for x in range(WIDTH):
-          pixel = self.framebuffer.get_at((x, y))
-          update += f"{pixel[2]:02x}{pixel[1]:02x}{pixel[0]:02x}"
-      update_size = f"{int((len(update) / 2) + 2):06x}"
-      payload = UPDATE_BITMAP + bytearray.fromhex(update_size) + bytearray(3) + self.partial_update_count.to_bytes(4, "big")
-      if len(update) > 500: update = "00".join(update[i:i + 498] for i in range(0, len(update), 498))
-      update += "ef69"
+          pixel = framebuffer[x, y]
+          update += (pixel & 0xffffff).to_bytes(3, "big")
+      update_size = (len(update) + 2).to_bytes(3, "big")
+      payload = UPDATE_BITMAP + update_size + bytearray(3) + self.partial_update_count.to_bytes(4, "big")
+      if len(update) > 250: update = b"\x00".join(update[i:i + 249] for i in range(0, len(update), 249))
+      update += bytearray([0xef, 0x69])
 
       self.send_command(bytearray([0xff]), payload)
-      self.send_command(bytearray([0xff]), bytearray.fromhex(update))
+      self.send_command(bytearray([0xff]), update)
       self.send_command(QUERY_STATUS)
       res = self.lcd.read(1024)[:0x20]
       print(f"[D] {res}")
