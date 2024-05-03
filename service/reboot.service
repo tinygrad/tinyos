@@ -1,0 +1,13 @@
+[Unit]
+Description=Reboot Hook
+Before=reboot.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=bash /opt/tinybox/service/reboot.sh
+
+[Install]
+WantedBy=reboot.target

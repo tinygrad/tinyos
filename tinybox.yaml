@@ -55,6 +55,12 @@ customization:
         destination: /opt/tinybox/service/bootup.sh
       - source: ./service/reboot.sh
         destination: /opt/tinybox/service/reboot.sh
+      - source: ./service/poweroff.sh
+        destination: /opt/tinybox/service/poweroff.sh
+      - source: ./service/reboot.service
+        destination: /etc/systemd/system/reboot.service
+      - source: ./service/poweroff.service
+        destination: /etc/systemd/system/poweroff.service
       - source: ./setup/update.sh
         destination: /opt/tinybox/setup/update.sh
       - source: ./setup/raidsetup.sh

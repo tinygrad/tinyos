@@ -1,0 +1,13 @@
+[Unit]
+Description=Poweroff Hook
+Before=shutdown.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=bash /opt/tinybox/service/poweroff.sh
+
+[Install]
+WantedBy=shutdown.target
