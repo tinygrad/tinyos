@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -eo pipefail
 
 # echo to stderr
 function ercho { printf "%s\n" "$*" >&2; }
