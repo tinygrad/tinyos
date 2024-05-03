@@ -31,6 +31,16 @@ class AText(Displayable):
     display.blit(text, (400 - text.get_width() // 2, 225 + (120 - text.get_height() // 2)))
     self.current_state = (self.current_state + 1) % len(self.text_states)
 
+class VerticalProgressBar(Displayable):
+  def __init__(self, value: float, max_value: int, width: int, height: int, color: tuple[int, int, int]):
+    self.value, self.max_value, self.width, self.height, self.color = value, max_value, width, height, color
+  def display(self, display: Display):
+    # draw background
+    display.blit(pg.Surface((self.width, self.height), pg.SRCALPHA), (400 - self.width // 2, 225 - self.height // 2))
+    # draw bar
+    bar_height = self.height * self.value // self.max_value
+    display.blit(pg.Surface((self.width, bar_height), pg.SRCALPHA), (400 - self.width // 2, 225 - bar_height // 2))
+
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
 display_thread_alive = True
@@ -57,6 +67,10 @@ def display_thread():
         case "text":
           display_state = DisplayState.TEXT
           to_display = args
+        case "status":
+          display_state = DisplayState.STATUS
+          display_last_active = time.monotonic()
+          to_display = None
     else:
       # reset display state if inactive for 60 seconds
       if time.monotonic() - display_last_active > 60 and display_state == DisplayState.STATUS:
@@ -73,7 +87,16 @@ def display_thread():
             to_display.display(display)
           else: sleep_text.display(display)
         case DisplayState.STATUS:
-          pass
+          # get gpu utilization
+          gpu_utilizations = []
+          for i in range(1, 7):
+            with open("/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
+              gpu_utilizations.append(int(f.read().strip()))
+          print(f"[DT] GPU Utilizations: {gpu_utilizations}")
+          # display gpu utilization
+          mean_gpu_utilization = sum(gpu_utilizations) / len(gpu_utilizations)
+          print(f"[DT] Mean GPU Utilization: {mean_gpu_utilization}")
+          VerticalProgressBar(mean_gpu_utilization, 100, 50, 200, (255, 255, 255)).display(display)
 
       if display_state == DisplayState.TEXT:
         # check gpu utilization to see if we should switch to status
