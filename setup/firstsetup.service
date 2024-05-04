@@ -1,6 +1,6 @@
 [Unit]
 Description=First Setup Service
-After=network.target
+After=network.target sleeping.service
 
 [Service]
 Type=oneshot
