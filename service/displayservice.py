@@ -118,6 +118,7 @@ def display_thread():
 
   display_state = DisplayState.TEXT
   display_last_active = time.monotonic()
+  start_time = time.monotonic()
   to_display: Displayable | None = None
 
   while display_thread_alive:
@@ -149,7 +150,7 @@ def display_thread():
       gpu_utilizations = get_gpu_utilizations()
       logging.debug(f"GPU Utilizations: {gpu_utilizations}")
       mean_gpu_utilization = (sum(gpu_utilizations) / len(gpu_utilizations)) if len(gpu_utilizations) > 0 else 0
-      if mean_gpu_utilization > 5:
+      if mean_gpu_utilization > 5 and time.monotonic() - start_time > 15:
         display_state = DisplayState.STATUS
         display_last_active = time.monotonic()
 
