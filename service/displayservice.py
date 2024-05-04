@@ -113,7 +113,7 @@ def display_thread():
   display.flip()
 
   # load assets
-  logo = LerpedImage("/opt/tinybox/screen/logo.png", (200, 25), (200, 25), (400, 240), (400, 240), 2)
+  logo = Image("/opt/tinybox/screen/logo.png", (200, 25), (400, 240))
   logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 240))
 
   display_state = DisplayState.TEXT
@@ -127,9 +127,6 @@ def display_thread():
       logging.info(f"Received command {command} with args {args}")
       if command == "text":
         display_state = DisplayState.TEXT
-        if to_display is None:
-          logo.start_xy = logo_sleep.x, logo_sleep.y
-          logo.t = 0
         to_display = args
       elif command == "status":
         display_state = DisplayState.STATUS
