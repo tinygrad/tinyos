@@ -6,7 +6,7 @@ After=cloud-final.service
 Type=oneshot
 User=root
 Group=root
-ExecStart=bash /opt/tinybox/service/sleep.sh
+ExecStart=bash /opt/tinybox/service/sleeping.sh
 
 [Install]
 WantedBy=cloud-init.target
