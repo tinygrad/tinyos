@@ -65,6 +65,8 @@ customization:
         destination: /etc/systemd/system/poweroff.service
       - source: ./service/sleeping.service
         destination: /etc/systemd/system/sleeping.service
+      - source: ./setup/scramble.sh
+        destination: /opt/tinybox/setup/scramble.sh
       - source: ./setup/update.sh
         destination: /opt/tinybox/setup/update.sh
       - source: ./setup/raidsetup.sh
