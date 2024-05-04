@@ -148,7 +148,7 @@ def display_thread():
       # check if display should be in status state
       gpu_utilizations = get_gpu_utilizations()
       logging.debug(f"GPU Utilizations: {gpu_utilizations}")
-      mean_gpu_utilization = sum(gpu_utilizations) / len(gpu_utilizations)
+      mean_gpu_utilization = (sum(gpu_utilizations) / len(gpu_utilizations)) if len(gpu_utilizations) > 0 else 0
       if mean_gpu_utilization > 5:
         display_state = DisplayState.STATUS
         display_last_active = time.monotonic()

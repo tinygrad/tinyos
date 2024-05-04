@@ -3,7 +3,7 @@
 echo "atext,Preparing.. ,Preparing ..,Preparing. ." | nc -U /run/tinybox-screen.sock
 
 # change to user tiny
-su -c tiny git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad
+su tiny -c "git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad"
 pushd /home/tiny/tinygrad
-su -c tiny pip install -e .
+su tiny -c "pip install -e ."
 popd
