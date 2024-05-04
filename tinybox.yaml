@@ -43,6 +43,8 @@ customization:
         destination: /etc/cloud/cloud.cfg.d/tinybox.cfg
       - source: ./misc/grub
         destination: /etc/default/grub
+      - source: ./misc/mdadm.conf
+        destination: /etc/mdadm/mdadm.conf
       - source: ./tinyturing/display.py
         destination: /opt/tinybox/screen/display.py
       - source: ./tinyturing/logo.png
