@@ -13,7 +13,7 @@ function main {
 
   # change password of tiny to something random
   local random_password
-  random_password="$(openssl rand -hex 2)"
+  random_password="$(openssl rand -hex 3)"
   echo "tiny:$random_password" | chpasswd
   passwd --expire tiny
 
