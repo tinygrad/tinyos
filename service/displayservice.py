@@ -128,6 +128,7 @@ def display_thread():
       if command == "text":
         display_state = DisplayState.TEXT
         to_display = args
+        start_time = time.monotonic()
       elif command == "status":
         display_state = DisplayState.STATUS
         display_last_active = time.monotonic()
