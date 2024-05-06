@@ -19,10 +19,12 @@ class Display:
     self.lcd = serial.Serial(port, 1825200 * 2, timeout=1, write_timeout=0.5)
 
     # initialize display
+    self.lcd.write_timeout = 5
     self.send_command(HELLO)
     logging.debug(self.lcd.read(22))
     self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
     self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
+    self.lcd.write_timeout = 0.5
 
     self.font = np.load("/opt/tinybox/screen/font.npy")
     self.framebuffer = np.full((WIDTH, HEIGHT), 0xff, dtype=np.uint32)
