@@ -27,7 +27,7 @@ class Text(Displayable):
 class AText(Displayable):
   def __init__(self, text_states: list[str]): self.text_states, self.current_state = text_states, 0
   def display(self, display: Display):
-    text = display.text(self.text_states[self.current_state], 100, True, (255, 255, 255))
+    text = display.text(self.text_states[self.current_state])
     display.blit(text, (400 - text.shape[0] // 2, 225 + (120 - text.shape[1] // 2)))
     self.current_state = (self.current_state + 1) % len(self.text_states)
 
