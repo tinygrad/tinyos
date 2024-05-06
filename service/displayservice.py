@@ -8,7 +8,7 @@ from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
 import numpy as np
-from PIL import Image
+import PIL.Image
 
 class Displayable(ABC):
   @abstractmethod
@@ -52,13 +52,13 @@ class VerticalProgressBar(Displayable):
 
 class Image(Displayable):
   def __init__(self, path: str, xy: tuple[int, int], scale: tuple[int, int]):
-    self.image = np.array(Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
+    self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
     self.x, self.y = xy
   def display(self, display: Display): display.blit(self.image, (self.x, self.y))
 
 class DVDImage(Displayable):
   def __init__(self, path: str, scale: tuple[int, int], speed: float = 1):
-    self.image = np.array(Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
+    self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
     self.x_speed, self.y_speed = speed, speed
     self.reset()
   def display(self, display: Display):
