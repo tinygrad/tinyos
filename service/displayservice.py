@@ -160,6 +160,9 @@ def display_thread():
       if (sleep_time := 0.08 - flip_time) > 0: time.sleep(sleep_time)
   except Exception as e:
     logging.error(f"Display thread error: {e}")
+    # stacktrace
+    import traceback
+    traceback.print_exc()
     os._exit(1)
 
 class ControlHandler(StreamRequestHandler):
