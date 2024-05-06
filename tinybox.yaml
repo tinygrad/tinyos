@@ -49,6 +49,8 @@ customization:
         destination: /opt/tinybox/screen/display.py
       - source: ./tinyturing/logo.png
         destination: /opt/tinybox/screen/logo.png
+      - source: ./tinyturing/font.npy
+        destination: /opt/tinybox/screen/font.npy
       - source: ./service/displayservice.py
         destination: /opt/tinybox/service/displayservice.py
       - source: ./service/displayservice.service
