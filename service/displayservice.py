@@ -194,6 +194,7 @@ if __name__ == "__main__":
   signal.signal(signal.SIGTERM, signal_handler)
 
   # start control server
+  if os.path.exists("/run/tinybox-screen.sock"): os.remove("/run/tinybox-screen.sock")
   with UnixStreamServer("/run/tinybox-screen.sock", ControlHandler) as server:
     os.chmod("/run/tinybox-screen.sock", 0o777)
     server.serve_forever()
