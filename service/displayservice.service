@@ -8,7 +8,7 @@ Type=simple
 User=root
 Group=root
 ExecStart=python3 /opt/tinybox/service/displayservice.py
-Restart=on-failure
+Restart=always
 RestartSec=2
 
 [Install]
