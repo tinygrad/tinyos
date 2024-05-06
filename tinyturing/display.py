@@ -127,10 +127,11 @@ def _build_update(dirty:np.ndarray, fb, update):
     for x in range(start, end + 1):
       update[write:write+3] = np.array([fb[x, y]]).view(np.uint8)[-3:]
       write += 3
-  return update[:write]
+  return update, write
 
 def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
-  update = _build_update(dirty, fb, update_buffer).tobytes()
+  update = _build_update(dirty, fb, update_buffer)
+  update = update[0][:update[1]]
   update_size = (len(update) + 2).to_bytes(3, "big")
   payload = UPDATE_BITMAP + update_size + b"\x00\x00\x00" + partial_update_count.to_bytes(4, "big")
   update_chunks = []
