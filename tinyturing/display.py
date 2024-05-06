@@ -98,7 +98,7 @@ class Display:
       else:
         self.partial_update_count += 1
 
-@njit
+@njit(cache=True)
 def _blit_text(text, font):
   text_width = len(text) * 32
   text_height = 64
@@ -108,10 +108,10 @@ def _blit_text(text, font):
     text_surface[i*32:(i+1)*32, :64] = char_bitmap.T * 0xffffffff
   return text_surface
 
-@njit
+@njit(cache=True)
 def _track_damage(old:np.ndarray, new:np.ndarray): return np.where(old != new, 1, 0).T
 
-@njit
+@njit(cache=True)
 def _build_update(dirty:np.ndarray, fb, update):
   write = 0
   for y in range(HEIGHT):
