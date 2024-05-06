@@ -16,7 +16,7 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 WIDTH, HEIGHT = 800, 480
 class Display:
   def __init__(self, port):
-    self.lcd = serial.Serial(port, 1825200, timeout=5, write_timeout=5)
+    self.lcd = serial.Serial(port, 1825200 * 2, timeout=5, write_timeout=5)
 
     # initialize display
     self.send_command(HELLO)
@@ -25,7 +25,7 @@ class Display:
     self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
 
     self.font = np.load("/opt/tinybox/screen/font.npy")
-    self.framebuffer = np.zeros((WIDTH, HEIGHT), dtype=np.uint32)
+    self.framebuffer = np.full((WIDTH, HEIGHT), 0xff, dtype=np.uint32)
     self.old_framebuffer = self.framebuffer.copy()
     self.update_buffer = np.zeros(self.framebuffer.size, dtype=np.uint8)
     self.partial_update_count = 0
@@ -52,7 +52,7 @@ class Display:
   def text(self, text): return _blit_text(text, self.font)
   def clear(self):
     self.old_framebuffer = self.framebuffer.copy()
-    self.framebuffer.fill(0)
+    self.framebuffer.fill(0xff)
   def blit(self, source, dest=(0, 0)):
     if source.ndim == 3: source = (source[:, :, 0].astype(np.uint32) << 24) | (source[:, :, 1].astype(np.uint32) << 16) | (source[:, :, 2].astype(np.uint32) << 8) | 0xff
     self.framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = source
@@ -117,9 +117,9 @@ def _build_update(dirty:np.ndarray, fb, update):
   for y in range(HEIGHT):
     if not np.any(dirty[y]): continue
     start = 0
-    while not dirty[y][start]: start += 1
+    while dirty[y][start] == 0: start += 1
     end = WIDTH - 1
-    while not dirty[y][end]: end -= 1
+    while dirty[y][end] == 0: end -= 1
     update[write:write+3] = np.array([y * WIDTH + start]).view(np.uint8)[::-1][-3:]
     write += 3
     update[write:write+2] = np.array([end - start + 1]).view(np.uint8)[::-1][-2:]
