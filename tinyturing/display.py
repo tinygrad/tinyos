@@ -85,7 +85,7 @@ class Display:
       res = self.lcd.read(1024)[:0x20]
       logging.debug(f"{res}")
       if res == b"\x00" or res == b"" or b"Send:1" in res:
-        logging.debug("Partial update failed, full update required")
+        logging.warning("Partial update failed, full update required")
         self.send_command(PRE_UPDATE_BITMAP)
         self.send_command(START_DISPLAY_BITMAP)
         self.send_command(DISPLAY_BITMAP)
