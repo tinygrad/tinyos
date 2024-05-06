@@ -58,7 +58,6 @@ class Display:
 
   def flip(self):
     dirty = _track_damage(self.old_framebuffer, self.framebuffer)
-    print(dirty.shape)
 
     if not np.any(dirty):
       logging.debug("Skipping flip because framebuffer is clean")
