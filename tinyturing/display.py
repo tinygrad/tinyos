@@ -16,7 +16,7 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 WIDTH, HEIGHT = 800, 480
 class Display:
   def __init__(self, port):
-    self.lcd = serial.Serial(port, 1825200 * 4, timeout=5, write_timeout=5)
+    self.lcd = serial.Serial(port, 1825200, timeout=5, write_timeout=5)
 
     # initialize display
     self.send_command(HELLO)
