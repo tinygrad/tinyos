@@ -27,7 +27,7 @@ class Display:
     self.font = np.load("/opt/tinybox/screen/font.npy")
     self.framebuffer = np.full((WIDTH, HEIGHT), 0xff, dtype=np.uint32)
     self.old_framebuffer = self.framebuffer.copy()
-    self.update_buffer = np.zeros(self.framebuffer.size, dtype=np.uint8)
+    self.update_buffer = np.zeros(self.framebuffer.size * self.framebuffer.itemsize, dtype=np.uint8)
     self.partial_update_count = 0
 
   def __del__(self): self.lcd.close()
@@ -127,11 +127,10 @@ def _build_update(dirty:np.ndarray, fb, update):
     for x in range(start, end + 1):
       update[write:write+3] = np.array([fb[x, y]]).view(np.uint8)[-3:]
       write += 3
-  return update, write
+  return update[:write]
 
 def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
-  update = _build_update(dirty, fb, update_buffer)
-  update = update[0][:update[1]].tobytes()
+  update = _build_update(dirty, fb, update_buffer).tobytes()
   update_size = (len(update) + 2).to_bytes(3, "big")
   payload = UPDATE_BITMAP + update_size + b"\x00\x00\x00" + partial_update_count.to_bytes(4, "big")
   update_chunks = []
