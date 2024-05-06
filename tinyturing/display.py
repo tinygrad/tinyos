@@ -27,6 +27,7 @@ class Display:
     self.font = np.load("/opt/tinybox/screen/font.npy")
     self.framebuffer = np.zeros((WIDTH, HEIGHT), dtype=np.uint32)
     self.old_framebuffer = self.framebuffer.copy()
+    self.update_buffer = np.zeros(self.framebuffer.size, dtype=np.uint8)
     self.partial_update_count = 0
 
   def __del__(self): self.lcd.close()
@@ -57,9 +58,7 @@ class Display:
     self.framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = source
 
   def flip(self):
-    st = time.perf_counter()
     dirty = _track_damage(self.old_framebuffer, self.framebuffer)
-    print(time.perf_counter() - st)
 
     if not np.any(dirty):
       logging.debug("Skipping flip because framebuffer is clean")
@@ -78,7 +77,7 @@ class Display:
       logging.debug(f"{self.lcd.read(1024)[:0x20]}")
     else:
       logging.debug("Flipping partial framebuffer")
-      update, payload = _update_payload(dirty, self.framebuffer, self.partial_update_count)
+      update, payload = _update_payload(dirty, self.framebuffer, self.update_buffer, self.partial_update_count)
 
       self.send_command(bytearray([0xff]), payload)
       self.send_command(bytearray([0xff]), update)
@@ -112,20 +111,26 @@ def _blit_text(text, font):
 @njit
 def _track_damage(old:np.ndarray, new:np.ndarray): return np.where(old != new, 1, 0).T
 
-def _update_payload(dirty:np.ndarray, fb, partial_update_count):
-  update = bytearray()
+@njit
+def _build_update(dirty:np.ndarray, fb, update):
+  write = 0
   for y in range(HEIGHT):
     if not np.any(dirty[y]): continue
-    # find first dirty pixel
     start = 0
     while not dirty[y][start]: start += 1
-    # find last dirty pixel
     end = WIDTH - 1
     while not dirty[y][end]: end -= 1
-    update += (y * WIDTH + start).to_bytes(3, "big") + (end - start + 1).to_bytes(2, "big")
+    update[write:write+3] = np.array([y * WIDTH + start]).view(np.uint8)[::-1][-3:]
+    write += 3
+    update[write:write+2] = np.array([end - start + 1]).view(np.uint8)[::-1][-2:]
+    write += 2
     for x in range(start, end + 1):
-      pixel = fb[x, y]
-      update += pixel.tobytes()[-3:]
+      update[write:write+3] = np.array([fb[x, y]]).view(np.uint8)[-3:]
+      write += 3
+  return update[:write]
+
+def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
+  update = _build_update(dirty, fb, update_buffer).tobytes()
   update_size = (len(update) + 2).to_bytes(3, "big")
   payload = UPDATE_BITMAP + update_size + b"\x00\x00\x00" + partial_update_count.to_bytes(4, "big")
   update_chunks = []
