@@ -57,7 +57,9 @@ class Display:
     self.framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = source
 
   def flip(self):
+    st = time.perf_counter()
     dirty = _track_damage(self.old_framebuffer, self.framebuffer)
+    print(time.perf_counter() - st)
 
     if not np.any(dirty):
       logging.debug("Skipping flip because framebuffer is clean")
@@ -76,9 +78,7 @@ class Display:
       logging.debug(f"{self.lcd.read(1024)[:0x20]}")
     else:
       logging.debug("Flipping partial framebuffer")
-      st = time.perf_counter()
       update, payload = _update_payload(dirty, self.framebuffer, self.partial_update_count)
-      print(f"Update payload took {time.perf_counter() - st} seconds")
 
       self.send_command(bytearray([0xff]), payload)
       self.send_command(bytearray([0xff]), update)
