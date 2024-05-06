@@ -119,9 +119,10 @@ def display_thread():
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
         elif command == "sleep":
-          display_state = DisplayState.TEXT
-          to_display = None
-          logo_sleep.reset()
+          if to_display is not None and display_state != DisplayState.TEXT:
+            display_state = DisplayState.TEXT
+            to_display = None
+            logo_sleep.reset()
       else:
         # reset display state if inactive for 15 seconds
         if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
