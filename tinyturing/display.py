@@ -24,7 +24,7 @@ class Display:
     self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
     self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
 
-    self.font = np.load("font.npy")
+    self.font = np.load("/opt/tinybox/screen/font.npy")
     self.framebuffer = np.zeros((WIDTH, HEIGHT), dtype=np.uint32)
     self.old_framebuffer = self.framebuffer.copy()
     self.partial_update_count = 0
