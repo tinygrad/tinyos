@@ -91,72 +91,76 @@ DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
 display_thread_alive = True
 def display_thread():
-  # initialize display
-  display = Display("/dev/ttyACM0")
-  display.clear()
-  display.flip()
-
-  # load assets
-  logo = Image("/opt/tinybox/screen/logo.png", (200, 25), (400, 240))
-  logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 240))
-
-  display_state = DisplayState.TEXT
-  display_last_active = time.monotonic()
-  start_time = time.monotonic()
-  to_display: Displayable | None = None
-
-  while display_thread_alive:
-    st = time.perf_counter()
-    if not control_queue.empty():
-      command, args = control_queue.get()
-      logging.info(f"Received command {command} with args {args}")
-      if command == "text":
-        display_state = DisplayState.TEXT
-        to_display = args
-        start_time = time.monotonic()
-      elif command == "status":
-        display_state = DisplayState.STATUS
-        display_last_active = time.monotonic()
-      elif command == "sleep":
-        display_state = DisplayState.TEXT
-        to_display = None
-        logo_sleep.reset()
-    else:
-      # reset display state if inactive for 15 seconds
-      if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
-        logging.info("Display inactive for 15 seconds, switching back to sleep text state")
-        display_state, to_display = DisplayState.TEXT, None
-        display_last_active = time.monotonic()
-        logo_sleep.reset()
-
-      # check if display should be in status state
-      gpu_utilizations = get_gpu_utilizations()
-      logging.debug(f"GPU Utilizations: {gpu_utilizations}")
-      mean_gpu_utilization = (sum(gpu_utilizations) / len(gpu_utilizations)) if len(gpu_utilizations) > 0 else 0
-      if mean_gpu_utilization > 5 and time.monotonic() - start_time > 10:
-        display_state = DisplayState.STATUS
-        display_last_active = time.monotonic()
-
-      display.clear()
-      if display_state == DisplayState.TEXT:
-        if to_display is not None:
-          logo.display(display)
-          logging.debug(f"Displaying: {to_display}")
-          to_display.display(display)
-        else: logo_sleep.display(display)
-      elif display_state == DisplayState.STATUS:
-        for i, utilization in enumerate(gpu_utilizations):
-          VerticalProgressBar(utilization, 100, 50, 380, 50 + 75 * i).display(display)
-        power_draws = get_gpu_power_draw()
-        total_power_draw = sum(power_draws)
-        PositionableText(f"{total_power_draw}W", (625, 240)).display(display)
-
-    # update display
+  try:
+    # initialize display
+    display = Display("/dev/ttyACM0")
+    display.clear()
     display.flip()
-    flip_time = time.perf_counter() - st
 
-    # sleep
-    if (sleep_time := 0.08 - flip_time) > 0: time.sleep(sleep_time)
+    # load assets
+    logo = Image("/opt/tinybox/screen/logo.png", (200, 25), (400, 240))
+    logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 240))
+
+    display_state = DisplayState.TEXT
+    display_last_active = time.monotonic()
+    start_time = time.monotonic()
+    to_display: Displayable | None = None
+
+    while display_thread_alive:
+      st = time.perf_counter()
+      if not control_queue.empty():
+        command, args = control_queue.get()
+        logging.info(f"Received command {command} with args {args}")
+        if command == "text":
+          display_state = DisplayState.TEXT
+          to_display = args
+          start_time = time.monotonic()
+        elif command == "status":
+          display_state = DisplayState.STATUS
+          display_last_active = time.monotonic()
+        elif command == "sleep":
+          display_state = DisplayState.TEXT
+          to_display = None
+          logo_sleep.reset()
+      else:
+        # reset display state if inactive for 15 seconds
+        if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
+          logging.info("Display inactive for 15 seconds, switching back to sleep text state")
+          display_state, to_display = DisplayState.TEXT, None
+          display_last_active = time.monotonic()
+          logo_sleep.reset()
+
+        # check if display should be in status state
+        gpu_utilizations = get_gpu_utilizations()
+        logging.debug(f"GPU Utilizations: {gpu_utilizations}")
+        mean_gpu_utilization = (sum(gpu_utilizations) / len(gpu_utilizations)) if len(gpu_utilizations) > 0 else 0
+        if mean_gpu_utilization > 5 and time.monotonic() - start_time > 10:
+          display_state = DisplayState.STATUS
+          display_last_active = time.monotonic()
+
+        display.clear()
+        if display_state == DisplayState.TEXT:
+          if to_display is not None:
+            logo.display(display)
+            logging.debug(f"Displaying: {to_display}")
+            to_display.display(display)
+          else: logo_sleep.display(display)
+        elif display_state == DisplayState.STATUS:
+          for i, utilization in enumerate(gpu_utilizations):
+            VerticalProgressBar(utilization, 100, 50, 380, 50 + 75 * i).display(display)
+          power_draws = get_gpu_power_draw()
+          total_power_draw = sum(power_draws)
+          PositionableText(f"{total_power_draw}W", (625, 240)).display(display)
+
+      # update display
+      display.flip()
+      flip_time = time.perf_counter() - st
+
+      # sleep
+      if (sleep_time := 0.08 - flip_time) > 0: time.sleep(sleep_time)
+  except Exception as e:
+    logging.error(f"Display thread error: {e}")
+    os._exit(1)
 
 class ControlHandler(StreamRequestHandler):
   def handle(self):
