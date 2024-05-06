@@ -62,12 +62,12 @@ class DVDImage(Displayable):
     self.x_speed, self.y_speed = speed, speed
     self.reset()
   def display(self, display: Display):
-    if self.x + self.image.shape[0] + self.x_speed >= 800 or self.x - self.x_speed <= 0: self.x_speed *= -1
-    if self.y + self.image.shape[1] + self.y_speed >= 480 or self.y - self.y_speed <= 0: self.y_speed *= -1
+    if self.x + self.image.shape[0] + self.x_speed > 800 or self.x - self.x_speed < 0: self.x_speed *= -1
+    if self.y + self.image.shape[1] + self.y_speed > 480 or self.y - self.y_speed < 0: self.y_speed *= -1
     self.x += self.x_speed
     self.y += self.y_speed
     display.blit(self.image, (self.x, self.y))
-  def reset(self): self.x, self.y = random.randint(0, 800 - self.image.shape[0]), random.randint(0, 480 - self.image.shape[1])
+  def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), 480 - self.image.shape[1] - abs(self.y_speed))
 
 def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
