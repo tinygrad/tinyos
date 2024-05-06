@@ -106,6 +106,7 @@ def display_thread():
   to_display: Displayable | None = None
 
   while display_thread_alive:
+    st = time.perf_counter()
     if not control_queue.empty():
       command, args = control_queue.get()
       logging.info(f"Received command {command} with args {args}")
@@ -151,7 +152,6 @@ def display_thread():
         PositionableText(f"{total_power_draw}W", (625, 240)).display(display)
 
     # update display
-    st = time.perf_counter()
     display.flip()
     flip_time = time.perf_counter() - st
 
