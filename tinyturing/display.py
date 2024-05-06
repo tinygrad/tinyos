@@ -76,7 +76,9 @@ class Display:
       logging.debug(f"{self.lcd.read(1024)[:0x20]}")
     else:
       logging.debug("Flipping partial framebuffer")
+      st = time.perf_counter()
       update, payload = _update_payload(dirty, self.framebuffer, self.partial_update_count)
+      print(f"Update payload took {time.perf_counter() - st} seconds")
 
       self.send_command(bytearray([0xff]), payload)
       self.send_command(bytearray([0xff]), update)
