@@ -101,8 +101,8 @@ customization:
     - name: python3-pip
     - name: python3-numpy
     - name: python3-numba
+    - name: python3-pillow
     - name: python3-serial
-    - name: python3-pygame
     - name: python3-psutil
     - name: build-essential
     - name: clang

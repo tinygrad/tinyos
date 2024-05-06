@@ -7,7 +7,8 @@ import threading, time, signal, os, random, logging
 from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
-import pygame as pg
+import numpy as np
+from PIL import Image
 
 class Displayable(ABC):
   @abstractmethod
@@ -20,8 +21,8 @@ class Text(Displayable):
     lines = self.text.split("\n")
     starting_offset = 225 - (80 * (len(lines) - 1)) // 2
     for i, line in enumerate(lines):
-      text = display.text(line, 100, True, (255, 255, 255))
-      display.blit(text, (400 - text.get_width() // 2, starting_offset + (120 - text.get_height() // 2) + i * 80))
+      text = display.text(line)
+      display.blit(text, (400 - text.shape[0] // 2, starting_offset + (120 - text.shape[1] // 2) + i * 80))
 
 class AText(Displayable):
   def __init__(self, text_states: list[str]): self.text_states, self.current_state = text_states, 0
@@ -31,50 +32,33 @@ class AText(Displayable):
     self.current_state = (self.current_state + 1) % len(self.text_states)
 
 class PositionableText(Displayable):
-  def __init__(self, text: str, xy: tuple[int, int], size: int):
-    self.text, self.x, self.y, self.size = text, xy[0], xy[1], size
+  def __init__(self, text: str, xy: tuple[int, int]):
+    self.text, self.x, self.y = text, xy[0], xy[1]
   def display(self, display: Display):
-    text = display.text(self.text, self.size, True, (255, 255, 255))
+    text = display.text(self.text)
     display.blit(text, (self.x - text.get_width() // 2, self.y - text.get_height() // 2))
 
 class VerticalProgressBar(Displayable):
   def __init__(self, value: float, max_value: float, width: int, height: int, x: int):
     self.value, self.max_value, self.width, self.height, self.x = value, max_value, width, height, x
+    self.background = np.full((width, height, 3), 20)
   def display(self, display: Display):
     # draw background
-    background = pg.Surface((self.width, self.height))
-    pg.draw.rect(background, (20, 20, 20), (0, 0, self.width, self.height))
-    display.blit(background, (self.x - self.width // 2, 240 - self.height // 2))
+    display.blit(self.background, (self.x - self.width // 2, 240 - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
-    color_sub = 255 - ((self.value / self.max_value) * 255)
-    bar = pg.Surface((self.width, bar_height))
-    pg.draw.rect(bar, (255, color_sub, color_sub), (0, 0, self.width, bar_height))
+    bar = np.full((self.width, bar_height, 3), 255)
     display.blit(bar, (self.x - self.width // 2, 240 - bar_height // 2))
 
 class Image(Displayable):
   def __init__(self, path: str, xy: tuple[int, int], scale: tuple[int, int]):
-    self.image = pg.image.load(path)
-    self.image = pg.transform.scale(self.image, scale)
+    self.image = np.array(Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
     self.x, self.y = xy
   def display(self, display: Display): display.blit(self.image, (self.x, self.y))
 
-def lerp(a: float, b: float, t: float) -> float: return a + (b - a) * t
-class LerpedImage(Displayable):
-  def __init__(self, path: str, start_xy: tuple[int, int], end_xy: tuple[int, int], start_scale: tuple[int, int], end_scale: tuple[int, int], duration: int):
-    self.image = pg.image.load(path)
-    self.start_xy, self.end_xy, self.start_scale, self.end_scale, self.duration, self.t = start_xy, end_xy, start_scale, end_scale, duration, 0
-  def display(self, display: Display):
-    xy = (int(lerp(self.start_xy[0], self.end_xy[0], self.t)), int(lerp(self.start_xy[1], self.end_xy[1], self.t)))
-    scale = (int(lerp(self.start_scale[0], self.end_scale[0], self.t)), int(lerp(self.start_scale[1], self.end_scale[1], self.t)))
-    image = pg.transform.scale(self.image, scale)
-    display.blit(image, xy)
-    self.t = min(1, self.t + 1 / self.duration)
-
 class DVDImage(Displayable):
   def __init__(self, path: str, scale: tuple[int, int], speed: float = 1):
-    self.image = pg.image.load(path)
-    self.image = pg.transform.scale(self.image, scale)
+    self.image = np.array(Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
     self.x_speed, self.y_speed = speed, speed
     self.reset()
   def display(self, display: Display):
@@ -164,7 +148,7 @@ def display_thread():
           VerticalProgressBar(utilization, 100, 50, 380, 50 + 75 * i).display(display)
         power_draws = get_gpu_power_draw()
         total_power_draw = sum(power_draws)
-        PositionableText(f"{total_power_draw}W", (625, 240), 100).display(display)
+        PositionableText(f"{total_power_draw}W", (625, 240)).display(display)
 
     # update display
     st = time.perf_counter()

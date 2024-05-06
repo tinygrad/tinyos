@@ -1,12 +1,10 @@
-import math, os, subprocess, time, logging
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-import serial, pygame
+import math, subprocess, time, logging
+import serial
 import numpy as np
 from numba import njit
 
 # commands
 HELLO = bytearray([0x01, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xc5, 0xd3])
-RESTART = bytearray([0x84, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 OPTIONS = bytearray([0x7d, 0xef, 0x69, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x2d])
 SET_BRIGHTNESS = bytearray([0x7b, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00])
 PRE_UPDATE_BITMAP = bytearray([0x86, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
@@ -26,11 +24,8 @@ class Display:
     self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
     self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
 
-    # initialize pygame
-    os.environ["SDL_VIDEODRIVER"] = "dummy"
-    pygame.font.init()
-    self.font_cache = {}
-    self.framebuffer = pygame.Surface((WIDTH, HEIGHT), flags=pygame.SRCALPHA)
+    self.font = np.load("font.npy")
+    self.framebuffer = np.zeros((WIDTH, HEIGHT), dtype=np.uint32)
     self.old_framebuffer = self.framebuffer.copy()
     self.partial_update_count = 0
 
@@ -53,17 +48,17 @@ class Display:
       self.lcd = serial.Serial(port, baudrate, timeout=5, write_timeout=5)
       self.lcd.write(command)
 
-  def text(self, text, size, *args, **kwargs):
-    if size not in self.font_cache: self.font_cache[size] = pygame.font.Font(None, size)
-    return self.font_cache[size].render(text, *args, **kwargs)
+  def text(self, text): return _blit_text(text, self.font)
   def clear(self):
     self.old_framebuffer = self.framebuffer.copy()
-    pygame.draw.rect(self.framebuffer, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
-  def blit(self, source, dest=(0, 0), area=None):
-    self.framebuffer.blit(source, dest, area)
+    self.framebuffer.fill(0)
+  def blit(self, source, dest=(0, 0)):
+    if source.ndim == 3: source = (source[:, :, 0].astype(np.uint32) << 24) | (source[:, :, 1].astype(np.uint32) << 16) | (source[:, :, 2].astype(np.uint32) << 8) | 0xff
+    self.framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = source
 
   def flip(self):
-    dirty = _track_damage(pygame.surfarray.pixels2d(self.old_framebuffer), pygame.surfarray.pixels2d(self.framebuffer))
+    dirty = _track_damage(self.old_framebuffer, self.framebuffer)
+    print(dirty.shape)
 
     if not np.any(dirty):
       logging.debug("Skipping flip because framebuffer is clean")
@@ -75,14 +70,14 @@ class Display:
       self.send_command(PRE_UPDATE_BITMAP)
       self.send_command(START_DISPLAY_BITMAP)
       self.send_command(DISPLAY_BITMAP)
-      framebuffer = pygame.surfarray.pixels2d(self.framebuffer).transpose().tobytes()
+      framebuffer = self.framebuffer.transpose().tobytes()
       self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
       logging.debug(f"{self.lcd.read(1024)[:0x20]}")
       self.send_command(QUERY_STATUS)
       logging.debug(f"{self.lcd.read(1024)[:0x20]}")
     else:
       logging.debug("Flipping partial framebuffer")
-      update, payload = _update_payload(dirty, pygame.PixelArray(self.framebuffer), self.partial_update_count)
+      update, payload = _update_payload(dirty, self.framebuffer, self.partial_update_count)
 
       self.send_command(bytearray([0xff]), payload)
       self.send_command(bytearray([0xff]), update)
@@ -94,7 +89,7 @@ class Display:
         self.send_command(PRE_UPDATE_BITMAP)
         self.send_command(START_DISPLAY_BITMAP)
         self.send_command(DISPLAY_BITMAP)
-        framebuffer = pygame.surfarray.array2d(self.framebuffer).transpose().tobytes()
+        framebuffer = self.framebuffer.transpose().tobytes()
         self.send_command(bytearray([0xff]), b"\x00".join([framebuffer[i:i+249] for i in range(0, len(framebuffer), 249)]))
         logging.debug(f"{self.lcd.read(1024)[:0x20]}")
         self.send_command(QUERY_STATUS)
@@ -102,7 +97,16 @@ class Display:
         self.partial_update_count = 0
       else:
         self.partial_update_count += 1
-    self.framebuffer_dirty = [[False] * WIDTH for _ in range(HEIGHT)]
+
+@njit
+def _blit_text(text, font):
+  text_width = len(text) * 32
+  text_height = 64
+  text_surface = np.zeros((text_width, text_height), dtype=np.uint32)
+  for i, char in enumerate(text):
+    char_bitmap = font[ord(char) - 32]
+    text_surface[i*32:(i+1)*32, :64] = char_bitmap.T * 0xffffffff
+  return text_surface
 
 @njit
 def _track_damage(old:np.ndarray, new:np.ndarray): return np.where(old != new, 1, 0).T
@@ -120,7 +124,7 @@ def _update_payload(dirty:np.ndarray, fb, partial_update_count):
     update += (y * WIDTH + start).to_bytes(3, "big") + (end - start + 1).to_bytes(2, "big")
     for x in range(start, end + 1):
       pixel = fb[x, y]
-      update += (pixel & 0xffffff).to_bytes(3, "little")
+      update += pixel.tobytes()[-3:]
   update_size = (len(update) + 2).to_bytes(3, "big")
   payload = UPDATE_BITMAP + update_size + b"\x00\x00\x00" + partial_update_count.to_bytes(4, "big")
   update_chunks = []
