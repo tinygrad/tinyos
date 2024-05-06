@@ -16,7 +16,7 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 WIDTH, HEIGHT = 800, 480
 class Display:
   def __init__(self, port):
-    self.lcd = serial.Serial(port, 1825200, timeout=5, write_timeout=5)
+    self.lcd = serial.Serial(port, 1825200, timeout=1, write_timeout=1)
 
     # initialize display
     self.send_command(HELLO)
@@ -82,7 +82,8 @@ class Display:
       self.send_command(bytearray([0xff]), payload)
       self.send_command(bytearray([0xff]), update)
       self.send_command(QUERY_STATUS)
-      res = self.lcd.read(1024)[:0x20]
+      try: res = self.lcd.read(1024)[:0x20]
+      except serial.SerialTimeoutException: res = b""
       logging.debug(f"{res}")
       if res == b"\x00" or res == b"" or b"Send:1" in res:
         logging.warning("Partial update failed, full update required")
