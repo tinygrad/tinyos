@@ -28,7 +28,7 @@ class AText(Displayable):
   def __init__(self, text_states: list[str]): self.text_states, self.current_state = text_states, 0
   def display(self, display: Display):
     text = display.text(self.text_states[self.current_state], 100, True, (255, 255, 255))
-    display.blit(text, (400 - text.get_width() // 2, 225 + (120 - text.get_height() // 2)))
+    display.blit(text, (400 - text.shape[0] // 2, 225 + (120 - text.shape[1] // 2)))
     self.current_state = (self.current_state + 1) % len(self.text_states)
 
 class PositionableText(Displayable):
@@ -36,7 +36,7 @@ class PositionableText(Displayable):
     self.text, self.x, self.y = text, xy[0], xy[1]
   def display(self, display: Display):
     text = display.text(self.text)
-    display.blit(text, (self.x - text.get_width() // 2, self.y - text.get_height() // 2))
+    display.blit(text, (self.x - text.shape[0] // 2, self.y - text.shape[1] // 2))
 
 class VerticalProgressBar(Displayable):
   def __init__(self, value: float, max_value: float, width: int, height: int, x: int):
@@ -62,12 +62,12 @@ class DVDImage(Displayable):
     self.x_speed, self.y_speed = speed, speed
     self.reset()
   def display(self, display: Display):
-    if self.x + self.image.get_width() + self.x_speed >= 800 or self.x - self.x_speed <= 0: self.x_speed *= -1
-    if self.y + self.image.get_height() + self.y_speed >= 480 or self.y - self.y_speed <= 0: self.y_speed *= -1
+    if self.x + self.image.shape[0] + self.x_speed >= 800 or self.x - self.x_speed <= 0: self.x_speed *= -1
+    if self.y + self.image.shape[1] + self.y_speed >= 480 or self.y - self.y_speed <= 0: self.y_speed *= -1
     self.x += self.x_speed
     self.y += self.y_speed
     display.blit(self.image, (self.x, self.y))
-  def reset(self): self.x, self.y = random.randint(0, 800 - self.image.get_width()), random.randint(0, 480 - self.image.get_height())
+  def reset(self): self.x, self.y = random.randint(0, 800 - self.image.shape[0]), random.randint(0, 480 - self.image.shape[1])
 
 def get_gpu_utilizations() -> list[float]:
   gpu_utilizations = []
