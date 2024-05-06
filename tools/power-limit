@@ -8,12 +8,12 @@ IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 function main {
   local limit="$1"
   if [ -z "$limit" ]; then
-    echo "Limit not provided"
+    ercho "Limit not provided"
     exit 1
   fi
   if ((limit < 100 || limit > 350)); then
-    echo "Invalid limit: $limit"
-    echo "Valid range: 100-350 W"
+    ercho "Invalid limit: $limit"
+    ercho "Valid range: 100-350 W"
     exit 1
   fi
 
