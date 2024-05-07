@@ -55,6 +55,15 @@ class Display:
     self.framebuffer.fill(0xff)
   def blit(self, source, dest=(0, 0)):
     if source.ndim == 3: source = (source[:, :, 0].astype(np.uint32) << 24) | (source[:, :, 1].astype(np.uint32) << 16) | (source[:, :, 2].astype(np.uint32) << 8) | 0xff
+    # clip source to framebuffer
+    if dest[0] + source.shape[0] > self.framebuffer.shape[0]: source = source[:self.framebuffer.shape[0] - dest[0]]
+    if dest[1] + source.shape[1] > self.framebuffer.shape[1]: source = source[:, :self.framebuffer.shape[1] - dest[1]]
+    if dest[0] < 0:
+      source = source[-dest[0]:]
+      dest = (0, dest[1])
+    if dest[1] < 0:
+      source = source[:, -dest[1]:]
+      dest = (dest[0], 0)
     self.framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = source
 
   def flip(self, force=False):
@@ -117,17 +126,29 @@ def _build_update(dirty:np.ndarray, fb, update):
   write = 0
   for y in range(HEIGHT):
     if not np.any(dirty[y]): continue
-    start = 0
-    while dirty[y][start] == 0: start += 1
-    end = WIDTH - 1
-    while dirty[y][end] == 0: end -= 1
-    update[write:write+3] = np.array([y * WIDTH + start]).view(np.uint8)[::-1][-3:]
-    write += 3
-    update[write:write+2] = np.array([end - start + 1]).view(np.uint8)[::-1][-2:]
-    write += 2
-    for x in range(start, end + 1):
-      update[write:write+3] = np.array([fb[x, y]]).view(np.uint8)[-3:]
+
+    # find all dirty segments
+    segments = []
+    i = 0
+    while i < WIDTH:
+      if dirty[y][i]:
+        segment_start, segment_length = i, 1
+        j = i + 1
+        while j < WIDTH and (dirty[y][j]):
+          segment_length += 1
+          j += 1
+        i = j
+        segments.append((segment_start, segment_length))
+      i += 1
+
+    for segment in segments:
+      update[write:write+3] = np.array([y * WIDTH + segment[0]]).view(np.uint8)[::-1][-3:]
       write += 3
+      update[write:write+2] = np.array([segment[1]]).view(np.uint8)[::-1][-2:]
+      write += 2
+      for x in range(segment[0], segment[0] + segment[1]):
+        update[write:write+3] = np.array([fb[x, y]]).view(np.uint8)[-3:]
+        write += 3
   return update[:write]
 
 def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
