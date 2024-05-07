@@ -144,7 +144,7 @@ def _build_update(dirty:np.ndarray, fb, update):
       if dirty[y][i]:
         segment_start, segment_length = i, 1
         j = i + 1
-        while j < WIDTH and dirty[y][j]:
+        while j < WIDTH and (dirty[y][j] or dirty[y][j+1]):
           segment_length += 1
           j += 1
         i = j
@@ -168,7 +168,7 @@ def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
   bupdate = b"\x00".join(update_chunks)
   if len(update) > 250 and (len(update) % 250 == 0 or len(update) % 250 == 248 or len(update) % 250 == 249):
     bupdate += b"\x00\x00\x00\x01\x00\x00\xef\x69"
-    update_size = (len(update) + 7).to_bytes(3, "big")
+    update_size = (len(update) + 8).to_bytes(3, "big")
   else:
     bupdate += b"\xef\x69"
     update_size = (len(update) + 2).to_bytes(3, "big")
