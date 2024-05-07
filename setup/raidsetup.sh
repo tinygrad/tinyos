@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 echo "atext,Creating RAID.. ,Creating RAID ..,Creating RAID. ." | nc -U /run/tinybox-screen.sock
 

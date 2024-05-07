@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 function main {
   # see if the password must be changed to see if we are in first setup

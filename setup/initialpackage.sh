@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 echo "atext,Preparing.. ,Preparing ..,Preparing. ." | nc -U /run/tinybox-screen.sock
 

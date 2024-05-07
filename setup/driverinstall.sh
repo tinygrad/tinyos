@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 echo "atext,Installing Drivers.. ,Installing Drivers ..,Installing Drivers. ." | nc -U /run/tinybox-screen.sock
 
