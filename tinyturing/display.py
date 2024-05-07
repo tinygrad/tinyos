@@ -163,9 +163,11 @@ def _build_update(dirty:np.ndarray, fb, update):
 
 def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
   update = _build_update(dirty, fb, update_buffer).tobytes()
-  update_chunks = []
-  for i in range(0, len(update), 249): update_chunks.append(update[i:i+249])
-  bupdate = b"\x00".join(update_chunks)
+  if len(update) > 250:
+    update_chunks = []
+    for i in range(0, len(update), 249): update_chunks.append(update[i:i+249])
+    bupdate = b"\x00".join(update_chunks)
+  else: bupdate = update
   if len(update) > 250 and (len(update) % 250 == 0 or len(update) % 250 == 248 or len(update) % 250 == 249):
     bupdate += b"\x00\x00\x00\x01\x00\x00\xef\x69"
     update_size = (len(update) + 7).to_bytes(3, "big")
