@@ -25,7 +25,9 @@ class Text(Displayable):
       display.blit(text, (400 - text.shape[0] // 2, starting_offset + (120 - text.shape[1] // 2) + i * 80))
 
 class AText(Displayable):
-  def __init__(self, text_states: list[str]): self.text_states, self.current_state = text_states, 0
+  def __init__(self, text_states: list[str]):
+    self.text_states, self.current_state = [], 0
+    for text_state in text_states: self.text_states.extend([text_state] * 3)
   def display(self, display: Display):
     text = display.text(self.text_states[self.current_state])
     display.blit(text, (400 - text.shape[0] // 2, 225 + (120 - text.shape[1] // 2)))
