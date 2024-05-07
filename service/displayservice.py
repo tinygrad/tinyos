@@ -119,7 +119,7 @@ def display_thread():
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
         elif command == "sleep":
-          if to_display is not None and display_state != DisplayState.TEXT:
+          if to_display is not None or display_state != DisplayState.TEXT:
             display_state = DisplayState.TEXT
             to_display = None
             logo_sleep.reset()
