@@ -152,7 +152,7 @@ def _build_update(dirty:np.ndarray, fb, update):
       i += 1
 
     for segment in segments:
-      if segment[0] > 1:
+      if segment[1] > 1:
         update[write:write+3] = np.array([y * WIDTH + segment[0]]).view(np.uint8)[::-1][-3:]
         write += 3
         update[write:write+2] = np.array([segment[1]]).view(np.uint8)[::-1][-2:]
