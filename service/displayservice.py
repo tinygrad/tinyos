@@ -77,8 +77,21 @@ def get_gpu_utilizations() -> list[float]:
     for i in range(1, 7):
       with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
         gpu_utilizations.append(int(f.read().strip()))
-  except: logging.warning("Failed to read GPU utilization")
+  except:
+    logging.warning("Failed to read GPU utilization")
+    return []
   return gpu_utilizations
+
+def get_gpu_memory_utilizations() -> list[float]:
+  gpu_memory_utilizations = []
+  try:
+    for i in range(1, 7):
+      with open(f"/sys/class/drm/card{i}/device/mem_busy_percent", "r") as f:
+        gpu_memory_utilizations.append(int(f.read().strip()))
+  except:
+    logging.warning("Failed to read GPU memory utilization")
+    return []
+  return gpu_memory_utilizations
 
 def get_gpu_power_draw() -> list[int]:
   gpu_power_draws = []
@@ -86,7 +99,9 @@ def get_gpu_power_draw() -> list[int]:
     for i in range(1, 7):
       with open(f"/sys/class/drm/card{i}/device/hwmon/hwmon{i+4}/power1_average", "r") as f:
         gpu_power_draws.append(int(f.read().strip()) // 1000000)
-  except: logging.warning("Failed to read GPU power draw")
+  except:
+    logging.warning("Failed to read GPU power draw")
+    return []
   return gpu_power_draws
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
@@ -95,7 +110,7 @@ display_thread_alive = True
 def display_thread():
   try:
     # initialize display
-    display = Display("/dev/ttyACM0")
+    display = Display()
     display.clear()
     display.flip(force=True)
 

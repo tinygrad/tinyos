@@ -1,5 +1,6 @@
 import math, subprocess, time, logging
 import serial
+from serial.tools.list_ports import comports
 import numpy as np
 from numba import njit
 
@@ -15,7 +16,16 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 
 WIDTH, HEIGHT = 800, 480
 class Display:
-  def __init__(self, port):
+  def __init__(self):
+    # auto detect com port
+    for port in comports():
+      if port.serial_number == "20080411":
+        logging.info(f"Found display at {port.device}")
+        break
+    else:
+      logging.error("Display not found")
+      raise SystemExit
+    port = port.device
     self.lcd = serial.Serial(port, 1825200 * 2, timeout=1, write_timeout=1)
 
     # initialize display
