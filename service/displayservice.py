@@ -100,7 +100,7 @@ def display_thread():
     display.flip()
 
     # load assets
-    logo = Image("/opt/tinybox/screen/logo.png", (200, 111), (400, 154))
+    logo = Image("/opt/tinybox/screen/logo.png", (200, 68), (400, 154))
     logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
 
     display_state = DisplayState.TEXT
