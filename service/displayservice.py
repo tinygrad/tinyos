@@ -95,9 +95,7 @@ def display_thread():
     # initialize display
     display = Display("/dev/ttyACM0")
     display.clear()
-    display.flip()
-    display.clear()
-    display.flip()
+    display.flip(force=True)
 
     # load assets
     logo = Image("/opt/tinybox/screen/logo.png", (200, 68), (400, 154))

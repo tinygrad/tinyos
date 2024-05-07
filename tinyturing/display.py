@@ -57,7 +57,7 @@ class Display:
     if source.ndim == 3: source = (source[:, :, 0].astype(np.uint32) << 24) | (source[:, :, 1].astype(np.uint32) << 16) | (source[:, :, 2].astype(np.uint32) << 8) | 0xff
     self.framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = source
 
-  def flip(self):
+  def flip(self, force=False):
     dirty = _track_damage(self.old_framebuffer, self.framebuffer)
 
     if not np.any(dirty):
@@ -65,7 +65,7 @@ class Display:
       return
 
     # check if the whole framebuffer is dirty
-    if np.all(dirty):
+    if np.all(dirty) or force:
       logging.debug("Flipping full framebuffer")
       self.send_command(PRE_UPDATE_BITMAP)
       self.send_command(START_DISPLAY_BITMAP)
