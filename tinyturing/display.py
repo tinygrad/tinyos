@@ -144,7 +144,7 @@ def _build_update(dirty:np.ndarray, fb, update):
       if dirty[y][i]:
         segment_start, segment_length = i, 1
         j = i + 1
-        while j < WIDTH and (dirty[y][j] or dirty[y][j+1]):
+        while j < WIDTH and dirty[y][j]:
           segment_length += 1
           j += 1
         i = j
