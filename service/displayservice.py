@@ -71,38 +71,76 @@ class DVDImage(Displayable):
     display.blit(self.image, (self.x, self.y))
   def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), 480 - self.image.shape[1] - abs(self.y_speed))
 
-def get_gpu_utilizations() -> list[float]:
-  gpu_utilizations = []
-  try:
-    for i in range(1, 7):
-      with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
-        gpu_utilizations.append(int(f.read().strip()))
-  except:
-    logging.warning("Failed to read GPU utilization")
-    return []
-  return gpu_utilizations
+# determine GPU type
+try:
+  import pynvml as N
+  logging.info("pynvml found, assuming NVIDIA GPU")
+  N.nvmlInit()
+  GPU_HANDLES = [N.nvmlDeviceGetHandleByIndex(i) for i in range(6)]
+  def get_gpu_utilizations() -> list[float]:
+    gpu_utilizations = []
+    try:
+      for handle in GPU_HANDLES:
+        utilization = N.nvmlDeviceGetUtilizationRates(handle)
+        gpu_utilizations.append(utilization.gpu)
+    except:
+      logging.warning("Failed to read GPU utilization")
+      return []
+    return gpu_utilizations
+  def get_gpu_memory_utilizations() -> list[float]:
+    gpu_memory_utilizations = []
+    try:
+      for handle in GPU_HANDLES:
+        utilization = N.nvmlDeviceGetUtilizationRates(handle)
+        gpu_memory_utilizations.append(utilization.memory)
+    except:
+      logging.warning("Failed to read GPU memory utilization")
+      return []
+    return gpu_memory_utilizations
+  def get_gpu_power_draw() -> list[int]:
+    gpu_power_draws = []
+    try:
+      for handle in GPU_HANDLES:
+        power = N.nvmlDeviceGetPowerUsage(handle)
+        gpu_power_draws.append(power // 1000000)
+    except:
+      logging.warning("Failed to read GPU power draw")
+      return []
+    return gpu_power_draws
+except ImportError:
+  logging.info("pynvml not found, assuming AMD GPU")
+  def get_gpu_utilizations() -> list[float]:
+    gpu_utilizations = []
+    try:
+      for i in range(1, 7):
+        with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
+          gpu_utilizations.append(int(f.read().strip()))
+    except:
+      logging.warning("Failed to read GPU utilization")
+      return []
+    return gpu_utilizations
 
-def get_gpu_memory_utilizations() -> list[float]:
-  gpu_memory_utilizations = []
-  try:
-    for i in range(1, 7):
-      with open(f"/sys/class/drm/card{i}/device/mem_busy_percent", "r") as f:
-        gpu_memory_utilizations.append(int(f.read().strip()))
-  except:
-    logging.warning("Failed to read GPU memory utilization")
-    return []
-  return gpu_memory_utilizations
+  def get_gpu_memory_utilizations() -> list[float]:
+    gpu_memory_utilizations = []
+    try:
+      for i in range(1, 7):
+        with open(f"/sys/class/drm/card{i}/device/mem_busy_percent", "r") as f:
+          gpu_memory_utilizations.append(int(f.read().strip()))
+    except:
+      logging.warning("Failed to read GPU memory utilization")
+      return []
+    return gpu_memory_utilizations
 
-def get_gpu_power_draw() -> list[int]:
-  gpu_power_draws = []
-  try:
-    for i in range(1, 7):
-      with open(f"/sys/class/drm/card{i}/device/hwmon/hwmon{i+4}/power1_average", "r") as f:
-        gpu_power_draws.append(int(f.read().strip()) // 1000000)
-  except:
-    logging.warning("Failed to read GPU power draw")
-    return []
-  return gpu_power_draws
+  def get_gpu_power_draw() -> list[int]:
+    gpu_power_draws = []
+    try:
+      for i in range(1, 7):
+        with open(f"/sys/class/drm/card{i}/device/hwmon/hwmon{i+4}/power1_average", "r") as f:
+          gpu_power_draws.append(int(f.read().strip()) // 1000000)
+    except:
+      logging.warning("Failed to read GPU power draw")
+      return []
+    return gpu_power_draws
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
