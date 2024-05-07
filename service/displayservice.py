@@ -102,7 +102,7 @@ try:
     try:
       for handle in GPU_HANDLES:
         power = N.nvmlDeviceGetPowerUsage(handle)
-        gpu_power_draws.append(power // 1000000)
+        gpu_power_draws.append(int(power))
     except:
       logging.warning("Failed to read GPU power draw")
       return []
