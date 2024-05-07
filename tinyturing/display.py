@@ -11,7 +11,7 @@ SET_BRIGHTNESS = bytearray([0x7b, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00
 PRE_UPDATE_BITMAP = bytearray([0x86, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 START_DISPLAY_BITMAP = bytearray([0x2c])
 DISPLAY_BITMAP = bytearray([0xc8, 0xef, 0x69, 0x00, 0x17, 0x70])
-UPDATE_BITMAP = bytes([0xcc, 0xef, 0x69, 0x00])
+UPDATE_BITMAP = bytes([0xcc, 0xef, 0x69])
 QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 
 WIDTH, HEIGHT = 800, 480
@@ -169,7 +169,7 @@ def _build_update(dirty:np.ndarray, fb, update):
 
 def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
   update = _build_update(dirty, fb, update_buffer).tobytes()
-  update_size = (len(update) + 2).to_bytes(3, "big")
+  update_size = (len(update) + 2).to_bytes(4, "big")
   print(int.from_bytes(update_size, "big"), len(update), partial_update_count)
   payload = UPDATE_BITMAP + update_size + b"\x00\x00\x00" + partial_update_count.to_bytes(4, "big")
   update_chunks = []
