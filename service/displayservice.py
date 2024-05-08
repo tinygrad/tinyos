@@ -53,6 +53,13 @@ class VerticalProgressBar(Displayable):
     bar = np.full((self.width, bar_height, 3), 255)
     display.blit(bar, (self.x - self.width // 2, 240 - bar_height // 2))
 
+class VerticalLine(Displayable):
+  def __init__(self, x: int, height: int, color: tuple[int, int, int]):
+    self.x, self.height, self.color = x, height, color
+  def display(self, display: Display):
+    line = np.full((1, self.height, 3), self.color)
+    display.blit(line, (self.x, 240 - self.height // 2))
+
 class Image(Displayable):
   def __init__(self, path: str, xy: tuple[int, int], scale: tuple[int, int]):
     self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
@@ -205,7 +212,10 @@ def display_thread():
           else: logo_sleep.display(display)
         elif display_state == DisplayState.STATUS:
           for i, utilization in enumerate(gpu_utilizations):
-            VerticalProgressBar(utilization, 100, 50, 430, 70 * i).display(display)
+            VerticalProgressBar(utilization, 100, 50, 430, 25 + 70 * i).display(display)
+
+          VerticalLine(400, 480, (255, 255, 255)).display(display)
+
           power_draws = get_gpu_power_draw()
           total_power_draw = sum(power_draws)
           total_power_draw_avg = (total_power_draw_avg + total_power_draw) // 2
