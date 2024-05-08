@@ -205,7 +205,7 @@ def display_thread():
           else: logo_sleep.display(display)
         elif display_state == DisplayState.STATUS:
           for i, utilization in enumerate(gpu_utilizations):
-            VerticalProgressBar(utilization, 100, 50, 380, 50 + 75 * i).display(display)
+            VerticalProgressBar(utilization, 100, 50, 430, 70 * i).display(display)
           power_draws = get_gpu_power_draw()
           total_power_draw = sum(power_draws)
           total_power_draw_avg = (total_power_draw_avg + total_power_draw) // 2
