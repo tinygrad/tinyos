@@ -130,7 +130,7 @@ class LineGraph(Displayable):
       if y1 >= self.height: y1 = self.height - 1
       if y2 >= self.height: y2 = self.height - 1
       # draw line
-      yy, xx, val = line(x1, y1, x2, y2)
+      yy, xx, val = line(y1, x1, y2, x2)
       surface[xx, yy] = (255 * val).astype(int)[..., None]
     display.blit(surface, (self.x - self.width // 2, self.y - self.height // 2))
 
