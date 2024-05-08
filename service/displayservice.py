@@ -3,7 +3,7 @@ sys.path.insert(0, "/opt/tinybox/screen/")
 
 from display import Display
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal, os, random, logging
+import threading, time, signal, os, random, logging, math
 logging.basicConfig(level=logging.INFO)
 from enum import Enum
 from abc import ABC, abstractmethod
@@ -100,6 +100,41 @@ class DVDImage(Displayable):
     display.blit(self.image, (self.x, self.y))
   def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), 480 - self.image.shape[1] - abs(self.y_speed))
 
+def line(x1: int, y1: int, x2: int, y2: int) -> list[tuple[int, int]]:
+  points = []
+  dx, dy = abs(x2 - x1), abs(y2 - y1)
+  sx, sy = 1 if x1 < x2 else -1, 1 if y1 < y2 else -1
+  err = dx - dy
+  while True:
+    points.append((x1, y1))
+    if x1 == x2 and y1 == y2: break
+    e2 = 2 * err
+    if e2 > -dy:
+      err -= dy
+      x1 += sx
+    if e2 < dx:
+      err += dx
+      y1 += sy
+  return points
+
+class LineGraph(Displayable):
+  def __init__(self, width: int, height: int, x: int, y: int, points_to_keep: int=10):
+    self.width, self.height, self.x, self.y, self.points_to_keep = width, height, x, y, points_to_keep
+    self.data = []
+  def add_data(self, data: float):
+    self.data.append(data)
+    if len(self.data) > self.points_to_keep: self.data.pop(0)
+  def display(self, display: Display):
+    if len(self.data) < 2: return
+    max_data, min_data = max(self.data), min(self.data)
+    if max_data == min_data: return
+    surface = np.full((self.width, self.height, 3), 0)
+    for i in range(1, len(self.data)):
+      x1, y1 = self.x + self.width * (i - 1) // (self.points_to_keep - 1), self.y - self.height * (self.data[i - 1] - min_data) // (max_data - min_data)
+      x2, y2 = self.x + self.width * i // (self.points_to_keep - 1), self.y - self.height * (self.data[i] - min_data) // (max_data - min_data)
+      # draw line
+      for point in line(x1, y1, x2, y2): surface[point[0], point[1]] = [255, 255, 255]
+
 # determine GPU type
 try:
   import pynvml as N
@@ -193,6 +228,7 @@ def display_thread():
     start_time = time.monotonic()
     to_display: Displayable | None = None
     total_power_draw_avg = 0
+    status_graph = LineGraph(350, 190, 600, 360)
 
     while display_thread_alive:
       st = time.perf_counter()
@@ -241,12 +277,15 @@ def display_thread():
           HorizontalLine(600, 280, (255, 255, 255)).display(display)
 
           total_power_draw = sum(get_gpu_power_draw())
-          total_power_draw_avg = (total_power_draw_avg + total_power_draw) // 2
+          total_power_draw_avg = math.floor(0.9 * total_power_draw_avg + 0.1 * total_power_draw)
           PositionableText(f"{total_power_draw_avg}W", (425, 90), "left").display(display)
 
           memory_utilizations = get_gpu_memory_utilizations()
           mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
           HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 150)).display(display)
+
+          status_graph.add_data(total_power_draw_avg)
+          status_graph.display(display)
 
       # update display
       display.flip()
