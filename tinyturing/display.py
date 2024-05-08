@@ -17,16 +17,7 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 WIDTH, HEIGHT = 800, 480
 class Display:
   def __init__(self):
-    # auto detect com port
-    for port in comports():
-      if port.serial_number == "20080411":
-        logging.info(f"Found display at {port.device}")
-        break
-    else:
-      logging.error("Display not found")
-      raise SystemExit
-    port = port.device
-    self.lcd = serial.Serial(port, 1825200 * 2, timeout=1, write_timeout=1)
+    self._connect()
 
     # initialize display
     self.send_command(HELLO)
@@ -39,8 +30,18 @@ class Display:
     self.old_framebuffer = self.framebuffer.copy()
     self.update_buffer = np.zeros(self.framebuffer.size * self.framebuffer.itemsize, dtype=np.uint8)
     self.partial_update_count = 0
-
   def __del__(self): self.lcd.close()
+
+  def _connect(self):
+    # auto detect com port
+    for port in comports():
+      if port.serial_number == "20080411":
+        logging.info(f"Found display at {port.device}")
+        break
+    else:
+      logging.error("Display not found")
+      raise SystemExit
+    self.lcd = serial.Serial(port.device, 1825200 * 2, timeout=1, write_timeout=1)
 
   def send_command(self, command, payload=None):
     logging.debug(f"Sending command {command}")
