@@ -130,10 +130,11 @@ class LineGraph(Displayable):
     if max_data == min_data: return
     surface = np.full((self.width, self.height, 3), 0)
     for i in range(1, len(self.data)):
-      x1, y1 = self.x + self.width * (i - 1) // (self.points_to_keep - 1), self.y - self.height * (self.data[i - 1] - min_data) // (max_data - min_data)
-      x2, y2 = self.x + self.width * i // (self.points_to_keep - 1), self.y - self.height * (self.data[i] - min_data) // (max_data - min_data)
+      x1, y1 = self.width * (i - 1) // (self.points_to_keep - 1), self.height * (self.data[i - 1] - min_data) // (max_data - min_data)
+      x2, y2 = self.width * i // (self.points_to_keep - 1), self.height * (self.data[i] - min_data) // (max_data - min_data)
       # draw line
       for point in line(x1, y1, x2, y2): surface[point[0], point[1]] = [255, 255, 255]
+    display.blit(surface, (self.x - self.width // 2, self.y - self.height // 2))
 
 # determine GPU type
 try:
