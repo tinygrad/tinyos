@@ -100,17 +100,22 @@ class DVDImage(Displayable):
     display.blit(self.image, (self.x, self.y))
   def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), 480 - self.image.shape[1] - abs(self.y_speed))
 
-def line(x1: int, y1: int, x2: int, y2: int):
-  if abs(x2 - x1) < abs(y2 - y1):
-    xx, yy, val = line(y1, x1, y2, x2)
-    return yy, xx, val
-  if x1 > x2: return line(x2, y2, x1, y1)
-  x = np.arange(x1, x2 + 1, dtype=float)
-  y = x * (y2 - y1) / (x2 - x1) + (x2 * y1 - x1 * y2) / (x2 - x1)
-
-  valbot = np.floor(y) - y + 1
-  valtop = y - np.floor(y)
-  return np.concatenate((np.floor(y), np.floor(y) + 1)).astype(int), np.concatenate((x, x)).astype(int), np.concatenate((valbot, valtop))
+def line(x1: int, y1: int, x2: int, y2: int) -> list[tuple[int, int]]:
+  points = []
+  dx, dy = abs(x2 - x1), abs(y2 - y1)
+  sx, sy = 1 if x1 < x2 else -1, 1 if y1 < y2 else -1
+  err = dx - dy
+  while True:
+    points.append((x1, y1))
+    if x1 == x2 and y1 == y2: break
+    e2 = 2 * err
+    if e2 > -dy:
+      err -= dy
+      x1 += sx
+    if e2 < dx:
+      err += dx
+      y1 += sy
+  return points
 
 class LineGraph(Displayable):
   def __init__(self, width: int, height: int, x: int, y: int, points_to_keep: int=10):
@@ -127,11 +132,10 @@ class LineGraph(Displayable):
     for i in range(len(self.data) - 1):
       x1, y1 = int(self.width * i / (self.points_to_keep - 1)), int(self.height * (self.data[i] - min_data) / (max_data - min_data))
       x2, y2 = int(self.width * (i + 1) / (self.points_to_keep - 1)), int(self.height * (self.data[i + 1] - min_data) / (max_data - min_data))
-      if y1 >= self.height: y1 = self.height - 1
-      if y2 >= self.height: y2 = self.height - 1
       # draw line
-      yy, xx, val = line(y1, x1, y2, x2)
-      surface[xx, yy] = (255 * val).astype(int)[..., None]
+      for point in line(x1, y1, x2, y2):
+        if 0 <= point[0] < self.width and 0 <= point[1] < self.height:
+          surface[point[0], point[1]] = [255, 255, 255]
     display.blit(surface, (self.x - self.width // 2, self.y - self.height // 2))
 
 # determine GPU type
@@ -257,7 +261,7 @@ def display_thread():
         # check if display should be in status state
         gpu_utilizations = get_gpu_utilizations()
         logging.debug(f"GPU Utilizations: {gpu_utilizations}")
-        if any(map(lambda x: x > 2, gpu_utilizations)):# and time.monotonic() - start_time > 10:
+        if any(map(lambda x: x > 2, gpu_utilizations)) and time.monotonic() - start_time > 10:
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
 
