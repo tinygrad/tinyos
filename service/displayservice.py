@@ -35,11 +35,13 @@ class AText(Displayable):
     self.current_state = (self.current_state + 1) % len(self.text_states)
 
 class PositionableText(Displayable):
-  def __init__(self, text: str, xy: tuple[int, int]):
-    self.text, self.x, self.y = text, xy[0], xy[1]
+  def __init__(self, text: str, xy: tuple[int, int], align: str = "center"):
+    self.text, self.x, self.y, self.align = text, xy[0], xy[1], align
   def display(self, display: Display):
     text = display.text(self.text)
-    display.blit(text, (self.x - text.shape[0] // 2, self.y - text.shape[1] // 2))
+    if self.align == "center": display.blit(text, (self.x - text.shape[0] // 2, self.y - text.shape[1] // 2))
+    elif self.align == "left": display.blit(text, (self.x, self.y - text.shape[1] // 2))
+    elif self.align == "right": display.blit(text, (self.x - text.shape[0], self.y - text.shape[1] // 2))
 
 class VerticalProgressBar(Displayable):
   def __init__(self, value: float, max_value: float, width: int, height: int, x: int):
@@ -52,6 +54,18 @@ class VerticalProgressBar(Displayable):
     bar_height = self.height * self.value // self.max_value
     bar = np.full((self.width, bar_height, 3), 255)
     display.blit(bar, (self.x - self.width // 2, 240 - bar_height // 2))
+
+class HorizontalProgressBar(Displayable):
+  def __init__(self, value: float, max_value: float, width: int, height: int, xy: tuple[int, int]):
+    self.value, self.max_value, self.width, self.height, self.x, self.y = value, max_value, width, height, xy[0], xy[1]
+    self.background = np.full((width, height, 3), 20)
+  def display(self, display: Display):
+    # draw background
+    display.blit(self.background, (self.x, self.y - self.height // 2))
+    # draw bar
+    bar_width = self.width * self.value // self.max_value
+    bar = np.full((bar_width, self.height, 3), 255)
+    display.blit(bar, (self.x, self.y - self.height // 2))
 
 class VerticalLine(Displayable):
   def __init__(self, x: int, height: int, color: tuple[int, int, int]):
@@ -222,12 +236,14 @@ def display_thread():
             VerticalProgressBar(utilization, 100, 50, 430, 50 + 60 * i).display(display)
 
           VerticalLine(400, 280, (255, 255, 255)).display(display)
-          HorizontalLine(600, 234, (255, 255, 255)).display(display)
+          HorizontalLine(600, 280, (255, 255, 255)).display(display)
 
-          power_draws = get_gpu_power_draw()
-          total_power_draw = sum(power_draws)
+          total_power_draw = sum(get_gpu_power_draw())
           total_power_draw_avg = (total_power_draw_avg + total_power_draw) // 2
-          PositionableText(f"{total_power_draw_avg}W", (600, 120)).display(display)
+          PositionableText(f"{total_power_draw_avg}W", (600, 60), "left").display(display)
+
+          total_memory_utilization = sum(get_gpu_memory_utilizations())
+          HorizontalProgressBar(total_memory_utilization, 600, 200, 50, (425, 180)).display(display)
 
       # update display
       display.flip()
