@@ -4,6 +4,7 @@ sys.path.insert(0, "/opt/tinybox/screen/")
 from display import Display
 from socketserver import UnixStreamServer, StreamRequestHandler
 import threading, time, signal, os, random, logging
+logging.basicConfig(level=logging.INFO)
 from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
@@ -238,8 +239,6 @@ class ControlHandler(StreamRequestHandler):
       control_queue.put(("sleep", None))
 
 if __name__ == "__main__":
-  logging.basicConfig(level=logging.INFO)
-
   # start display thread
   dt = threading.Thread(target=display_thread)
   dt.start()
