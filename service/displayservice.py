@@ -58,7 +58,7 @@ class VerticalProgressBar(Displayable):
 class HorizontalProgressBar(Displayable):
   def __init__(self, value: float, max_value: float, width: int, height: int, xy: tuple[int, int]):
     self.value, self.max_value, self.width, self.height, self.x, self.y = value, max_value, width, height, xy[0], xy[1]
-    self.background = np.full((width, height, 3), 20)
+    self.background = np.full((width, height, 3), 50)
   def display(self, display: Display):
     # draw background
     display.blit(self.background, (self.x, self.y - self.height // 2))
