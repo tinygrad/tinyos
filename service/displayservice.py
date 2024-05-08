@@ -118,7 +118,7 @@ def line(x1: int, y1: int, x2: int, y2: int) -> list[tuple[int, int]]:
   return points
 
 class LineGraph(Displayable):
-  def __init__(self, width: int, height: int, x: int, y: int, points_to_keep: int=10):
+  def __init__(self, width: int, height: int, x: int, y: int, points_to_keep: int=20):
     self.width, self.height, self.x, self.y, self.points_to_keep = width, height, x, y, points_to_keep
     self.data = []
     self.min_data, self.max_data = math.inf, -math.inf
