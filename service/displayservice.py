@@ -153,8 +153,11 @@ except ImportError:
     gpu_memory_utilizations = []
     try:
       for i in range(1, 7):
-        with open(f"/sys/class/drm/card{i}/device/mem_busy_percent", "r") as f:
-          gpu_memory_utilizations.append(int(f.read().strip()))
+        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_used", "r") as f:
+          used = int(f.read().strip())
+        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_total", "r") as f:
+          total = int(f.read().strip())
+        gpu_memory_utilizations.append(used / total * 100)
     except:
       logging.warning("Failed to read GPU memory utilization")
       return []
@@ -243,7 +246,7 @@ def display_thread():
 
           memory_utilizations = get_gpu_memory_utilizations()
           mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
-          HorizontalProgressBar(mean_memory_utilization, 100, 150, 50, (425, 150)).display(display)
+          HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 150)).display(display)
 
       # update display
       display.flip()
