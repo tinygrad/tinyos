@@ -242,7 +242,7 @@ def display_thread():
           PositionableText(f"{total_power_draw_avg}W", (425, 90), "left").display(display)
 
           memory_utilizations = get_gpu_memory_utilizations()
-          mean_memory_utilization = sum(memory_utilizations) / len(memory_utilizations)
+          mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
           HorizontalProgressBar(mean_memory_utilization, 100, 200, 50, (425, 150)).display(display)
 
       # update display
