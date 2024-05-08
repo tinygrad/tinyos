@@ -131,8 +131,8 @@ class LineGraph(Displayable):
     if data_range == 0: data_range = 1
     surface = np.full((self.width, self.height, 3), 0)
     for i in range(len(self.data) - 1):
-      x1, y1 = int(self.width * i / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i] - self.min_data) / data_range)
-      x2, y2 = int(self.width * (i + 1) / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i + 1] - self.min_data) / data_range)
+      x1, y1 = int(self.width * i / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i] - min_data) / data_range)
+      x2, y2 = int(self.width * (i + 1) / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i + 1] - min_data) / data_range)
       # draw line
       for point in line(x1, y1, x2, y2):
         # clamp point to graph bounds
