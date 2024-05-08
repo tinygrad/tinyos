@@ -121,18 +121,19 @@ class LineGraph(Displayable):
   def __init__(self, width: int, height: int, x: int, y: int, points_to_keep: int=10):
     self.width, self.height, self.x, self.y, self.points_to_keep = width, height, x, y, points_to_keep
     self.data = []
+    self.min_data, self.max_data = -math.inf, math.inf
   def add_data(self, data: float):
     self.data.append(data)
     if len(self.data) > self.points_to_keep: self.data.pop(0)
+    self.min_data, self.max_data = min(self.min_data, data), max(self.max_data, data)
   def display(self, display: Display):
     if len(self.data) < 2: return
-    max_data, min_data = max(self.data), min(self.data)
-    data_range = max_data - min_data
+    data_range = self.max_data - self.min_data
     if data_range == 0: data_range = 1
     surface = np.full((self.width, self.height, 3), 0)
     for i in range(len(self.data) - 1):
-      x1, y1 = int(self.width * i / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i] - min_data) / data_range)
-      x2, y2 = int(self.width * (i + 1) / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i + 1] - min_data) / data_range)
+      x1, y1 = int(self.width * i / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i] - self.min_data) / data_range)
+      x2, y2 = int(self.width * (i + 1) / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i + 1] - self.min_data) / data_range)
       # draw line
       for point in line(x1, y1, x2, y2):
         # clamp point to graph bounds
