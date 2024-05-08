@@ -66,6 +66,7 @@ class Display:
   def blit(self, source, dest=(0, 0)):
     if source.ndim == 3: source = (source[:, :, 0].astype(np.uint32) << 24) | (source[:, :, 1].astype(np.uint32) << 16) | (source[:, :, 2].astype(np.uint32) << 8) | 0xff
     # clip source to framebuffer
+    if dest[0] >= self.framebuffer.shape[0] or dest[1] >= self.framebuffer.shape[1]: return
     if dest[0] + source.shape[0] > self.framebuffer.shape[0]: source = source[:self.framebuffer.shape[0] - dest[0]]
     if dest[1] + source.shape[1] > self.framebuffer.shape[1]: source = source[:, :self.framebuffer.shape[1] - dest[1]]
     if dest[0] < 0:
@@ -97,7 +98,6 @@ class Display:
     else:
       logging.debug("Flipping partial framebuffer")
       update, payload = _update_payload(dirty, self.framebuffer, self.update_buffer, self.partial_update_count)
-
       self.send_command(bytearray([0xff]), payload)
       self.send_command(bytearray([0xff]), update)
       self.send_command(QUERY_STATUS)
@@ -169,6 +169,7 @@ def _build_update(dirty:np.ndarray, fb, update):
 
 def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
   update = _build_update(dirty, fb, update_buffer).tobytes()
+  if len(update) % 249 == 0 or len(update) % 249 == 248: update = update + b"\x80\x00\x00\x00\x00\x00"
   update_size = (len(update) + 2).to_bytes(4, "big")
   payload = UPDATE_BITMAP + update_size + b"\x00\x00\x00" + partial_update_count.to_bytes(4, "big")
   update_chunks = []
