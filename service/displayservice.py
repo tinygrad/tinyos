@@ -127,6 +127,8 @@ class LineGraph(Displayable):
     for i in range(len(self.data) - 1):
       x1, y1 = int(self.width * i / (self.points_to_keep - 1)), int(self.height * (self.data[i] - min_data) / (max_data - min_data))
       x2, y2 = int(self.width * (i + 1) / (self.points_to_keep - 1)), int(self.height * (self.data[i + 1] - min_data) / (max_data - min_data))
+      if y1 >= self.height: y1 = self.height - 1
+      if y2 >= self.height: y2 = self.height - 1
       # draw line
       yy, xx, val = line(x1, y1, x2, y2)
       surface[xx, yy] = (255 * val).astype(int)[..., None]
@@ -255,7 +257,7 @@ def display_thread():
         # check if display should be in status state
         gpu_utilizations = get_gpu_utilizations()
         logging.debug(f"GPU Utilizations: {gpu_utilizations}")
-        if any(map(lambda x: x > 2, gpu_utilizations)) and time.monotonic() - start_time > 10:
+        if any(map(lambda x: x > 2, gpu_utilizations)):# and time.monotonic() - start_time > 10:
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
 
