@@ -60,6 +60,13 @@ class VerticalLine(Displayable):
     line = np.full((1, self.height, 3), self.color)
     display.blit(line, (self.x, 240 - self.height // 2))
 
+class HorizontalLine(Displayable):
+  def __init__(self, x: int, width: int, color: tuple[int, int, int]):
+    self.x, self.width, self.color = x, width, color
+  def display(self, display: Display):
+    line = np.full((self.width, 1, 3), self.color)
+    display.blit(line, (self.x - self.width // 2, 240))
+
 class Image(Displayable):
   def __init__(self, path: str, xy: tuple[int, int], scale: tuple[int, int]):
     self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
@@ -215,11 +222,12 @@ def display_thread():
             VerticalProgressBar(utilization, 100, 50, 430, 50 + 60 * i).display(display)
 
           VerticalLine(400, 280, (255, 255, 255)).display(display)
+          HorizontalLine(600, 234, (255, 255, 255)).display(display)
 
           power_draws = get_gpu_power_draw()
           total_power_draw = sum(power_draws)
           total_power_draw_avg = (total_power_draw_avg + total_power_draw) // 2
-          PositionableText(f"{total_power_draw_avg}W", (600, 240)).display(display)
+          PositionableText(f"{total_power_draw_avg}W", (600, 120)).display(display)
 
       # update display
       display.flip()
