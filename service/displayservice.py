@@ -129,7 +129,7 @@ class LineGraph(Displayable):
       x2, y2 = int(self.width * (i + 1) / (self.points_to_keep - 1)), int(self.height * (self.data[i + 1] - min_data) / (max_data - min_data))
       # draw line
       yy, xx, val = line(x1, y1, x2, y2)
-      surface[yy, xx] = (255 * val).astype(int)
+      surface[yy, xx] = (255 * val).astype(int)[..., None]
     display.blit(surface, (self.x - self.width // 2, self.y - self.height // 2))
 
 # determine GPU type
