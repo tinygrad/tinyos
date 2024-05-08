@@ -46,7 +46,7 @@ class PositionableText(Displayable):
 class VerticalProgressBar(Displayable):
   def __init__(self, value: float, max_value: float, width: int, height: int, x: int):
     self.value, self.max_value, self.width, self.height, self.x = value, max_value, width, height, x
-    self.background = np.full((width, height, 3), 20)
+    self.background = np.full((width, height, 3), 25)
   def display(self, display: Display):
     # draw background
     display.blit(self.background, (self.x - self.width // 2, 240 - self.height // 2))
