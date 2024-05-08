@@ -121,7 +121,7 @@ class LineGraph(Displayable):
   def __init__(self, width: int, height: int, x: int, y: int, points_to_keep: int=10):
     self.width, self.height, self.x, self.y, self.points_to_keep = width, height, x, y, points_to_keep
     self.data = []
-    self.min_data, self.max_data = -math.inf, math.inf
+    self.min_data, self.max_data = math.inf, -math.inf
   def add_data(self, data: float):
     self.data.append(data)
     if len(self.data) > self.points_to_keep: self.data.pop(0)
