@@ -243,7 +243,7 @@ def display_thread():
 
           memory_utilizations = get_gpu_memory_utilizations()
           mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
-          HorizontalProgressBar(mean_memory_utilization, 100, 200, 50, (425, 150)).display(display)
+          HorizontalProgressBar(mean_memory_utilization, 100, 150, 50, (425, 150)).display(display)
 
       # update display
       display.flip()
