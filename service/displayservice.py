@@ -9,6 +9,7 @@ from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
 import numpy as np
+from numba import njit
 import PIL.Image
 import psutil
 
@@ -98,6 +99,7 @@ class DVDImage(Displayable):
     display.blit(self.image, (self.x, self.y))
   def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), 480 - self.image.shape[1] - abs(self.y_speed))
 
+@njit
 def line(x1: int, y1: int, x2: int, y2: int) -> list[tuple[int, int]]:
   points = []
   dx, dy = abs(x2 - x1), abs(y2 - y1)
