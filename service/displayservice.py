@@ -140,6 +140,47 @@ class LineGraph(Displayable):
         surface[point[0], point[1]] = [255, 255, 255]
     display.blit(surface, (self.x - self.width // 2, self.y - self.height // 2))
 
+class StatusScreen(Displayable):
+  def __init__(self):
+    self.vertical_line = VerticalLine(400, 280, (255, 255, 255))
+    self.horizontal_line = HorizontalLine(600, 280, (255, 255, 255))
+
+    self.gpu_bars = [VerticalProgressBar(0, 100, 50, 430, 30 + 64 * i) for i in range(6)]
+    self.gpu_mem_bars = [VerticalProgressBar(0, 100, 5, 100, 425 + 10 * i, 167) for i in range(6)]
+    self.cpu_bars = [VerticalProgressBar(0, 100, 2, 117, 604 + 3 * i, 89) for i in range(64)]
+
+    self.rolling_power_draw = 0
+    self.power_draw_text = PositionableText("", (425, 57), "left")
+    self.rolling_disk_io = 0
+    self.disk_io_text = PositionableText("", (WIDTH - 5, 190), "right")
+
+    self.line_graph = LineGraph(370, 190, 610, 360)
+  def update(self, gpu_utilizations: list[float], gpu_memory_utilizations: list[float], cpu_utilizations: list[float], gpu_power_draws: list[int], cpu_power_draw: int, disk_read_write: tuple[int, int]):
+    for i, bar in enumerate(self.gpu_bars): bar.value = int(gpu_utilizations[i])
+    for i, bar in enumerate(self.gpu_mem_bars): bar.value = int(gpu_memory_utilizations[i])
+
+    for i, bar in enumerate(self.cpu_bars): bar.value = int(cpu_utilizations[i])
+
+    self.rolling_power_draw = math.floor(0.9 * self.rolling_power_draw + 0.1 * sum(gpu_power_draws, cpu_power_draw))
+    self.power_draw_text.text = f"{self.rolling_power_draw}W"
+
+    self.rolling_disk_io = math.floor(0.9 * self.rolling_disk_io + 0.1 * sum(disk_read_write))
+    self.disk_io_text.text = f"{self.rolling_disk_io}MB/s"
+
+    self.line_graph.add_data(self.rolling_power_draw)
+  def display(self, display: Display):
+    self.vertical_line.display(display)
+    self.horizontal_line.display(display)
+
+    for bar in self.gpu_bars: bar.display(display)
+    for bar in self.gpu_mem_bars: bar.display(display)
+    for bar in self.cpu_bars: bar.display(display)
+
+    self.power_draw_text.display(display)
+    self.disk_io_text.display(display)
+
+    self.line_graph.display(display)
+
 # determine GPU type
 try:
   import pynvml as N
@@ -263,8 +304,7 @@ def display_thread():
     display_last_active = time.monotonic()
     start_time = time.monotonic()
     to_display: Displayable | None = None
-    total_power_draw_avg, disk_avg = 0, 0
-    status_graph = LineGraph(370, 190, 610, 360)
+    status_screen = StatusScreen()
 
     while display_thread_alive:
       st = time.perf_counter()
@@ -306,30 +346,8 @@ def display_thread():
             to_display.display(display)
           else: logo_sleep.display(display)
         elif display_state == DisplayState.STATUS:
-          for i, utilization in enumerate(gpu_utilizations):
-            VerticalProgressBar(int(utilization), 100, 50, 430, 30 + 64 * i).display(display)
-
-          VerticalLine(400, 280, (255, 255, 255)).display(display)
-          HorizontalLine(600, 280, (255, 255, 255)).display(display)
-
-          total_power_draw = sum(get_gpu_power_draw(), get_cpu_power_draw())
-          total_power_draw_avg = math.floor(0.9 * total_power_draw_avg + 0.1 * total_power_draw)
-          PositionableText(f"{total_power_draw_avg}W", (425, 57), "left").display(display)
-
-          memory_utilizations = get_gpu_memory_utilizations()
-          mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
-          HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 117)).display(display)
-
-          cpu_utilizations = get_cpu_utilizations()
-          for i, utilization in enumerate(cpu_utilizations):
-            VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89).display(display)
-
-          disk_read, disk_write = get_disk_io_per_second()
-          disk_avg = math.floor(0.8 * disk_avg + 0.2 * (disk_read + disk_write))
-          PositionableText(f"{disk_avg}MB/s", (WIDTH - 5, 190), "right").display(display)
-
-          status_graph.add_data(total_power_draw_avg)
-          status_graph.display(display)
+          status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
+          status_screen.display(display)
 
       # update display
       display.flip()
