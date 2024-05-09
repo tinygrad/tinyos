@@ -74,11 +74,11 @@ class DoubleHorizontalProgressBar(Displayable):
     self.background = np.full((width, height, 3), 50)
   def display(self, display: Display):
     # draw background
-    display.blit(self.background, (self.x, self.y - self.height // 2))
+    display.blit(self.background, (self.x - self.width // 2, self.y - self.height // 2))
     # draw bar
     bar_width = self.width * self.value // self.max_value
     bar = np.full((bar_width, self.height, 3), 255)
-    display.blit(bar, (self.x - self.width // 2, self.y - self.height // 2))
+    display.blit(bar, (self.x - bar_width // 2, self.y - self.height // 2))
 
 class VerticalLine(Displayable):
   def __init__(self, x: int, height: int, color: tuple[int, int, int]):
@@ -228,6 +228,17 @@ except ImportError:
     return gpu_power_draws
 
 def get_cpu_utilization() -> float: return psutil.cpu_percent()
+
+def get_disk_io_per_second() -> float:
+  try:
+    with open("/proc/diskstats", "r") as f:
+      for line in f:
+        if "nvme0n1" in line:
+          return int(line.split()[6]) / 2
+      else: return 0
+  except:
+    logging.warning("Failed to read disk I/O")
+    return 0
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
