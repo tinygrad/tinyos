@@ -52,12 +52,11 @@ class Display:
     try: self.lcd.write(command)
     except serial.SerialTimeoutException:
       logging.warning("Serial write timeout, resetting usb device and retrying")
-      port, baudrate = self.lcd.port, self.lcd.baudrate
       self.lcd.close()
       subprocess.run(["usbreset", "1d6b:0106"])
-      logging.warning("Waiting 5 seconds for usb device to reset")
-      time.sleep(5)
-      self.lcd = serial.Serial(port, baudrate, timeout=5, write_timeout=5)
+      logging.warning("Waiting 2 seconds for usb device to reset")
+      time.sleep(2)
+      self._connect()
       self.lcd.write(command)
 
   def text(self, text): return _blit_text(text, self.font)
