@@ -252,7 +252,7 @@ def display_thread():
     start_time = time.monotonic()
     to_display: Displayable | None = None
     total_power_draw_avg = 0
-    status_graph = LineGraph(350, 190, 600, 360)
+    status_graph = LineGraph(370, 190, 610, 360)
 
     while display_thread_alive:
       st = time.perf_counter()
