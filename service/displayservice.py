@@ -68,6 +68,18 @@ class HorizontalProgressBar(Displayable):
     bar = np.full((bar_width, self.height, 3), 255)
     display.blit(bar, (self.x, self.y - self.height // 2))
 
+class DoubleHorizontalProgressBar(Displayable):
+  def __init__(self, value: float, max_value: float, width: int, height: int, xy: tuple[int, int]):
+    self.value, self.max_value, self.width, self.height, self.x, self.y = value, max_value, width, height, xy[0], xy[1]
+    self.background = np.full((width, height, 3), 50)
+  def display(self, display: Display):
+    # draw background
+    display.blit(self.background, (self.x, self.y - self.height // 2))
+    # draw bar
+    bar_width = self.width * self.value // self.max_value
+    bar = np.full((bar_width, self.height, 3), 255)
+    display.blit(bar, (self.x - self.width // 2, self.y - self.height // 2))
+
 class VerticalLine(Displayable):
   def __init__(self, x: int, height: int, color: tuple[int, int, int]):
     self.x, self.height, self.color = x, height, color
@@ -293,7 +305,7 @@ def display_thread():
           HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 150)).display(display)
 
           cpu_utilization = get_cpu_utilization()
-          PositionableText(f"{cpu_utilization}%", (700, 120), "center").display(display)
+          DoubleHorizontalProgressBar(cpu_utilization, 100, 175, 50, (700, 90)).display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
