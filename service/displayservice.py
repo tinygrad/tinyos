@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from queue import Queue
 import numpy as np
 import PIL.Image
+import psutil
 
 class Displayable(ABC):
   @abstractmethod
@@ -214,6 +215,8 @@ except ImportError:
       return []
     return gpu_power_draws
 
+def get_cpu_utilization() -> float: return psutil.cpu_percent()
+
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
 display_thread_alive = True
@@ -288,6 +291,9 @@ def display_thread():
           memory_utilizations = get_gpu_memory_utilizations()
           mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
           HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 150)).display(display)
+
+          cpu_utilization = get_cpu_utilization()
+          PositionableText(f"{cpu_utilization}%", (700, 120), "center").display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
