@@ -310,8 +310,7 @@ def display_thread():
           VerticalLine(400, 280, (255, 255, 255)).display(display)
           HorizontalLine(600, 280, (255, 255, 255)).display(display)
 
-          # total_power_draw = sum(get_gpu_power_draw(), get_cpu_power_draw())
-          total_power_draw = get_cpu_power_draw()
+          total_power_draw = sum(get_gpu_power_draw(), get_cpu_power_draw())
           total_power_draw_avg = math.floor(0.9 * total_power_draw_avg + 0.1 * total_power_draw)
           PositionableText(f"{total_power_draw_avg}W", (425, 57), "left").display(display)
 
