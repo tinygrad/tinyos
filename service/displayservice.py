@@ -222,16 +222,15 @@ def get_cpu_utilizations() -> list[float]:
     logging.warning("Failed to read CPU utilization")
     return []
 
-def get_disk_io_per_second() -> float:
-  try:
-    with open("/proc/diskstats", "r") as f:
-      for line in f:
-        if "nvme0n1" in line:
-          return int(line.split()[6]) / 2
-      else: return 0
-  except:
-    logging.warning("Failed to read disk I/O")
-    return 0
+last_disk_read, last_disk_write, last_disk_time = 0, 0, time.monotonic()
+def get_disk_io_per_second() -> tuple[int, int]:
+  global last_disk_read, last_disk_write, last_disk_time
+  counter = psutil.disk_io_counters(perdisk=True)["md0"]
+  current_time = time.monotonic()
+  disk_read = (counter.read_bytes - last_disk_read) / (current_time - last_disk_time)
+  disk_write = (counter.write_bytes - last_disk_write) / (current_time - last_disk_time)
+  last_disk_read, last_disk_write, last_disk_time = counter.read_bytes, counter.write_bytes, current_time
+  return int(disk_read / 1e6), int(disk_write / 1e6)
 
 DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
 control_queue = Queue()
@@ -311,6 +310,9 @@ def display_thread():
           cpu_utilizations = get_cpu_utilizations()
           for i, utilization in enumerate(cpu_utilizations):
             VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89).display(display)
+
+          disk_read, disk_write = get_disk_io_per_second()
+          PositionableText(f"{disk_read}MB/s", (600, 174), "center").display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
