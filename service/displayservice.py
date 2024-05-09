@@ -45,15 +45,15 @@ class PositionableText(Displayable):
     elif self.align == "right": display.blit(text, (self.x - text.shape[0], self.y - text.shape[1] // 2))
 
 class VerticalProgressBar(Displayable):
-  def __init__(self, value: float, max_value: float, width: int, height: int, x: int, y: int = 240):
-    self.value, self.max_value, self.width, self.height, self.x, self.y = value, max_value, width, height, x, y
-    self.background = np.full((width, height, 3), 25)
+  def __init__(self, value: float, max_value: float, width: int, height: int, x: int, y: int = 240, fill_value=255, trans_bg=False):
+    self.value, self.max_value, self.width, self.height, self.x, self.y, self.fill_value = value, max_value, width, height, x, y, fill_value
+    self.background = np.full((width, height, 3), 25) if not trans_bg else None
   def display(self, display: Display):
     # draw background
-    display.blit(self.background, (self.x - self.width // 2, self.y - self.height // 2))
+    if self.background is not None: display.blit(self.background, (self.x - self.width // 2, self.y - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
-    bar = np.full((self.width, bar_height, 3), 255)
+    bar = np.full((self.width, bar_height, 3), self.fill_value)
     display.blit(bar, (self.x - self.width // 2, self.y - bar_height // 2))
 
 class HorizontalProgressBar(Displayable):
@@ -296,6 +296,10 @@ def display_thread():
           for i, utilization in enumerate(gpu_utilizations):
             VerticalProgressBar(utilization, 100, 50, 430, 30 + 64 * i).display(display)
 
+          memory_utilizations = get_gpu_memory_utilizations()
+          for i, utilization in enumerate(memory_utilizations):
+            VerticalProgressBar(utilization, 100, 5, 430, 30 + 64 * i, fill_value=100, trans_bg=True).display(display)
+
           VerticalLine(400, 280, (255, 255, 255)).display(display)
           HorizontalLine(600, 280, (255, 255, 255)).display(display)
 
@@ -303,9 +307,9 @@ def display_thread():
           total_power_draw_avg = math.floor(0.9 * total_power_draw_avg + 0.1 * total_power_draw)
           PositionableText(f"{total_power_draw_avg}W", (425, 57), "left").display(display)
 
-          memory_utilizations = get_gpu_memory_utilizations()
-          mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
-          HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 117)).display(display)
+          # memory_utilizations = get_gpu_memory_utilizations()
+          # mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
+          # HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 117)).display(display)
 
           cpu_utilizations = get_cpu_utilizations()
           for i, utilization in enumerate(cpu_utilizations):
