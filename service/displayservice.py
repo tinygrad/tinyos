@@ -47,7 +47,7 @@ class PositionableText(Displayable):
 class VerticalProgressBar(Displayable):
   def __init__(self, value: float, max_value: float, width: int, height: int, x: int, y: int = 240, fill_value=255, trans_bg=False):
     self.value, self.max_value, self.width, self.height, self.x, self.y, self.fill_value = value, max_value, width, height, x, y, fill_value
-    self.background = np.full((width, height, 3), 25) if not trans_bg else None
+    self.background = np.full((width, height, 3), 50) if not trans_bg else None
   def display(self, display: Display):
     # draw background
     if self.background is not None: display.blit(self.background, (self.x - self.background.shape[0] // 2, self.y - self.height // 2))
