@@ -219,6 +219,20 @@ def get_cpu_utilizations() -> list[float]:
     logging.warning("Failed to read CPU utilization")
     return []
 
+last_energy, last_energy_time = 0, time.monotonic()
+def get_cpu_power_draw() -> int:
+  global last_energy, last_energy_time
+  try:
+    with open("/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj", "r") as f:
+      current_energy = int(f.read().strip())
+    current_time = time.monotonic()
+    power_draw = (current_energy - last_energy) / (current_time - last_energy_time) / 1e6
+    last_energy, last_energy_time = current_energy, current_time
+    return int(power_draw)
+  except:
+    logging.warning("Failed to read CPU power draw")
+    return 0
+
 last_disk_read, last_disk_write, last_disk_time = 0, 0, time.monotonic()
 def get_disk_io_per_second() -> tuple[int, int]:
   global last_disk_read, last_disk_write, last_disk_time
@@ -296,7 +310,8 @@ def display_thread():
           VerticalLine(400, 280, (255, 255, 255)).display(display)
           HorizontalLine(600, 280, (255, 255, 255)).display(display)
 
-          total_power_draw = sum(get_gpu_power_draw())
+          # total_power_draw = sum(get_gpu_power_draw(), get_cpu_power_draw())
+          total_power_draw = get_cpu_power_draw()
           total_power_draw_avg = math.floor(0.9 * total_power_draw_avg + 0.1 * total_power_draw)
           PositionableText(f"{total_power_draw_avg}W", (425, 57), "left").display(display)
 
