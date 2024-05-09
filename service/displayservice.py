@@ -293,12 +293,10 @@ def display_thread():
             to_display.display(display)
           else: logo_sleep.display(display)
         elif display_state == DisplayState.STATUS:
-          for i, utilization in enumerate(gpu_utilizations):
-            VerticalProgressBar(int(utilization), 100, 50, 430, 30 + 64 * i).display(display)
-
           memory_utilizations = get_gpu_memory_utilizations()
-          for i, utilization in enumerate(memory_utilizations):
-            VerticalProgressBar(int(utilization), 100, 10, 430, 10 + 64 * i, fill_value=25, trans_bg=True).display(display)
+          for i, utilization in enumerate(gpu_utilizations):
+            bar_width = int(max(1, min(50, memory_utilizations[i] // 2)))
+            VerticalProgressBar(int(utilization), 100, bar_width, 430, 30 + 64 * i).display(display)
 
           VerticalLine(400, 280, (255, 255, 255)).display(display)
           HorizontalLine(600, 280, (255, 255, 255)).display(display)
