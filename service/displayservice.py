@@ -219,37 +219,34 @@ try:
     return gpu_power_draws
 except ImportError:
   logging.info("pynvml not found, assuming AMD GPU")
+  gpu_utilization_handles = [open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") for i in range(1, 7)]
   def get_gpu_utilizations() -> list[float]:
     gpu_utilizations = []
     try:
-      for i in range(1, 7):
-        with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
-          gpu_utilizations.append(int(f.read().strip()))
+      for handle in gpu_utilization_handles: gpu_utilizations.append(int(handle.read().strip()))
     except:
       logging.warning("Failed to read GPU utilization")
       return []
     return gpu_utilizations
-
+  total_vrams = []
+  for i in range(1, 7):
+    with open(f"/sys/class/drm/card{i}/device/mem_info_vram_total", "r") as f: total_vrams.append(int(f.read().strip()))
+  gpu_memory_utilization_handles = [open(f"/sys/class/drm/card{i}/device/mem_info_vram_used", "r") for i in range(1, 7)]
   def get_gpu_memory_utilizations() -> list[float]:
     gpu_memory_utilizations = []
     try:
-      for i in range(1, 7):
-        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_used", "r") as f:
-          used = int(f.read().strip())
-        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_total", "r") as f:
-          total = int(f.read().strip())
-        gpu_memory_utilizations.append(used / total * 100)
+      for i, handle in enumerate(gpu_memory_utilization_handles):
+        used = int(handle.read().strip())
+        gpu_memory_utilizations.append(used / total_vrams[i - 1] * 100)
     except:
       logging.warning("Failed to read GPU memory utilization")
       return []
     return gpu_memory_utilizations
-
+  gpu_power_draw_handles = [open(f"/sys/class/drm/card{i}/device/hwmon/hwmon{i+4}/power1_average", "r") for i in range(1, 7)]
   def get_gpu_power_draw() -> list[int]:
     gpu_power_draws = []
     try:
-      for i in range(1, 7):
-        with open(f"/sys/class/drm/card{i}/device/hwmon/hwmon{i+4}/power1_average", "r") as f:
-          gpu_power_draws.append(int(f.read().strip()) // 1000000)
+      for handle in gpu_power_draw_handles: gpu_power_draws.append(int(handle.read().strip()) // 1000000)
     except:
       logging.warning("Failed to read GPU power draw")
       return []
