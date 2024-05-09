@@ -309,14 +309,14 @@ def display_thread():
 
           total_power_draw = sum(get_gpu_power_draw())
           total_power_draw_avg = math.floor(0.9 * total_power_draw_avg + 0.1 * total_power_draw)
-          PositionableText(f"{total_power_draw_avg}W", (425, 90), "left").display(display)
+          PositionableText(f"{total_power_draw_avg}W", (425, 57), "left").display(display)
 
           memory_utilizations = get_gpu_memory_utilizations()
           mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
-          HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 150)).display(display)
+          HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 117)).display(display)
 
           cpu_utilization = get_cpu_utilization()
-          DoubleHorizontalProgressBar(int(cpu_utilization), 100, 175, 50, (700, 90)).display(display)
+          DoubleHorizontalProgressBar(int(cpu_utilization), 100, 175, 50, (700, 89)).display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
