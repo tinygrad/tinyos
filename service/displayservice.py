@@ -50,7 +50,7 @@ class VerticalProgressBar(Displayable):
     self.background = np.full((width, height, 3), 25) if not trans_bg else None
   def display(self, display: Display):
     # draw background
-    if self.background is not None: display.blit(self.background, (self.x - self.width // 2, self.y - self.height // 2))
+    if self.background is not None: display.blit(self.background, (self.x - self.background.shape[0] // 2, self.y - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
     bar = np.full((self.width, bar_height, 3), self.fill_value)
@@ -296,7 +296,9 @@ def display_thread():
           memory_utilizations = get_gpu_memory_utilizations()
           for i, utilization in enumerate(gpu_utilizations):
             bar_width = int(max(1, min(50, memory_utilizations[i] // 2)))
-            VerticalProgressBar(int(utilization), 100, bar_width, 430, 30 + 64 * i).display(display)
+            bar = VerticalProgressBar(int(utilization), 100, 50, 430, 30 + 64 * i)
+            bar.width = bar_width
+            bar.display(display)
 
           VerticalLine(400, 280, (255, 255, 255)).display(display)
           HorizontalLine(600, 280, (255, 255, 255)).display(display)
