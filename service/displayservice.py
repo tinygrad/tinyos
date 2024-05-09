@@ -293,12 +293,8 @@ def display_thread():
             to_display.display(display)
           else: logo_sleep.display(display)
         elif display_state == DisplayState.STATUS:
-          memory_utilizations = get_gpu_memory_utilizations()
           for i, utilization in enumerate(gpu_utilizations):
-            bar_width = int(max(1, min(50, memory_utilizations[i] // 2)))
-            bar = VerticalProgressBar(int(utilization), 100, 50, 430, 30 + 64 * i)
-            bar.width = bar_width
-            bar.display(display)
+            VerticalProgressBar(int(utilization), 100, 50, 430, 30 + 64 * i).display(display)
 
           VerticalLine(400, 280, (255, 255, 255)).display(display)
           HorizontalLine(600, 280, (255, 255, 255)).display(display)
@@ -307,9 +303,9 @@ def display_thread():
           total_power_draw_avg = math.floor(0.9 * total_power_draw_avg + 0.1 * total_power_draw)
           PositionableText(f"{total_power_draw_avg}W", (425, 57), "left").display(display)
 
-          # memory_utilizations = get_gpu_memory_utilizations()
-          # mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
-          # HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 117)).display(display)
+          memory_utilizations = get_gpu_memory_utilizations()
+          mean_memory_utilization = int(sum(memory_utilizations) / len(memory_utilizations))
+          HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 117)).display(display)
 
           cpu_utilizations = get_cpu_utilizations()
           for i, utilization in enumerate(cpu_utilizations):
