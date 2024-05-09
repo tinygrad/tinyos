@@ -229,16 +229,15 @@ except ImportError:
       logging.warning("Failed to read GPU utilization")
       return []
     return gpu_utilizations
-  total_vrams = []
-  for i in range(1, 7):
-    with open(f"/sys/class/drm/card{i}/device/mem_info_vram_total", "r") as f: total_vrams.append(int(f.read().strip()))
   def get_gpu_memory_utilizations() -> list[float]:
     gpu_memory_utilizations = []
     try:
       for i in range(1, 7):
         with open(f"/sys/class/drm/card{i}/device/mem_info_vram_used", "r") as f:
           used = int(f.read().strip())
-        gpu_memory_utilizations.append(used / total_vrams[i - 1] * 100)
+        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_total", "r") as f:
+          total = int(f.read().strip())
+        gpu_memory_utilizations.append(used / total * 100)
     except:
       logging.warning("Failed to read GPU memory utilization")
       return []
