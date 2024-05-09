@@ -310,7 +310,7 @@ def display_thread():
 
           cpu_utilizations = get_cpu_utilizations()
           for i, utilization in enumerate(cpu_utilizations):
-            VerticalProgressBar(int(utilization), 100, 2, 117, 704 + 3 * i, 89).display(display)
+            VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89).display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
