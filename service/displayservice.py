@@ -298,7 +298,7 @@ def display_thread():
 
           memory_utilizations = get_gpu_memory_utilizations()
           for i, utilization in enumerate(memory_utilizations):
-            VerticalProgressBar(int(utilization), 100, 5, 430, 5 + 64 * i, fill_value=150, trans_bg=True).display(display)
+            VerticalProgressBar(int(utilization), 100, 5, 430, 5 + 64 * i, fill_value=100, trans_bg=True).display(display)
 
           VerticalLine(400, 280, (255, 255, 255)).display(display)
           HorizontalLine(600, 280, (255, 255, 255)).display(display)
