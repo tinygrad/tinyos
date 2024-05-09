@@ -305,7 +305,7 @@ def display_thread():
           HorizontalProgressBar(mean_memory_utilization, 100, 175, 50, (425, 150)).display(display)
 
           cpu_utilization = get_cpu_utilization()
-          DoubleHorizontalProgressBar(cpu_utilization, 100, 175, 50, (700, 90)).display(display)
+          DoubleHorizontalProgressBar(int(cpu_utilization), 100, 175, 50, (700, 90)).display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
