@@ -261,7 +261,7 @@ def display_thread():
     display_last_active = time.monotonic()
     start_time = time.monotonic()
     to_display: Displayable | None = None
-    total_power_draw_avg, disk_read_avg, disk_write_avg = 0, 0, 0
+    total_power_draw_avg, disk_avg = 0, 0
     status_graph = LineGraph(370, 190, 610, 360)
 
     while display_thread_alive:
@@ -323,9 +323,8 @@ def display_thread():
             VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89).display(display)
 
           disk_read, disk_write = get_disk_io_per_second()
-          disk_read_avg = math.floor(0.9 * disk_read_avg + 0.1 * disk_read)
-          disk_write_avg = math.floor(0.9 * disk_write_avg + 0.1 * disk_write)
-          PositionableText(f"{disk_read_avg + disk_write_avg}MB/s", (WIDTH - 5, 190), "right").display(display)
+          disk_avg = math.floor(0.8 * disk_avg + 0.2 * (disk_read + disk_write))
+          PositionableText(f"{disk_avg}MB/s", (WIDTH - 5, 190), "right").display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
