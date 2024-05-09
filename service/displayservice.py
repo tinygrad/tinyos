@@ -45,15 +45,12 @@ class PositionableText(Displayable):
     elif self.align == "right": display.blit(text, (self.x - text.shape[0], self.y - text.shape[1] // 2))
 
 class VerticalProgressBar(Displayable):
-  def __init__(self, value: float, max_value: float, width: int, height: int, x: int, y: int = 240, fill_value=255, trans_bg=False):
-    self.value, self.max_value, self.width, self.height, self.x, self.y, self.fill_value = value, max_value, width, height, x, y, fill_value
-    self.background = np.full((width, height, 3), 50) if not trans_bg else None
+  def __init__(self, value: float, max_value: float, width: int, height: int, x: int, y: int = 240):
+    self.value, self.max_value, self.width, self.height, self.x, self.y = value, max_value, width, height, x, y
   def display(self, display: Display):
-    # draw background
-    if self.background is not None: display.blit(self.background, (self.x - self.background.shape[0] // 2, self.y - self.height // 2))
     # draw bar
     bar_height = self.height * self.value // self.max_value
-    bar = np.full((self.width, bar_height, 3), self.fill_value)
+    bar = np.full((self.width, bar_height, 3), 255)
     display.blit(bar, (self.x - self.width // 2, self.y - bar_height // 2))
 
 class HorizontalProgressBar(Displayable):
@@ -309,7 +306,7 @@ def display_thread():
 
           cpu_utilizations = get_cpu_utilizations()
           for i, utilization in enumerate(cpu_utilizations):
-            VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89, trans_bg=True).display(display)
+            VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89).display(display)
 
           disk_read, disk_write = get_disk_io_per_second()
           disk_read_avg = math.floor(0.9 * disk_read_avg + 0.1 * disk_read)
