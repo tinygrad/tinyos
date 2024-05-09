@@ -286,7 +286,7 @@ def get_disk_io_per_second() -> tuple[int, int]:
   last_disk_read, last_disk_write, last_disk_time = counter.read_bytes, counter.write_bytes, current_time
   return int(disk_read / 1e6), int(disk_write / 1e6)
 
-DisplayState = Enum("DisplayState", ["TEXT", "STATUS"])
+DisplayState = Enum("DisplayState", ["TEXT", "STATUS", "SLEEP"])
 control_queue = Queue()
 display_thread_alive = True
 def display_thread():
@@ -300,10 +300,10 @@ def display_thread():
     logo = Image("/opt/tinybox/screen/logo.png", (200, 68), (400, 154))
     logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
 
-    display_state = DisplayState.TEXT
+    display_state = DisplayState.SLEEP
     display_last_active = time.monotonic()
     start_time = time.monotonic()
-    to_display: Displayable | None = None
+    to_display: Displayable = Text("...")
     status_screen = StatusScreen()
 
     while display_thread_alive:
@@ -319,15 +319,14 @@ def display_thread():
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
         elif command == "sleep":
-          if to_display is not None or display_state != DisplayState.TEXT:
-            display_state = DisplayState.TEXT
-            to_display = None
+          if display_state != DisplayState.SLEEP:
+            display_state = DisplayState.SLEEP
             logo_sleep.reset()
       else:
         # reset display state if inactive for 15 seconds
         if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
-          logging.info("Display inactive for 15 seconds, switching back to sleep text state")
-          display_state, to_display = DisplayState.TEXT, None
+          logging.info("Display inactive for 15 seconds, switching back to sleep state")
+          display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
           logo_sleep.reset()
 
@@ -340,14 +339,14 @@ def display_thread():
 
         display.clear()
         if display_state == DisplayState.TEXT:
-          if to_display is not None:
-            logo.display(display)
-            logging.debug(f"Displaying: {to_display}")
-            to_display.display(display)
-          else: logo_sleep.display(display)
+          logo.display(display)
+          logging.debug(f"Displaying: {to_display}")
+          to_display.display(display)
         elif display_state == DisplayState.STATUS:
           status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
           status_screen.display(display)
+        elif display_state == DisplayState.SLEEP:
+          logo_sleep.display(display)
 
       # update display
       display.flip()
