@@ -312,7 +312,7 @@ def display_thread():
             VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89).display(display)
 
           disk_read, disk_write = get_disk_io_per_second()
-          PositionableText(f"{disk_read}MB/s", (WIDTH - 5, 174), "right").display(display)
+          PositionableText(f"{disk_read + disk_write}MB/s", (WIDTH - 5, 174), "right").display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
