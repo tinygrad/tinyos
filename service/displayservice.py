@@ -318,7 +318,7 @@ def display_thread():
           disk_read, disk_write = get_disk_io_per_second()
           disk_read_avg = math.floor(0.9 * disk_read_avg + 0.1 * disk_read)
           disk_write_avg = math.floor(0.9 * disk_write_avg + 0.1 * disk_write)
-          PositionableText(f"{disk_read_avg + disk_write_avg}MB/s", (WIDTH - 5, 174), "right").display(display)
+          PositionableText(f"{disk_read_avg + disk_write_avg}MB/s", (WIDTH - 5, 180), "right").display(display)
 
           status_graph.add_data(total_power_draw_avg)
           status_graph.display(display)
