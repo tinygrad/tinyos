@@ -341,7 +341,7 @@ def display_thread():
           logging.debug(f"Displaying: {to_display}")
           to_display.display(display)
         elif display_state == DisplayState.STATUS:
-          status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
+          status_screen.update(gpu_utilizations, [100, 100, 100, 100, 100, 100], get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
           status_screen.display(display)
         elif display_state == DisplayState.SLEEP:
           logo_sleep.display(display)
