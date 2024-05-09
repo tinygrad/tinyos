@@ -313,7 +313,7 @@ def display_thread():
 
           cpu_utilizations = get_cpu_utilizations()
           for i, utilization in enumerate(cpu_utilizations):
-            VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89).display(display)
+            VerticalProgressBar(int(utilization), 100, 2, 117, 604 + 3 * i, 89, trans_bg=True).display(display)
 
           disk_read, disk_write = get_disk_io_per_second()
           disk_read_avg = math.floor(0.9 * disk_read_avg + 0.1 * disk_read)
