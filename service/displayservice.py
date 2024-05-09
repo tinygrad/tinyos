@@ -146,7 +146,7 @@ class StatusScreen(Displayable):
     self.horizontal_line = HorizontalLine(600, 280, (255, 255, 255))
 
     self.gpu_bars = [VerticalProgressBar(0, 100, 50, 430, 30 + 64 * i) for i in range(6)]
-    self.gpu_mem_bars = [VerticalProgressBar(0, 100, 5, 100, 425 + 10 * i, 167) for i in range(6)]
+    self.gpu_mem_bars = [VerticalProgressBar(0, 100, 10, 100, 425 + 15 * i, 160) for i in range(6)]
     self.cpu_bars = [VerticalProgressBar(0, 100, 2, 117, 604 + 3 * i, 89) for i in range(64)]
 
     self.rolling_power_draw = 0
