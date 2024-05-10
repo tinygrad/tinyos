@@ -351,8 +351,6 @@ def display_thread():
           ip_text.display(display)
 
       # update display
-      # invert entire framebuffer
-      display.framebuffer = 0x00ffffff - display.framebuffer
       display.flip()
       flip_time = time.perf_counter() - st
 
