@@ -21,6 +21,11 @@ if [ -z "$IS_NVIDIA_GPU" ]; then
 /opt/rocm/lib64
 EOF
   ldconfig
+
+  # disable cwsr
+  cat <<EOF > /etc/modprobe.d/amdgpu.conf
+options amdgpu cwsr_enable=0
+EOF
 else
   echo "NVIDIA GPU found."
   # Install NVIDIA drivers
