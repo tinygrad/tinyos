@@ -4,7 +4,7 @@ revision: 1
 architecture: amd64
 series: jammy
 class: preinstalled
-kernel: linux-image-generic
+kernel: linux-generic-hwe-22.04
 gadget:
   url: file://./pc-gadget/
   type: directory
@@ -112,9 +112,11 @@ customization:
     - name: clang
     - name: bash-completion
     - name: netcat-openbsd
+    - name: btop
   extra-snaps:
     - name: core
     - name: core20
+    - name: nvtop
 artifacts:
   img:
     - name: tinyos.img
