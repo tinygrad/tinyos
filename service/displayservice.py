@@ -197,12 +197,13 @@ try:
       logging.warning("Failed to read GPU utilization")
       return []
     return gpu_utilizations
+  total_vrams = [N.nvmlDeviceGetMemoryInfo(handle).total for handle in GPU_HANDLES]
   def get_gpu_memory_utilizations() -> list[float]:
     gpu_memory_utilizations = []
     try:
       for handle in GPU_HANDLES:
-        utilization = N.nvmlDeviceGetUtilizationRates(handle)
-        gpu_memory_utilizations.append(utilization.memory)
+        memory = N.nvmlDeviceGetMemoryInfo(handle)
+        gpu_memory_utilizations.append(memory.used / memory.total * 100)
     except:
       logging.warning("Failed to read GPU memory utilization")
       return []
