@@ -113,6 +113,7 @@ customization:
     - name: bash-completion
     - name: netcat-openbsd
     - name: btop
+    - name: rsync
   extra-snaps:
     - name: core
     - name: core20
