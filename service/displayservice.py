@@ -299,7 +299,7 @@ def display_thread():
     logo = Image("/opt/tinybox/screen/logo.png", (200, 68), (400, 154))
     logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
     ip_address = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
-    ip_text = PositionableText(f"IP: {ip_address}", (WIDTH - 5, HEIGHT - 5), "right")
+    ip_text = PositionableText(f"IP: {ip_address}", (WIDTH - 5, HEIGHT - 5 - 32), "right")
 
     display_state = DisplayState.SLEEP
     display_last_active = time.monotonic()
