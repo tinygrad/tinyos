@@ -321,9 +321,9 @@ def display_thread():
             display_state = DisplayState.SLEEP
             logo_sleep.reset()
       else:
-        # reset display state if inactive for 15 seconds
-        if time.monotonic() - display_last_active > 15 and display_state == DisplayState.STATUS:
-          logging.info("Display inactive for 15 seconds, switching back to sleep state")
+        # reset display state if inactive for 30 seconds
+        if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
+          logging.info("Display inactive for 30 seconds, switching back to sleep state")
           display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
           logo_sleep.reset()
