@@ -3,7 +3,7 @@ sys.path.insert(0, "/opt/tinybox/screen/")
 
 from display import Display, WIDTH, HEIGHT
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal, os, random, logging, math
+import threading, time, signal, os, random, logging, math, subprocess
 logging.basicConfig(level=logging.INFO)
 from enum import Enum
 from abc import ABC, abstractmethod
@@ -298,6 +298,8 @@ def display_thread():
     # load assets
     logo = Image("/opt/tinybox/screen/logo.png", (200, 68), (400, 154))
     logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
+    ip_address = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
+    ip_text = PositionableText(f"IP: {ip_address}", (WIDTH - 5, HEIGHT - 5), "right")
 
     display_state = DisplayState.SLEEP
     display_last_active = time.monotonic()
@@ -346,6 +348,7 @@ def display_thread():
           status_screen.display(display)
         elif display_state == DisplayState.SLEEP:
           logo_sleep.display(display)
+          ip_text.display(display)
 
       # update display
       display.flip()
