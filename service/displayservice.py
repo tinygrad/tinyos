@@ -269,6 +269,9 @@ def get_cpu_power_draw() -> int:
       current_energy = int(f.read().strip())
     current_time = time.monotonic()
     power_draw = (current_energy - last_energy) / (current_time - last_energy_time) / 1e6
+    if power_draw < 0:
+      # energy counter rolled over
+      power_draw = current_energy / (current_time - last_energy_time) / 1e6
     last_energy, last_energy_time = current_energy, current_time
     return int(power_draw)
   except:
