@@ -326,7 +326,7 @@ def display_thread():
       st = time.perf_counter()
       if not control_queue.empty():
         command, args = control_queue.get()
-        logging.info(f"Received command {command} with args {args}")
+        logging.debug(f"Received command {command} with args {args}")
         if command == "text":
           display_state = DisplayState.TEXT
           to_display = args
