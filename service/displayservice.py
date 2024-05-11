@@ -22,10 +22,10 @@ class Text(Displayable):
   def display(self, display: Display):
     # split text into lines
     lines = self.text.split("\n")
-    starting_offset = 225 - (72 * (len(lines) - 1)) // 2
+    starting_offset = 225 - (70 * (len(lines) - 1)) // 2
     for i, line in enumerate(lines):
       text = display.text(line)
-      display.blit(text, (400 - text.shape[0] // 2, starting_offset + (120 - text.shape[1] // 2) + i * 72))
+      display.blit(text, (400 - text.shape[0] // 2, starting_offset + (120 - text.shape[1] // 2) + i * 70))
 
 class AText(Displayable):
   def __init__(self, text_states: list[str]):
@@ -185,7 +185,7 @@ class SleepScreen(Displayable):
   def __init__(self):
     self.logo = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
-    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH, HEIGHT - 104), "right")
+    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH, HEIGHT - 102), "right")
 
     bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
     bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
