@@ -74,11 +74,11 @@ class VerticalLine(Displayable):
     display.blit(line, (self.x, 240 - self.height // 2))
 
 class HorizontalLine(Displayable):
-  def __init__(self, x: int, width: int, color: tuple[int, int, int]):
-    self.x, self.width, self.color = x, width, color
+  def __init__(self, x: int, y: int, width: int, color: tuple[int, int, int]):
+    self.x, self.y, self.width, self.color = x, y, width, color
   def display(self, display: Display):
     line = np.full((self.width, 1, 3), self.color)
-    display.blit(line, (self.x - self.width // 2, 240))
+    display.blit(line, (self.x - self.width // 2, self.y))
 
 class Image(Displayable):
   def __init__(self, path: str, xy: tuple[int, int], scale: tuple[int, int]):
@@ -143,7 +143,7 @@ class LineGraph(Displayable):
 class StatusScreen(Displayable):
   def __init__(self):
     self.vertical_line = VerticalLine(400, 280, (255, 255, 255))
-    self.horizontal_line = HorizontalLine(600, 280, (255, 255, 255))
+    self.horizontal_line = HorizontalLine(600, 240, 280, (255, 255, 255))
 
     self.gpu_bars = [VerticalProgressBar(0, 100, 50, 430, 30 + 64 * i) for i in range(6)]
     self.gpu_mem_bars = [HorizontalProgressBar(0, 100, 160, 5, (425, 100 + 7 * i)) for i in range(6)]
@@ -184,6 +184,9 @@ class StatusScreen(Displayable):
 class SleepScreen(Displayable):
   def __init__(self):
     self.logo = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
+
+    self.horizontal_line = HorizontalLine(WIDTH // 2, 134, WIDTH - WIDTH // 5, (255, 255, 255))
+
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
     self.ip_text = PositionableText(f"IP: {ip}", (WIDTH, HEIGHT - 102), "right")
 
