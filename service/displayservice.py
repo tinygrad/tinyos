@@ -185,7 +185,7 @@ class SleepScreen(Displayable):
   def __init__(self):
     self.logo = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
 
-    self.horizontal_line = HorizontalLine(WIDTH // 2, 134, WIDTH - WIDTH // 5, (255, 255, 255))
+    self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 134, WIDTH - WIDTH // 5, (255, 255, 255))
 
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
     self.ip_text = PositionableText(f"IP: {ip}", (WIDTH, HEIGHT - 102), "right")
