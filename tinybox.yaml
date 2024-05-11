@@ -55,6 +55,8 @@ customization:
         destination: /opt/tinybox/service/displayservice.py
       - source: ./service/displayservice.service
         destination: /etc/systemd/system/displayservice.service
+      - source: ./setup/adduser.sh
+        destination: /opt/tinybox/setup/adduser.sh
       - source: ./service/bootup.sh
         destination: /opt/tinybox/service/bootup.sh
       - source: ./service/reboot.sh
@@ -71,8 +73,6 @@ customization:
         destination: /etc/systemd/system/sleeping.service
       - source: ./setup/ensuredspackage.sh
         destination: /opt/tinybox/setup/ensuredspackage.sh
-      - source: ./setup/scramble.sh
-        destination: /opt/tinybox/setup/scramble.sh
       - source: ./setup/update.sh
         destination: /opt/tinybox/setup/update.sh
       - source: ./setup/raidsetup.sh
