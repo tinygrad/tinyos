@@ -93,11 +93,11 @@ class DVDImage(Displayable):
     self.reset()
   def display(self, display: Display):
     if self.x + self.image.shape[0] + self.x_speed > 800 or self.x + self.x_speed < 0: self.x_speed *= -1
-    if self.y + self.image.shape[1] + self.y_speed > 480 or self.y + self.y_speed < 0: self.y_speed *= -1
+    if self.y + self.image.shape[1] + self.y_speed > 345 or self.y + self.y_speed < 0: self.y_speed *= -1
     self.x += self.x_speed
     self.y += self.y_speed
     display.blit(self.image, (self.x, self.y))
-  def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), 480 - self.image.shape[1] - abs(self.y_speed))
+  def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), 345 - self.image.shape[1] - abs(self.y_speed))
 
 @njit
 def line(x1: int, y1: int, x2: int, y2: int) -> list[tuple[int, int]]:
@@ -185,7 +185,7 @@ class SleepScreen(Displayable):
   def __init__(self):
     self.logo = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
 
-    self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 134, WIDTH - WIDTH // 5, (255, 255, 255))
+    self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 135, WIDTH - WIDTH // 5, (255, 255, 255))
 
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
     self.ip_text = PositionableText(f"IP: {ip}", (WIDTH, HEIGHT - 102), "right")
