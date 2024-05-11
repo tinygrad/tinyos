@@ -195,6 +195,7 @@ class SleepScreen(Displayable):
     self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH, HEIGHT - 32), "right")
   def display(self, display: Display):
     self.logo.display(display)
+    self.horizontal_line.display(display)
     self.ip_text.display(display)
     self.bmc_ip_text.display(display)
 
