@@ -22,10 +22,10 @@ class Text(Displayable):
   def display(self, display: Display):
     # split text into lines
     lines = self.text.split("\n")
-    starting_offset = 225 - (80 * (len(lines) - 1)) // 2
+    starting_offset = 225 - (72 * (len(lines) - 1)) // 2
     for i, line in enumerate(lines):
       text = display.text(line)
-      display.blit(text, (400 - text.shape[0] // 2, starting_offset + (120 - text.shape[1] // 2) + i * 80))
+      display.blit(text, (400 - text.shape[0] // 2, starting_offset + (120 - text.shape[1] // 2) + i * 72))
 
 class AText(Displayable):
   def __init__(self, text_states: list[str]):
@@ -181,6 +181,20 @@ class StatusScreen(Displayable):
 
     self.line_graph.display(display)
 
+class SleepScreen(Displayable):
+  def __init__(self):
+    self.logo = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
+    ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
+    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH, HEIGHT - 104), "right")
+
+    bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
+    bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
+    self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH, HEIGHT - 32), "right")
+  def display(self, display: Display):
+    self.logo.display(display)
+    self.ip_text.display(display)
+    self.bmc_ip_text.display(display)
+
 # determine GPU type
 try:
   import pynvml as N
@@ -300,9 +314,7 @@ def display_thread():
 
     # load assets
     logo = Image("/opt/tinybox/screen/logo.png", (200, 68), (400, 154))
-    logo_sleep = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
-    ip_address = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
-    ip_text = PositionableText(f"{ip_address}", (WIDTH, HEIGHT - 32), "right")
+    sleep = SleepScreen()
 
     display_state = DisplayState.SLEEP
     display_last_active = time.monotonic()
@@ -350,8 +362,7 @@ def display_thread():
           status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
           status_screen.display(display)
         elif display_state == DisplayState.SLEEP:
-          logo_sleep.display(display)
-          ip_text.display(display)
+          sleep.display(display)
 
       # update display
       display.flip()
