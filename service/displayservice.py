@@ -314,7 +314,7 @@ def display_thread():
 
     # load assets
     logo = Image("/opt/tinybox/screen/logo.png", (200, 56), (400, 154))
-    sleep = SleepScreen()
+    sleep_screen = SleepScreen()
 
     display_state = DisplayState.SLEEP
     display_last_active = time.monotonic()
@@ -337,14 +337,14 @@ def display_thread():
         elif command == "sleep":
           if display_state != DisplayState.SLEEP:
             display_state = DisplayState.SLEEP
-            logo_sleep.reset()
+            sleep_screen.logo.reset()
       else:
         # reset display state if inactive for 30 seconds
         if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
           logging.info("Display inactive for 30 seconds, switching back to sleep state")
           display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
-          logo_sleep.reset()
+          sleep_screen.logo.reset()
 
         # check if display should be in status state
         gpu_utilizations = get_gpu_utilizations()
@@ -362,7 +362,7 @@ def display_thread():
           status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
           status_screen.display(display)
         elif display_state == DisplayState.SLEEP:
-          sleep.display(display)
+          sleep_screen.display(display)
 
       # update display
       display.flip()
