@@ -188,11 +188,11 @@ class SleepScreen(Displayable):
     self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 135, WIDTH - WIDTH // 5, (255, 255, 255))
 
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
-    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH, HEIGHT - 102), "right")
+    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH // 2, HEIGHT - 102), "center")
 
     bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
     bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
-    self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH, HEIGHT - 32), "right")
+    self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH // 2, HEIGHT - 32), "center")
   def display(self, display: Display):
     self.logo.display(display)
     self.horizontal_line.display(display)
