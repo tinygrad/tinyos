@@ -1,4 +1,5 @@
 import math, subprocess, time, logging
+from pathlib import Path
 import serial
 from serial.tools.list_ports import comports
 import numpy as np
@@ -25,7 +26,7 @@ class Display:
     self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
     self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
 
-    self.font = np.load("/opt/tinybox/screen/font.npy")
+    self.font = np.load(Path(__file__).parent / "font.npy")
     self.framebuffer = np.full((WIDTH, HEIGHT), 0xff, dtype=np.uint32)
     self.old_framebuffer = self.framebuffer.copy()
     self.update_buffer = np.zeros(self.framebuffer.size * self.framebuffer.itemsize, dtype=np.uint8)
