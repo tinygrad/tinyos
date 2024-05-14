@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, "/opt/tinybox/screen/")
+sys.path.insert(0, "/opt/tinybox/tinyturing/")
 
 from display import Display, WIDTH, HEIGHT
 from socketserver import UnixStreamServer, StreamRequestHandler
@@ -183,7 +183,7 @@ class StatusScreen(Displayable):
 
 class SleepScreen(Displayable):
   def __init__(self):
-    self.logo = DVDImage("/opt/tinybox/screen/logo.png", (400, 154))
+    self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154))
 
     self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 135, WIDTH - WIDTH // 5, (255, 255, 255))
 
@@ -317,7 +317,7 @@ def display_thread():
     display.flip(force=True)
 
     # load assets
-    logo = Image("/opt/tinybox/screen/logo.png", (200, 56), (400, 154))
+    logo = Image("/opt/tinybox/service/logo.png", (200, 56), (400, 154))
     sleep_screen = SleepScreen()
 
     display_state = DisplayState.SLEEP

@@ -30,7 +30,7 @@ customization:
   pocket: updates
   manual:
     make-dirs:
-      - path: /opt/tinybox/screen/
+      - path: /opt/tinybox/tinyturing/
         permissions: 0755
       - path: /opt/tinybox/service/
         permissions: 0755
@@ -46,11 +46,11 @@ customization:
       - source: ./misc/mdadm.conf
         destination: /etc/mdadm/mdadm.conf
       - source: ./tinyturing/display.py
-        destination: /opt/tinybox/screen/display.py
-      - source: ./tinyturing/logo.png
-        destination: /opt/tinybox/screen/logo.png
+        destination: /opt/tinybox/tinyturing/display.py
+      - source: ./service/logo.png
+        destination: /opt/tinybox/service/logo.png
       - source: ./tinyturing/font.npy
-        destination: /opt/tinybox/screen/font.npy
+        destination: /opt/tinybox/tinyturing/font.npy
       - source: ./service/displayservice.py
         destination: /opt/tinybox/service/displayservice.py
       - source: ./service/displayservice.service
