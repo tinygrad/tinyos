@@ -108,6 +108,7 @@ customization:
         - [ cloud-init-per, always, startdisplayservice, systemctl, start, displayservice.service ]
       mounts:
         - [ /dev/md/0, /raid, auto, "defaults,noatime,nofail", "0", "2" ]
+      users: []
       runcmd:
         - [ cloud-init-per, once, enabledisplayservice, systemctl, enable, displayservice.service ]
         - [ cloud-init-per, always, startdisplayservice, systemctl, start, displayservice.service ]
@@ -125,6 +126,7 @@ customization:
         - [ cloud-init-per, once, enablefirstsetup, systemctl, enable, firstsetup.service ]
         - [ cloud-init-per, once, ensuredspackage, bash, /opt/tinybox/setup/ensuredspackage.sh ]
         - [ cloud-init-per, once, reboot, bash, /opt/tinybox/service/reboot.sh ]
+      byobu_by_default: enable
       power_state:
         delay: now
         mode: reboot
