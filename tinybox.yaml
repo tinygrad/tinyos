@@ -163,4 +163,4 @@ artifacts:
   img:
     - name: tinyos.img
   manifest:
-    - name: tinyos.manifest
+    name: tinyos.manifest
