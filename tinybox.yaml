@@ -162,3 +162,5 @@ customization:
 artifacts:
   img:
     - name: tinyos.img
+  manifest:
+    - name: tinyos.manifest
