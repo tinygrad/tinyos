@@ -39,12 +39,13 @@ customization:
       - path: /raid/
         permissions: 0777
     copy-file:
-      - source: ./tinybox.cfg
-        destination: /etc/cloud/cloud.cfg.d/tinybox.cfg
+      # default grub config
       - source: ./misc/grub
         destination: /etc/default/grub
+      # fix raid array mounting quirks
       - source: ./misc/mdadm.conf
         destination: /etc/mdadm/mdadm.conf
+      # displayservice
       - source: ./tinyturing/display.py
         destination: /opt/tinybox/tinyturing/display.py
       - source: ./service/logo.png
@@ -55,8 +56,7 @@ customization:
         destination: /opt/tinybox/service/displayservice.py
       - source: ./service/displayservice.service
         destination: /etc/systemd/system/displayservice.service
-      - source: ./setup/adduser.sh
-        destination: /opt/tinybox/setup/adduser.sh
+      # displayservice hooks
       - source: ./service/bootup.sh
         destination: /opt/tinybox/service/bootup.sh
       - source: ./service/reboot.sh
@@ -71,6 +71,9 @@ customization:
         destination: /etc/systemd/system/poweroff.service
       - source: ./service/sleeping.service
         destination: /etc/systemd/system/sleeping.service
+      # setup
+      - source: ./setup/adduser.sh
+        destination: /opt/tinybox/setup/adduser.sh
       - source: ./setup/ensuredspackage.sh
         destination: /opt/tinybox/setup/ensuredspackage.sh
       - source: ./setup/update.sh
@@ -87,6 +90,7 @@ customization:
         destination: /opt/tinybox/setup/firstsetup.sh
       - source: ./setup/firstsetup.service
         destination: /etc/systemd/system/firstsetup.service
+      # tools
       - source: ./tools/fan-control
         destination: /usr/bin/fan-control
       - source: ./tools/fan-control_completion.sh
@@ -96,11 +100,51 @@ customization:
       - source: ./tools/power-limit_completion.sh
         destination: /etc/bash_completion.d/power-limit_completion.sh
   cloud-init:
-    meta-data: |
+    user-data: |
       #cloud-config
+      preserve_hostname: true
+      bootcmd:
+        - [ cloud-init-per, once, enabledisplayservice, systemctl, enable, displayservice.service ]
+        - [ cloud-init-per, always, startdisplayservice, systemctl, start, displayservice.service ]
+      mounts:
+        - [ /dev/md/0, /raid, auto, "defaults,noatime,nofail", "0", "2" ]
+      runcmd:
+        - [ cloud-init-per, once, enabledisplayservice, systemctl, enable, displayservice.service ]
+        - [ cloud-init-per, always, startdisplayservice, systemctl, start, displayservice.service ]
+        - [ cloud-init-per, once, enablepoweroff, systemctl, enable, poweroff.service ]
+        - [ cloud-init-per, once, enablereboot, systemctl, enable, reboot.service ]
+        - [ cloud-init-per, once, enablesleeping, systemctl, enable, sleeping.service ]
+        - [ cloud-init-per, once, bootup, bash, /opt/tinybox/service/bootup.sh ]
+        - [ cloud-init-per, once, hostname, hostnamectl, hostname, tinybox ]
+        - [ cloud-init-per, once, adduser, bash, /opt/tinybox/setup/adduser.sh ]
+        - [ cloud-init-per, once, update, bash, /opt/tinybox/setup/update.sh ]
+        - [ cloud-init-per, once, raidsetup, bash, /opt/tinybox/setup/raidsetup.sh ]
+        - [ cloud-init-per, once, driverinstall, bash, /opt/tinybox/setup/driverinstall.sh ]
+        - [ cloud-init-per, once, initialpackage, bash, /opt/tinybox/setup/initialpackage.sh ]
+        - [ cloud-init-per, always, correctperms, bash, /opt/tinybox/setup/correctperms.sh ]
+        - [ cloud-init-per, once, enablefirstsetup, systemctl, enable, firstsetup.service ]
+        - [ cloud-init-per, once, ensuredspackage, bash, /opt/tinybox/setup/ensuredspackage.sh ]
+        - [ cloud-init-per, once, reboot, bash, /opt/tinybox/service/reboot.sh ]
+      power_state:
+        delay: now
+        mode: reboot
+        message: Rebooting after setup
+        condition: true
+    meta-data: |
+      dsmode: local
   extra-packages:
-    - name: grub-efi-amd64
+    # bootloader
+    - name: grub-efi-amd64-signed
+    - name: shim-signed
+    - name: grub2-common
+    # preinstalled
+    - name: bash-completion
+    - name: build-essential
+    - name: clang
     - name: ipmitool
+    - name: btop
+    - name: rsync
+    # for displayservice
     - name: python3
     - name: python3-pip
     - name: python3-numpy
@@ -108,15 +152,12 @@ customization:
     - name: python3-pillow
     - name: python3-serial
     - name: python3-psutil
-    - name: build-essential
-    - name: clang
-    - name: bash-completion
     - name: netcat-openbsd
-    - name: btop
-    - name: rsync
   extra-snaps:
-    - name: core
+    # required
+    - name: snapd
     - name: core20
+    # preinstalled
     - name: nvtop
 artifacts:
   img:
