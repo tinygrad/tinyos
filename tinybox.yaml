@@ -48,10 +48,10 @@ customization:
       # displayservice
       - source: ./tinyturing/display.py
         destination: /opt/tinybox/tinyturing/display.py
-      - source: ./service/logo.png
-        destination: /opt/tinybox/service/logo.png
       - source: ./tinyturing/font.npy
         destination: /opt/tinybox/tinyturing/font.npy
+      - source: ./service/logo.png
+        destination: /opt/tinybox/service/logo.png
       - source: ./service/displayservice.py
         destination: /opt/tinybox/service/displayservice.py
       - source: ./service/displayservice.service
