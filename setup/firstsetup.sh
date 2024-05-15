@@ -10,7 +10,9 @@ function check_cloudinit {
 
 function set_locale {
   local locales
-  locales="$(cat /etc/locale.gen | sed -e '1,5d' | sed 's/^# //' | sed 's/^.*$/"&"/g')"
+  locales="$(cat /etc/locale.gen | sed -e '1,5d' | sed 's/^# //')"
+  # convert to bash array
+  readarray -t locales <<< "$locales"
 
   local current_locale
   current_locale="$(locale | grep LANG | cut -d= -f2)"
