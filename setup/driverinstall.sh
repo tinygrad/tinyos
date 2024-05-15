@@ -43,11 +43,13 @@ else
 
   rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia
   dkms remove nvidia/550.54.15
+  dkms install nvidia/550.54.15 --force
+  apt remove nvidia-driver-550-open -y
+  apt remove nvidia-driver-550 -y
 
   # need to install this again for some reason
   dpkg -i driver.deb
-
-  dkms install nvidia/550.54.15 --force
+  apt reinstall nvidia-driver-550-open -y
 
   # enable persistence mode
   nvidia-smi -pm 1
