@@ -10,6 +10,6 @@ download-deps:
 	curl -o build/deps/gum.deb -L "https://github.com/charmbracelet/gum/releases/download/v0.14.0/gum_0.14.0_amd64.deb"
 
 build: download-deps
-	time sudo ubuntu-image classic --debug tinyos.yaml
+	@time sudo ubuntu-image classic --debug tinyos.yaml
 
 .PHONY: clean download-deps build
