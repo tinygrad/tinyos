@@ -320,10 +320,10 @@ def display_thread():
     logo = Image("/opt/tinybox/service/logo.png", (200, 56), (400, 154))
     sleep_screen = SleepScreen()
 
-    display_state = DisplayState.SLEEP
+    display_state = DisplayState.TEXT
     display_last_active = time.monotonic()
     start_time = time.monotonic()
-    to_display: Displayable = Text("...")
+    to_display: Displayable = AText(["Booting.. ", "Booting ..", "Booting. ."])
     status_screen = StatusScreen()
 
     while display_thread_alive:
