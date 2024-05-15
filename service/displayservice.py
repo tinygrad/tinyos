@@ -341,7 +341,7 @@ def display_thread():
         elif command == "sleep":
           if display_state != DisplayState.SLEEP:
             display_state = DisplayState.SLEEP
-            sleep_screen.logo.reset()
+            sleep_screen = SleepScreen()
       else:
         # reset display state if inactive for 30 seconds
         if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
