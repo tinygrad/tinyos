@@ -30,6 +30,8 @@ customization:
   pocket: updates
   manual:
     make-dirs:
+      - path: /opt/tinybox/build/
+        permissions: 0755
       - path: /opt/tinybox/tinyturing/
         permissions: 0755
       - path: /opt/tinybox/service/
@@ -39,6 +41,9 @@ customization:
       - path: /raid/
         permissions: 0777
     copy-file:
+      # build-time chroot setup
+      - source: ./build/in-chroot.sh
+        destination: /opt/tinybox/build/in-chroot.sh
       # default grub config
       - source: ./misc/grub
         destination: /etc/default/grub
@@ -99,6 +104,8 @@ customization:
         destination: /usr/bin/power-limit
       - source: ./tools/power-limit_completion.sh
         destination: /etc/bash_completion.d/power-limit_completion.sh
+    execute:
+      - path: /opt/tinybox/build/in-chroot.sh
   cloud-init:
     user-data: |
       #cloud-config
