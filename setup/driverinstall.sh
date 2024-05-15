@@ -40,6 +40,16 @@ else
   dpkg -i driver.deb
 
   apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
+
+  rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia
+  dkms remove nvidia/550.54.15
+
+  # need to install this again for some reason
+  dpkg -i driver.deb
+
+  dkms install nvidia/550.54.15 --force
+
+  # enable persistence mode
   nvidia-smi -pm 1
 
   popd
