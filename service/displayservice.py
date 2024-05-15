@@ -323,7 +323,7 @@ def display_thread():
     display_state = DisplayState.TEXT
     display_last_active = time.monotonic()
     start_time = time.monotonic()
-    to_display: Displayable = AText(["Booting.. ", "Booting ..", "Booting. ."])
+    to_display: Displayable = AText([" ....", ". ...", ".. ..", "... .", ".... "])
     status_screen = StatusScreen()
 
     while display_thread_alive:
