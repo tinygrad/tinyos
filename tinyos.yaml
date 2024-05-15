@@ -155,6 +155,7 @@ customization:
     - name: ipmitool
     - name: btop
     - name: rsync
+    - name: time
     # for displayservice
     - name: python3
     - name: python3-pip
