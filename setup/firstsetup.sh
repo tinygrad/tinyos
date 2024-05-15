@@ -10,7 +10,7 @@ function check_cloudinit {
 
 function set_locale {
   local locales
-  locales="$(cat /etc/locale.gen | sed 's/^# //')"
+  locales="$(cat /etc/locale.gen | sed -e '1,5d' | sed 's/^# //')"
 
   local current_locale
   current_locale="$(locale | grep LANG | cut -d= -f2)"
@@ -27,7 +27,7 @@ function set_locale {
       gum log -sl warn "No locale selected."
       gum confirm "Try again?" && continue
       gum log -sl error "No locale selected."
-      break
+      return
     fi
 
     break
