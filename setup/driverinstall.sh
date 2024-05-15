@@ -40,6 +40,7 @@ else
   dpkg -i driver.deb
 
   apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
+  nvidia-smi -pm 1
 
   popd
 fi
