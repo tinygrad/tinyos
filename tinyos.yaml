@@ -158,6 +158,8 @@ customization:
     - name: btop
     - name: rsync
     - name: time
+    - name: jq
+    - name: locales
     # for displayservice
     - name: python3
     - name: python3-pip
