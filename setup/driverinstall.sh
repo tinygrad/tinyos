@@ -31,13 +31,14 @@ else
   # Install NVIDIA drivers
   pushd /tmp
 
-  # grab the patch p2p driver source
-  curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/550.54.15-p2p/nvidia-kernel-source-550-open-0ubuntu1_amd64.deb"
-  dpkg -i driver.deb
-
   wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
   dpkg -i cuda-keyring_1.1-1_all.deb
   apt update -y
+
+  # grab the patched p2p driver source
+  curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/550.54.15-p2p/nvidia-kernel-source-550-open-0ubuntu1_amd64.deb"
+  dpkg -i driver.deb
+
   apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
 
   popd
