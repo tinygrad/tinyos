@@ -348,7 +348,7 @@ def display_thread():
           logging.info("Display inactive for 30 seconds, switching back to sleep state")
           display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
-          sleep_screen.logo.reset()
+          sleep_screen = SleepScreen()
 
         # check if display should be in status state
         gpu_utilizations = get_gpu_utilizations()
