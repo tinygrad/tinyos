@@ -61,7 +61,11 @@ function add_keys {
       while true; do
         username="$(gum input --header "Github username")"
 
-        if [[ -z "$username" || $? -eq 1 ]]; then
+        if [[ $? -eq 1 ]]; then
+          return 2
+        fi
+
+        if [[ -z "$username" ]]; then
           continue
         fi
 
@@ -91,7 +95,11 @@ function add_keys {
       while true; do
         username="$(gum input --header "Gitlab username")"
 
-        if [[ -z "$username" || $? -eq 1 ]]; then
+        if [[ $? -eq 1 ]]; then
+          return 2
+        fi
+
+        if [[ -z "$username" ]]; then
           continue
         fi
 
@@ -121,7 +129,11 @@ function add_keys {
     while true; do
       keys="$(gum write --header "Paste your SSH keys one per line. Press Ctrl+D to save and continue." --placeholder "ssh-ed25519...")"
 
-      if [[ -z "$keys" || $? -eq 1 ]]; then
+      if [[ $? -eq 1 ]]; then
+        return 2
+      fi
+
+      if [[ -z "$keys" ]]; then
         gum log -sl warn "No keys provided."
         gum confirm "Try again?" && continue
         gum log -sl error "No keys provided."
@@ -155,7 +167,15 @@ function prompt_reboot {
 function main {
   check_cloudinit
   set_locale
-  add_keys
+
+  while true; do
+    add_keys
+    if [[ $? -eq 2 ]]; then
+      continue
+    fi
+    break
+  done
+
   prompt_reboot
 }
 
