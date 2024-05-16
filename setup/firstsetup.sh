@@ -53,6 +53,9 @@ function set_locale {
 function add_keys {
   local fetch_keys_method
   fetch_keys_method="$(gum choose --header "Where to add SSH keys from?" github gitlab paste none)"
+  if [[ $? -eq 1 ]]; then
+    return 2
+  fi
 
   local keys
   if [[ "$fetch_keys_method" == "github" ]]; then
@@ -60,7 +63,6 @@ function add_keys {
       local username
       while true; do
         username="$(gum input --header "Github username")"
-
         if [[ $? -eq 1 ]]; then
           return 2
         fi
@@ -94,7 +96,6 @@ function add_keys {
       local username
       while true; do
         username="$(gum input --header "Gitlab username")"
-
         if [[ $? -eq 1 ]]; then
           return 2
         fi
@@ -128,7 +129,6 @@ function add_keys {
     local keys
     while true; do
       keys="$(gum write --header "Paste your SSH keys one per line. Press Ctrl+D to save and continue." --placeholder "ssh-ed25519...")"
-
       if [[ $? -eq 1 ]]; then
         return 2
       fi
