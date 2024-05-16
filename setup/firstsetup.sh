@@ -77,6 +77,7 @@ function add_keys {
         break
       fi
 
+      gum log -sl info "" keys "$keys"
       break
     done
   elif [[ "$fetch_keys_method" == "paste" ]]; then
@@ -93,7 +94,7 @@ function add_keys {
       fi
 
       # confirm keys
-      gum log -sl info "Keys provided:" keys "$keys"
+      gum log -sl info "" keys "$keys"
       gum confirm "Are the keys correct?" && break
     done
   else
@@ -102,7 +103,6 @@ function add_keys {
     return
   fi
   gum log -sl info "Added $(echo "$keys" | wc -l) SSH keys."
-  echo "$keys"
 }
 
 function main {
