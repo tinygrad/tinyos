@@ -23,3 +23,8 @@ usermod -aG render tiny
 
 # set password
 echo "tiny:tiny" | chpasswd
+
+# enable running the first setup script
+chown tiny:tiny /opt/tinybox/setup/firstsetup.sh
+# add to .profile
+echo "bash /opt/tinybox/setup/firstsetup.sh" >> /home/tiny/.profile

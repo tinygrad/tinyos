@@ -97,8 +97,6 @@ customization:
         destination: /opt/tinybox/setup/correctperms.sh
       - source: ./setup/firstsetup.sh
         destination: /opt/tinybox/setup/firstsetup.sh
-      - source: ./setup/firstsetup.service
-        destination: /etc/systemd/system/firstsetup.service
       # tools
       - source: ./tools/fan-control
         destination: /usr/bin/fan-control
@@ -134,7 +132,6 @@ customization:
         - [ cloud-init-per, once, driverinstall, bash, /opt/tinybox/setup/driverinstall.sh ]
         - [ cloud-init-per, once, initialpackage, bash, /opt/tinybox/setup/initialpackage.sh ]
         - [ cloud-init-per, always, correctperms, bash, /opt/tinybox/setup/correctperms.sh ]
-        - [ cloud-init-per, once, enablefirstsetup, systemctl, enable, firstsetup.service ]
         - [ cloud-init-per, once, ensuredspackage, bash, /opt/tinybox/setup/ensuredspackage.sh ]
         - [ cloud-init-per, once, reboot, bash, /opt/tinybox/service/reboot.sh ]
       byobu_by_default: enable
