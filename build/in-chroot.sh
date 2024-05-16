@@ -15,4 +15,7 @@ ln -s /opt/tinybox/tools/fan-control_completion.sh /etc/bash_completion.d/
 ln -s /opt/tinybox/tools/power-limit /usr/local/bin/
 ln -s /opt/tinybox/tools/power-limit_completion.sh /etc/bash_completion.d/
 
+# symlink service files
+ln -s /opt/tinybox/service/displayservice.service /etc/systemd/system/
+
 popd
