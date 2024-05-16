@@ -6,10 +6,14 @@ NEED_REBOOT=0
 
 function check_cloudinit {
   # check if cloud-init succeeded
-  if [[ $(cloud-init status --wait --format json | jq -r '.status') != "done" ]]; then
-    gum log -sl error "cloud-init failed to run. Check the user manual for how to proceed."
-    exit 1
-  fi
+  while true; do
+    if [[ $(cloud-init status --wait --format json | jq -r '.status') != "done" ]]; then
+      gum log -sl error "cloud-init failed to run. Check the user manual for how to proceed."
+      exit 1
+    else
+      break
+    fi
+  done
 }
 
 function set_locale {
