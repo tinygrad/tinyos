@@ -34,20 +34,14 @@ customization:
     make-dirs:
       - path: /opt/tinybox/build/
         permissions: 0755
-      - path: /opt/tinybox/tinyturing/
-        permissions: 0755
-      - path: /opt/tinybox/service/
-        permissions: 0755
-      - path: /opt/tinybox/setup/
-        permissions: 0755
       - path: /raid/
         permissions: 0777
     copy-file:
       # build-time chroot setup
       - source: ./build/in-chroot.sh
         destination: /opt/tinybox/build/in-chroot.sh
-      - source: ./build/deps
-        destination: /opt/tinybox/build/deps
+      - source: ./build/deps/
+        destination: /opt/tinybox/build/deps/
       # default grub config
       - source: ./misc/grub
         destination: /etc/default/grub
@@ -55,57 +49,18 @@ customization:
       - source: ./misc/mdadm.conf
         destination: /etc/mdadm/mdadm.conf
       # displayservice
-      - source: ./tinyturing/display.py
-        destination: /opt/tinybox/tinyturing/display.py
-      - source: ./tinyturing/font.npy
-        destination: /opt/tinybox/tinyturing/font.npy
-      - source: ./service/logo.png
-        destination: /opt/tinybox/service/logo.png
-      - source: ./service/displayservice.py
-        destination: /opt/tinybox/service/displayservice.py
-      - source: ./service/displayservice.service
-        destination: /etc/systemd/system/displayservice.service
-      # displayservice hooks
-      - source: ./service/bootup.sh
-        destination: /opt/tinybox/service/bootup.sh
-      - source: ./service/reboot.sh
-        destination: /opt/tinybox/service/reboot.sh
-      - source: ./service/poweroff.sh
-        destination: /opt/tinybox/service/poweroff.sh
-      - source: ./service/sleeping.sh
-        destination: /opt/tinybox/service/sleeping.sh
-      - source: ./service/reboot.service
-        destination: /etc/systemd/system/reboot.service
-      - source: ./service/poweroff.service
-        destination: /etc/systemd/system/poweroff.service
-      - source: ./service/sleeping.service
-        destination: /etc/systemd/system/sleeping.service
+      - source: ./build/venv
+        destination: /opt/tinybox/build/venv
+      - source: ./tinyturing/
+        destination: /opt/tinybox/tinyturing/
+      - source: ./service/
+        destination: /opt/tinybox/service/
       # setup
-      - source: ./setup/adduser.sh
-        destination: /opt/tinybox/setup/adduser.sh
-      - source: ./setup/ensuredspackage.sh
-        destination: /opt/tinybox/setup/ensuredspackage.sh
-      - source: ./setup/update.sh
-        destination: /opt/tinybox/setup/update.sh
-      - source: ./setup/raidsetup.sh
-        destination: /opt/tinybox/setup/raidsetup.sh
-      - source: ./setup/driverinstall.sh
-        destination: /opt/tinybox/setup/driverinstall.sh
-      - source: ./setup/initialpackage.sh
-        destination: /opt/tinybox/setup/initialpackage.sh
-      - source: ./setup/correctperms.sh
-        destination: /opt/tinybox/setup/correctperms.sh
-      - source: ./setup/firstsetup.sh
-        destination: /opt/tinybox/setup/firstsetup.sh
+      - source: ./setup/
+        destination: /opt/tinybox/setup/
       # tools
-      - source: ./tools/fan-control
-        destination: /usr/bin/fan-control
-      - source: ./tools/fan-control_completion.sh
-        destination: /etc/bash_completion.d/fan-control_completion.sh
-      - source: ./tools/power-limit
-        destination: /usr/bin/power-limit
-      - source: ./tools/power-limit_completion.sh
-        destination: /etc/bash_completion.d/power-limit_completion.sh
+      - source: ./tools/
+        destination: /opt/tinybox/tools/
     execute:
       - path: /opt/tinybox/build/in-chroot.sh
   cloud-init:
