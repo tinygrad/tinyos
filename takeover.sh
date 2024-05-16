@@ -17,7 +17,7 @@ if [ -z "$drive" ]; then
 fi
 
 echo "text,Using Drive,$drive" | nc -U /run/tinybox-screen.sock
-sleep 4
+sleep 2
 
 # download the os image
 wget -b -o log -O tinyos.img "http://192.168.41.124:2543/tinyos.img"
