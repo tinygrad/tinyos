@@ -176,6 +176,9 @@ function main {
     break
   done
 
+  # remove from .profile
+  sed -i '/bash \/opt\/tinybox\/setup\/firstsetup.sh/d' "$HOME"/.profile
+
   prompt_reboot
 }
 
