@@ -17,7 +17,9 @@ function set_locale {
 
   local current_locale
   current_locale="$(locale | grep LANG | cut -d= -f2)"
-  if [[ $(gum confirm "Current locale is $current_locale. Change?") == 1 ]]; then
+
+  gum confirm "Current locale is $current_locale. Change?"
+  if [[ $? -eq 1 ]]; then
     gum log -sl info "Not changing locale."
     return
   fi
