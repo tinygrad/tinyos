@@ -2,6 +2,8 @@
 
 trap "" SIGINT SIGHUP
 
+NEED_REBOOT=0
+
 function check_cloudinit {
   # check if cloud-init succeeded
   if [[ $(cloud-init status --wait --format json | jq -r '.status') != "done" ]]; then
@@ -43,6 +45,7 @@ function set_locale {
   sudo locale-gen "$locale"
   sudo update-locale LANG="$locale"
   sudo localectl set-locale "LANG=$locale"
+  NEED_REBOOT=1
 
   gum log -sl info "Locale set to $locale."
 }
@@ -140,6 +143,11 @@ function add_keys {
 }
 
 function prompt_reboot {
+  if [[ $NEED_REBOOT -eq 0 ]]; then
+    gum log -sl info "No changes require a reboot."
+    return
+  fi
+  gum log -sl info "Some changes require a reboot."
   gum confirm "Reboot now?" && sudo systemctl reboot
 }
 
