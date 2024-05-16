@@ -22,20 +22,20 @@ echo "text,Using Drive,$drive" | nc -U /run/tinybox-screen.sock
 sleep 2
 
 # download the os image
-wget -b -o log -O /tmp/tinyos.img "http://192.168.41.124:2543/tinyos.img"
+wget -b -o /tmp/log -O /tmp/tinyos.img "http://192.168.41.124:2543/tinyos.img"
 
 # wait until the image is downloaded
 while true; do
   sleep 1
 
   # extract the downloaded percentage from the log file
-  percentage=$(grep -oP '\d+%' log | tail -n1)
+  percentage=$(grep -oP '\d+%' /tmp/log | tail -n1)
   # extract the estimated time left from the log file
-  time_left=$(grep -oP '\d+m\d+s' log | tail -n1)
+  time_left=$(grep -oP '(\d+m)?\d+s' /tmp/log | tail -n1)
 
   echo "text,Downloading Image,$percentage - $time_left" | nc -U /run/tinybox-screen.sock
 
-  if ! pgrep -f "wget -b -o log -O /tmp/tinyos.img" > /dev/null; then
+  if ! pgrep -f "wget -b -o /tmp/log -O /tmp/tinyos.img" > /dev/null; then
     break
   fi
 done
@@ -43,7 +43,8 @@ done
 echo "text,Flashing Image" | nc -U /run/tinybox-screen.sock
 
 # write the image to the drive
-dd if=/tmp/tinyos.img of="$drive" bs=4M status=progress
+dd if=/tmp/tinyos.img of="$drive" bs=4M
 
 echo "text,Flashing Complete,Rebooting" | nc -U /run/tinybox-screen.sock
+sleep 2
 reboot
