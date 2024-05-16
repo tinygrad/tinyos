@@ -10,3 +10,6 @@ pip install --upgrade pip
 
 # install deps
 pip install numpy numba pillow pyserial psutil
+
+# exit venv
+deactivate
