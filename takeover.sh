@@ -1,7 +1,7 @@
 #!/bin/sh
 set -xe
 
-# find first /dev/sd{a-z} that is not mounted in posix shell
+# find first /dev/sd{a-z} that is not mounted
 drive=""
 for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do
   if ! mount | grep -q "/dev/sd$i"; then
@@ -44,4 +44,4 @@ echo "text,Flashing Image" | nc -U /run/tinybox-screen.sock
 dd if="tinyos.img" of="$drive" bs=4M status=progress
 
 echo "text,Flashing Complete,Rebooting" | nc -U /run/tinybox-screen.sock
-# reboot
+reboot
