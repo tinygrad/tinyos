@@ -20,7 +20,7 @@ echo "text,Using Drive,$drive" | nc -U /run/tinybox-screen.sock
 sleep 2
 
 # download the os image
-wget -b -o log -O tinyos.img "http://192.168.41.124:2543/tinyos.img"
+wget -b -o log -O /tmp/tinyos.img "http://192.168.41.124:2543/tinyos.img"
 
 # wait until the image is downloaded
 while true; do
@@ -33,7 +33,7 @@ while true; do
 
   echo "text,Downloading Image,$percentage - $time_left" | nc -U /run/tinybox-screen.sock
 
-  if ! pgrep -f "wget -b -o log -O tinyos.img" > /dev/null; then
+  if ! pgrep -f "wget -b -o log -O /tmp/tinyos.img" > /dev/null; then
     break
   fi
 done
@@ -41,7 +41,7 @@ done
 echo "text,Flashing Image" | nc -U /run/tinybox-screen.sock
 
 # write the image to the drive
-dd if="tinyos.img" of="$drive" bs=4M status=progress
+dd if=/tmp/tinyos.img of="$drive" bs=4M status=progress
 
 echo "text,Flashing Complete,Rebooting" | nc -U /run/tinybox-screen.sock
 reboot
