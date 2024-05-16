@@ -80,7 +80,7 @@ function add_keys {
       fi
 
       gum log -sl info "" keys "$keys"
-      break
+      gum confirm "Are the keys correct?" && break
     done
   elif [[ "$fetch_keys_method" == "paste" ]]; then
     # paste keys
