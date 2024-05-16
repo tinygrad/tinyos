@@ -203,8 +203,12 @@ class SleepScreen(Displayable):
 try:
   import pynvml as N
   logging.info("pynvml found, assuming NVIDIA GPU")
-  N.nvmlInit()
-  GPU_HANDLES = [N.nvmlDeviceGetHandleByIndex(i) for i in range(6)]
+  try:
+    N.nvmlInit()
+    GPU_HANDLES = [N.nvmlDeviceGetHandleByIndex(i) for i in range(6)]
+  except:
+    logging.warning("Failed to find all 6 gpus")
+    GPU_HANDLES = []
   def get_gpu_utilizations() -> list[float]:
     gpu_utilizations = []
     try:
