@@ -19,7 +19,6 @@ function set_locale {
 
   local current_locale
   current_locale="$(locale | grep LANG | cut -d= -f2)"
-
   gum confirm "Current locale is $current_locale. Change?"
   if [[ $? -eq 1 ]]; then
     gum log -sl info "Not changing locale."
@@ -28,7 +27,7 @@ function set_locale {
 
   local locale
   while true; do
-    locale="$(gum filter --header "Select a locale" --placeholder "en_US..." "${locales[@]}")"
+    locale="$(gum filter --header "Select a locale" --placeholder "C.UTF-8" "${locales[@]}")"
 
     if [[ -z "$locale" ]]; then
       gum log -sl warn "No locale selected."
@@ -41,13 +40,47 @@ function set_locale {
     gum confirm "Confirm locale: $locale" && break
   done
 
-  # generate locale
+  # set locale
   gum spin -s jump --title "Generating locale..." -- sudo locale-gen "$locale"
   sudo update-locale LANG="$locale"
   sudo localectl set-locale "LANG=$locale"
   NEED_REBOOT=1
 
   gum log -sl info "Locale set to $locale."
+}
+
+function set_timezone {
+  local timezones
+  timezones="$(timedatectl list-timezones)"
+  readarray -t timezones <<< "$timezones"
+
+  local current_timezone
+  current_timezone="$(timedatectl show --property=Timezone --value)"
+  gum confirm "Current timezone is $current_timezone. Change?"
+  if [[ $? -eq 1 ]]; then
+    gum log -sl info "Not changing timezone."
+    return
+  fi
+
+  local timezone
+  while true; do
+    timezone="$(gum filter --header "Select a timezone" --placeholder "UTC" "${timezones[@]}")"
+
+    if [[ -z "$timezone" ]]; then
+      gum log -sl warn "No timezone selected."
+      gum confirm "Try again?" && continue
+      gum log -sl error "No timezone selected."
+      return
+    fi
+
+    # confirm timezone
+    gum confirm "Confirm timezone: $timezone" && break
+  done
+
+  # set timezone
+  sudo timedatectl set-timezone "$timezone"
+
+  gum log -sl info "Timezone set to $timezone."
 }
 
 function add_keys {
