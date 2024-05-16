@@ -41,4 +41,7 @@ done
 echo "text,Flashing Image" | nc -U /run/tinybox-screen.sock
 
 # write the image to the drive
-# dd if="tinyos.img" of="$drive" bs=4M status=progress
+dd if="tinyos.img" of="$drive" bs=4M status=progress
+
+echo "text,Flashing Complete,Rebooting" | nc -U /run/tinybox-screen.sock
+# reboot
