@@ -6,7 +6,7 @@ sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_
 echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
 systemctl restart sshd
 
-adduser tiny
+adduser tiny --gecos ""
 
 # add user to groups
 usermod -aG sudo tiny
