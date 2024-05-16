@@ -42,7 +42,7 @@ function set_locale {
   done
 
   # generate locale
-  gum spin -s jump --title "Generating Locale" -- sudo locale-gen "$locale"
+  gum spin -s jump --title "Generating locale..." -- sudo locale-gen "$locale"
   sudo update-locale LANG="$locale"
   sudo localectl set-locale "LANG=$locale"
   NEED_REBOOT=1
@@ -70,7 +70,7 @@ function add_keys {
       done
 
       # fetch keys
-      keys="$(curl -s "https://github.com/${username}.keys")"
+      keys="$(gum spin -s jump --title "Fetching keys..." --show-output -- curl -s "https://github.com/${username}.keys")"
 
       # check if keys were fetched
       if [[ -z "$keys" ]]; then
@@ -100,7 +100,7 @@ function add_keys {
       done
 
       # fetch keys
-      keys="$(curl -s "https://gitlab.com/${username}.keys")"
+      keys="$(gum spin -s jump --title "Fetching keys..." --show-output -- curl -s "https://gitlab.com/${username}.keys")"
 
       # check if keys were fetched
       if [[ -z "$keys" ]]; then
