@@ -104,7 +104,7 @@ function add_keys {
   fi
   gum log -sl info "Added $(echo "$keys" | wc -l) SSH keys."
 
-  echo "$keys" | tee -a "$HOME"/.ssh/authorized_keys
+  echo "$keys" > "$HOME"/.ssh/authorized_keys
 }
 
 function main {
