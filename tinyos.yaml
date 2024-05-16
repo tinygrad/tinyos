@@ -116,11 +116,7 @@ customization:
     # for displayservice
     - name: python3
     - name: python3-pip
-    - name: python3-numpy
-    - name: python3-numba
-    - name: python3-pillow
-    - name: python3-serial
-    - name: python3-psutil
+    - name: python3-venv
     - name: netcat-openbsd
   extra-snaps:
     # required
