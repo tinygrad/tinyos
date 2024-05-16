@@ -12,6 +12,7 @@ function set_locale {
   local locales
   IFS=$'\n'
   locales="$(cat /etc/locale.gen | sed -e '1,5d' | sed 's/^# //')"
+  readarray -t locales <<< "$locales"
   unset IFS
 
   local current_locale
