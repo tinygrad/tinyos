@@ -8,6 +8,9 @@ systemctl restart sshd
 
 adduser tiny --gecos ""
 
+# set sudo no password
+echo "tiny ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tiny
+
 # add user to groups
 usermod -aG sudo tiny
 usermod -aG adm tiny
