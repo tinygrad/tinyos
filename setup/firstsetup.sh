@@ -149,6 +149,7 @@ function prompt_reboot {
   fi
   gum log -sl info "Some changes require a reboot."
   gum confirm "Reboot now?" && sudo systemctl reboot
+  gum log -sl info "Not rebooting."
 }
 
 function main {
