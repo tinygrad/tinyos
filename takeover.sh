@@ -17,7 +17,15 @@ if [ -z "$drive" ]; then
 fi
 
 # download the os image
-wget "http://192.168.41.124:2543/tinyos.img"
+wget -b -o log "http://192.168.41.124:2543/tinyos.img"
+
+# wait until the image is downloaded
+while true; do
+  # extract the downloaded percentage from the log file
+  percentage=$(grep -oP '\d+(?=%)' log | tail -1)
+  echo "Downloaded $percentage% of the image."
+  sleep 1
+done
 
 # write the image to the drive
-dd if="tinyos.img" of="$drive" bs=4M status=progress
+# dd if="tinyos.img" of="$drive" bs=4M status=progress
