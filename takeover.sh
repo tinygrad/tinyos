@@ -17,14 +17,14 @@ if [ -z "$drive" ]; then
 fi
 
 echo "text,Using Drive,$drive" | nc -U /run/tinybox-screen.sock
-sleep 1
+sleep 4
 
 # download the os image
 wget -b -o log -O tinyos.img "http://192.168.41.124:2543/tinyos.img"
 
 # wait until the image is downloaded
 while true; do
-  sleep 1
+  sleep 0.5
 
   # extract the downloaded percentage from the log file
   percentage=$(grep -oP '\d+%' log | tail -n1)
