@@ -11,7 +11,7 @@ function check_cloudinit {
 function set_locale {
   local locales
   IFS=$'\n'
-  readarray -t locales <<< "$(cat /etc/locale.gen | sed -e '1,5d' | sed 's/^# //')"
+  locales="$(cat /etc/locale.gen | sed -e '1,5d' | sed 's/^# //')"
   unset IFS
 
   local current_locale
@@ -25,7 +25,7 @@ function set_locale {
 
   local locale
   while true; do
-    locale="$(gum filter --header "Select a locale" --placeholder "en_US..." $locales)"
+    locale="$(gum filter --header "Select a locale" --placeholder "en_US..." "${locales[@]}")"
 
     if [[ -z "$locale" ]]; then
       gum log -sl warn "No locale selected."
