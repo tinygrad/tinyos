@@ -7,9 +7,9 @@ DefaultDependencies=no
 Type=simple
 User=root
 Group=root
-ExecStart=python3 /opt/tinybox/service/displayservice.py
+ExecStart=/opt/tinybox/build/venv/bin/python3 /opt/tinybox/service/displayservice.py
 Restart=always
-RestartSec=2
+RestartSec=1
 
 [Install]
 WantedBy=sysinit.target
