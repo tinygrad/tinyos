@@ -184,6 +184,7 @@ function add_keys {
   fi
   gum log -sl info "Added $(echo "$keys" | wc -l) SSH keys."
 
+  mkdir -p "$HOME"/.ssh
   echo "$keys" > "$HOME"/.ssh/authorized_keys
 }
 
