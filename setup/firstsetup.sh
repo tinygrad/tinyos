@@ -61,7 +61,7 @@ function add_keys {
       while true; do
         username="$(gum input --header "Github username")"
 
-        if [[ -z "$username" ]]; then
+        if [[ -z "$username" || $? -eq 1 ]]; then
           continue
         fi
 
@@ -91,7 +91,7 @@ function add_keys {
       while true; do
         username="$(gum input --header "Gitlab username")"
 
-        if [[ -z "$username" ]]; then
+        if [[ -z "$username" || $? -eq 1 ]]; then
           continue
         fi
 
@@ -121,7 +121,7 @@ function add_keys {
     while true; do
       keys="$(gum write --header "Paste your SSH keys one per line. Press Ctrl+D to save and continue." --placeholder "ssh-ed25519...")"
 
-      if [[ -z "$keys" ]]; then
+      if [[ -z "$keys" || $? -eq 1 ]]; then
         gum log -sl warn "No keys provided."
         gum confirm "Try again?" && continue
         gum log -sl error "No keys provided."
