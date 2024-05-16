@@ -102,7 +102,6 @@ customization:
     # bootloader
     - name: grub-efi-amd64-signed
     - name: shim-signed
-    - name: grub2-common
     # preinstalled
     - name: bash-completion
     - name: build-essential
@@ -120,7 +119,6 @@ customization:
     - name: netcat-openbsd
   extra-snaps:
     # required
-    - name: snapd
     - name: core20
     # preinstalled
     - name: nvtop
