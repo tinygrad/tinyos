@@ -23,8 +23,16 @@ wget -b -o log -O tinyos.img "http://192.168.41.124:2543/tinyos.img"
 while true; do
   # extract the downloaded percentage from the log file
   percentage=$(grep -oP '\d+%' log | tail -n1)
-  echo "Downloaded $percentage% of the image."
+  # extract the estimated time left from the log file
+  time_left=$(grep -oP '\d+m\d+s' log | tail -n1)
+
+  echo "text,Downloading Image,$percentage - $time_left" | nc -U /run/tinybox-screen.sock
+
   sleep 1
+
+  if ! pgrep -f "wget -b -o log -O tinyos.img" > /dev/null; then
+    break
+  fi
 done
 
 # write the image to the drive
