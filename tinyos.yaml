@@ -118,6 +118,7 @@ customization:
     - name: netcat-openbsd
   extra-snaps:
     # required
+    - name: snapd
     - name: core20
     # preinstalled
     - name: nvtop
