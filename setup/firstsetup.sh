@@ -38,7 +38,8 @@ function set_locale {
 
   # generate locale
   sudo locale-gen "$locale"
-  sudo localectl set-locale "$locale"
+  sudo update-locale LANG="$locale"
+  sudo localectl set-locale "LANG=$locale"
 
   gum log -sl info "Locale set to $locale."
 }
