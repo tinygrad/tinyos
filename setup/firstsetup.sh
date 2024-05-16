@@ -33,7 +33,8 @@ function set_locale {
       return
     fi
 
-    break
+    # confirm locale
+    gum confirm "Confirm locale: $locale" && break
   done
 
   # generate locale
