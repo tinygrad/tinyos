@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+trap "" SIGINT
+
 function check_cloudinit {
   # check if cloud-init succeeded
   if [[ $(cloud-init status --wait --format json | jq -r '.status') != "done" ]]; then
