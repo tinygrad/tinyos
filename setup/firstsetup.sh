@@ -49,33 +49,63 @@ function set_locale {
 
 function add_keys {
   local fetch_keys_method
-  fetch_keys_method="$(gum choose --header "Where to add SSH keys from?" github paste none)"
+  fetch_keys_method="$(gum choose --header "Where to add SSH keys from?" github gitlab paste none)"
 
   local keys
   if [[ "$fetch_keys_method" == "github" ]]; then
     while true; do
-      local github_username
+      local username
       while true; do
-        github_username="$(gum input --header "Github username")"
+        username="$(gum input --header "Github username")"
 
-        if [[ -z "$github_username" ]]; then
+        if [[ -z "$username" ]]; then
           continue
         fi
 
         # confirm username
-        gum confirm "Confirm username: $github_username" && break
+        gum confirm "Confirm username: $username" && break
       done
 
       # fetch keys
-      keys="$(curl -s "https://github.com/${github_username}.keys")"
+      keys="$(curl -s "https://github.com/${username}.keys")"
 
       # check if keys were fetched
       if [[ -z "$keys" ]]; then
-        gum log -sl warn "No keys found for $github_username."
+        gum log -sl warn "No keys found for $username."
 
         # try again?
         gum confirm "Try again?" && continue
         gum log -sl error "Failed to fetch keys from Github."
+        break
+      fi
+
+      gum log -sl info "" keys "$keys"
+      gum confirm "Are the keys correct?" && break
+    done
+  elif [[ "$fetch_keys_method" == "gitlab" ]]; then
+    while true; do
+      local username
+      while true; do
+        username="$(gum input --header "Gitlab username")"
+
+        if [[ -z "$username" ]]; then
+          continue
+        fi
+
+        # confirm username
+        gum confirm "Confirm username: $username" && break
+      done
+
+      # fetch keys
+      keys="$(curl -s "https://gitlab.com/${username}.keys")"
+
+      # check if keys were fetched
+      if [[ -z "$keys" ]]; then
+        gum log -sl warn "No keys found for $username."
+
+        # try again?
+        gum confirm "Try again?" && continue
+        gum log -sl error "Failed to fetch keys from Gitlab."
         break
       fi
 
