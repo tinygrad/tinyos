@@ -24,7 +24,7 @@ wget -b -o log -O tinyos.img "http://192.168.41.124:2543/tinyos.img"
 
 # wait until the image is downloaded
 while true; do
-  sleep 0.5
+  sleep 1
 
   # extract the downloaded percentage from the log file
   percentage=$(grep -oP '\d+%' log | tail -n1)
