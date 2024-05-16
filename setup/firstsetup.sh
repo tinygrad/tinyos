@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-trap "" SIGINT
+trap "" SIGINT SIGHUP
 
 function check_cloudinit {
   # check if cloud-init succeeded
