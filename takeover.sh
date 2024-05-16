@@ -16,11 +16,16 @@ if [ -z "$drive" ]; then
   exit 1
 fi
 
+echo "text,Using Drive,$drive" | nc -U /run/tinybox-screen.sock
+sleep 1
+
 # download the os image
 wget -b -o log -O tinyos.img "http://192.168.41.124:2543/tinyos.img"
 
 # wait until the image is downloaded
 while true; do
+  sleep 1
+
   # extract the downloaded percentage from the log file
   percentage=$(grep -oP '\d+%' log | tail -n1)
   # extract the estimated time left from the log file
@@ -28,12 +33,12 @@ while true; do
 
   echo "text,Downloading Image,$percentage - $time_left" | nc -U /run/tinybox-screen.sock
 
-  sleep 1
-
   if ! pgrep -f "wget -b -o log -O tinyos.img" > /dev/null; then
     break
   fi
 done
+
+echo "text,Flashing Image" | nc -U /run/tinybox-screen.sock
 
 # write the image to the drive
 # dd if="tinyos.img" of="$drive" bs=4M status=progress
