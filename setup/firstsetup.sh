@@ -10,10 +10,8 @@ function check_cloudinit {
 
 function set_locale {
   local locales
-  IFS=$'\n'
-  locales="$(cat /etc/locale.gen | sed -e '1,5d' | sed 's/^# //')"
+  locales="$(sed -e '1,6d' /etc/locale.gen | sed 's/^# //' | xargs)"
   readarray -t locales <<< "$locales"
-  unset IFS
 
   local current_locale
   current_locale="$(locale | grep LANG | cut -d= -f2)"
