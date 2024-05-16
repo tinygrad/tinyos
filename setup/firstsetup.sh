@@ -42,7 +42,7 @@ function set_locale {
   done
 
   # generate locale
-  sudo locale-gen "$locale"
+  gum spin -s jump --title "Generating Locale" -- sudo locale-gen "$locale"
   sudo update-locale LANG="$locale"
   sudo localectl set-locale "LANG=$locale"
   NEED_REBOOT=1
