@@ -17,7 +17,7 @@ if [ -z "$drive" ]; then
 fi
 
 # download the os image
-wget -b -o log "http://192.168.41.124:2543/tinyos.img"
+wget -b -o log -O tinyos.img "http://192.168.41.124:2543/tinyos.img"
 
 # wait until the image is downloaded
 while true; do
