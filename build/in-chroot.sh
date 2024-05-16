@@ -17,5 +17,8 @@ ln -s /opt/tinybox/tools/power-limit_completion.sh /etc/bash_completion.d/
 
 # symlink service files
 ln -s /opt/tinybox/service/displayservice.service /etc/systemd/system/
+ln -s /opt/tinybox/service/poweroff.service /etc/systemd/system/
+ln -s /opt/tinybox/service/sleeping.service /etc/systemd/system/
+ln -s /opt/tinybox/service/reboot.service /etc/systemd/system/
 
 popd
