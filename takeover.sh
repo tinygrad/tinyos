@@ -1,6 +1,8 @@
 #!/bin/sh
 set -xe
 
+sleep 2
+
 # find first /dev/sd{a-z} that is not mounted
 drive=""
 for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do
