@@ -109,10 +109,15 @@ function add_keys {
   echo "$keys" > "$HOME"/.ssh/authorized_keys
 }
 
+function prompt_reboot {
+  gum confirm "Reboot now?" && sudo systemctl reboot
+}
+
 function main {
   check_cloudinit
   set_locale
   add_keys
+  prompt_reboot
 }
 
 main "$@"
