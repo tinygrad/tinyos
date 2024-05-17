@@ -6,7 +6,7 @@ sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_
 echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
 systemctl restart sshd
 
-adduser tiny --gecos ""
+adduser tiny --gecos "tiny"
 
 # set sudo no password for all users
 echo "%sudo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
