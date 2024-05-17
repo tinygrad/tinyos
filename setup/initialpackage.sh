@@ -13,6 +13,6 @@ su tiny -c "pip install pillow"
 
 # symlink datasets and weights
 su tiny -c "ln -s /raid/datasets/imagenet extra/datasets/"
-su tiny -c "ln - /raid/weights ./"
+su tiny -c "ln -s /raid/weights ./"
 
 popd
