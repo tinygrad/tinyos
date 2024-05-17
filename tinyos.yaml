@@ -103,14 +103,15 @@ customization:
     - name: grub2-common
     # preinstalled
     - name: bash-completion
+    - name: btop
     - name: build-essential
     - name: clang
     - name: ipmitool
-    - name: btop
-    - name: rsync
-    - name: time
     - name: jq
     - name: locales
+    - name: ripgrep
+    - name: rsync
+    - name: time
     # for displayservice
     - name: python3
     - name: python3-pip
