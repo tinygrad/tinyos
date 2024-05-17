@@ -39,21 +39,8 @@ else
   curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/550.54.15-p2p/nvidia-kernel-source-550-open-0ubuntu1_amd64.deb"
   dpkg -i driver.deb
 
+  # install cuda
   apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
-
-  rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia
-  dkms remove nvidia/550.54.15
-  dkms install nvidia/550.54.15 --force
-  apt remove nvidia-driver-550-open -y
-  apt remove nvidia-driver-550 -y
-
-  # need to install this again for some reason
-  dpkg -i driver.deb
-  apt reinstall nvidia-driver-550-open -y
-  dpkg -i driver.deb
-
-  dkms remove nvidia/550.54.15
-  dkms install nvidia/550.54.15 --force
 
   # enable persistence mode
   nvidia-smi -pm 1
