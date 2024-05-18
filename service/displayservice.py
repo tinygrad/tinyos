@@ -190,7 +190,8 @@ class SleepScreen(Displayable):
         with open("/root/.bmc_password", "r") as f:
           bmc_password = f.read().strip().split("=")[1]
         self.bmc_password_text = PositionableText(f"BMC PW: {bmc_password}", (WIDTH // 2, HEIGHT - 172), "center")
-      except: pass
+      except: logging.warning("Failed to read BMC password")
+    else: logging.warning("BMC password file not found")
 
     bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
     bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
