@@ -87,17 +87,18 @@ class Image(Displayable):
   def display(self, display: Display): display.blit(self.image, (self.x, self.y))
 
 class DVDImage(Displayable):
-  def __init__(self, path: str, scale: tuple[int, int], speed: float = 1):
+  def __init__(self, path: str, scale: tuple[int, int], speed: float = 1, lower_bound: int = 273):
     self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
     self.x_speed, self.y_speed = speed, speed
+    self.lower_bound = lower_bound
     self.reset()
   def display(self, display: Display):
     if self.x + self.image.shape[0] + self.x_speed > 800 or self.x + self.x_speed < 0: self.x_speed *= -1
-    if self.y + self.image.shape[1] + self.y_speed > 345 or self.y + self.y_speed < 0: self.y_speed *= -1
+    if self.y + self.image.shape[1] + self.y_speed > self.lower_bound or self.y + self.y_speed < 0: self.y_speed *= -1
     self.x += self.x_speed
     self.y += self.y_speed
     display.blit(self.image, (self.x, self.y))
-  def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), 345 - self.image.shape[1] - abs(self.y_speed))
+  def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), self.lower_bound - self.image.shape[1] - abs(self.y_speed))
 
 @njit
 def line(x1: int, y1: int, x2: int, y2: int) -> list[tuple[int, int]]:
@@ -183,21 +184,30 @@ class StatusScreen(Displayable):
 
 class SleepScreen(Displayable):
   def __init__(self):
-    self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154))
-
-    self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 135, WIDTH - WIDTH // 5, (255, 255, 255))
-
-    ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
-    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH // 2, HEIGHT - 102), "center")
+    # read bmc password from /root/.bmc_password
+    if os.path.exists("/root/.bmc_password"):
+      try:
+        with open("/root/.bmc_password", "r") as f:
+          bmc_password = f.read().strip().split("=")[1]
+        self.bmc_password_text = PositionableText(f"BMC PW: {bmc_password}", (WIDTH // 2, HEIGHT - 172), "center")
+      except: pass
 
     bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
     bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
-    self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH // 2, HEIGHT - 32), "center")
+    self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH // 2, HEIGHT - 102), "center")
+
+    ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
+    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH // 2, HEIGHT - 32), "center")
+
+    self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 207, WIDTH - WIDTH // 5, (255, 255, 255))
+
+    self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154))
   def display(self, display: Display):
     self.logo.display(display)
     self.horizontal_line.display(display)
     self.ip_text.display(display)
     self.bmc_ip_text.display(display)
+    if hasattr(self, "bmc_password_text"): self.bmc_password_text.display(display)
 
 # determine GPU type
 try:

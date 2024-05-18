@@ -31,3 +31,16 @@ echo "tiny:tiny" | chpasswd
 chown tiny:tiny /opt/tinybox/setup/firstsetup.sh
 # add to .profile
 echo "bash /opt/tinybox/setup/firstsetup.sh" >> /home/tiny/.profile
+
+# if the bmc_password file exists, read the password from it
+if [ -f /root/.bmc_password ]; then
+  . /root/.bmc_password
+else
+  # generate a random password for the bmc
+  BMC_PASSWORD="$(tr -cd '1234567890!@#$%^&*()-_=+[]{},.<>/?|qwertyuiopasdfghjkl;zxcvbnm' < /dev/random | head -c 12)"
+  # write bmc password to file
+  echo "BMC_PASSWORD=$BMC_PASSWORD" > /root/.bmc_password
+fi
+
+# set the bmc password
+ipmitool user set password 2 "$BMC_PASSWORD"
