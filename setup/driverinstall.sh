@@ -26,6 +26,9 @@ EOF
   cat <<EOF > /etc/modprobe.d/amdgpu.conf
 options amdgpu cwsr_enable=0
 EOF
+
+  # update initramfs
+  update-initramfs -u
 else
   echo "NVIDIA GPU found."
   # Install NVIDIA drivers
