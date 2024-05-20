@@ -40,10 +40,20 @@ while true; do
   fi
 done
 
+# see if the image was downloaded successfully by seeing if there is a 100% in the log file
+if ! grep -q "100%" /tmp/log; then
+  echo "text,Download Failed" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
+
 echo "text,Flashing Image" | nc -U /run/tinybox-screen.sock
 
 # write the image to the drive
 dd if=/tmp/tinyos.img of="$drive" bs=4M
+
+# tell uefi to boot from the internal drive
+bootnum="$(efibootmgr | grep -i "Sabrent SSD 1.00" | grep -oP '\d+' | head -n1)"
+efibootmgr -n "$bootnum"
 
 echo "text,Flashing Complete,Rebooting" | nc -U /run/tinybox-screen.sock
 sleep 2
