@@ -97,7 +97,8 @@ customization:
       dsmode: local
   extra-packages:
     # bootloader
-    - name: grub-efi-amd64
+    - name: grub-efi-amd64-signed
+    - name: shim-signed
     - name: grub2-common
     # preinstalled
     - name: bash-completion
