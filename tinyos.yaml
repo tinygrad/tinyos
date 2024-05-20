@@ -21,8 +21,6 @@ rootfs:
     names:
       - server
       - server-minimal
-      - standard
-      - minimal
   sources-list-deb822: true
 customization:
   components:
