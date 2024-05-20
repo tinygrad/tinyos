@@ -22,7 +22,7 @@ echo "text,Using Drive,$drive" | nc -U /run/tinybox-screen.sock
 sleep 2
 
 # download the os image
-wget -b -o /tmp/log -O /tmp/tinyos.img "http://192.168.41.124:2543/tinyos.img"
+wget -b -o /tmp/log -O /tmp/tinyos.img "http://192.168.52.17:2543/tinyos.img"
 
 # wait until the image is downloaded
 while true; do
