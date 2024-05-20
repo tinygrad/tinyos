@@ -52,7 +52,8 @@ echo "text,Flashing Image" | nc -U /run/tinybox-screen.sock
 dd if=/tmp/tinyos.img of="$drive" bs=4M
 
 # tell uefi to boot from the internal drive
-bootnum="$(efibootmgr | grep -i "Sabrent SSD 1.00" | grep -oP '\d+' | head -n1)"
+efibootmgr --create --disk "$drive" --part 1 --label "tinyos" --loader '\EFI\BOOT\BOOTX64.EFI'
+bootnum="$(efibootmgr | grep -i "tinyos" | grep -oP '\d+' | head -n1)"
 efibootmgr -n "$bootnum"
 
 echo "text,Flashing Complete,Rebooting" | nc -U /run/tinybox-screen.sock
