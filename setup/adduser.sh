@@ -6,11 +6,23 @@ sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_
 echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
 systemctl restart sshd
 
-# create user
-useradd -m -s /bin/bash -G sudo,adm,audio,cdrom,dialout,floppy,lxd,netdev,plugdev,video,render,input tiny
-
 # set sudo no password for all users
 echo "%sudo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
+
+useradd -m -s /bin/bash tiny
+
+# add user to groups
+usermod -aG sudo tiny
+usermod -aG adm tiny
+usermod -aG audio tiny
+usermod -aG cdrom tiny
+usermod -aG dialout tiny
+usermod -aG floppy tiny
+usermod -aG lxd tiny
+usermod -aG netdev tiny
+usermod -aG plugdev tiny
+usermod -aG video tiny
+usermod -aG render tiny
 
 # set password
 echo "tiny:tiny" | chpasswd
