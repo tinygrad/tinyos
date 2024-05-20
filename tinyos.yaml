@@ -112,9 +112,6 @@ customization:
     - name: ripgrep
     - name: rsync
     - name: time
-    - name: rdma-core
-    - name: mstflint
-    - name: inetutils-ping
     # for displayservice
     - name: python3
     - name: python3-pip
