@@ -3,7 +3,7 @@ sys.path.insert(0, "/opt/tinybox/tinyturing/")
 
 from display import Display, WIDTH, HEIGHT
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal, os, random, logging, math, subprocess
+import threading, time, signal, os, random, logging, math, subprocess, glob
 logging.basicConfig(level=logging.INFO)
 from enum import Enum
 from abc import ABC, abstractmethod
@@ -280,11 +280,12 @@ except ImportError:
       logging.warning("Failed to read GPU memory utilization")
       return []
     return gpu_memory_utilizations
+  hwmon_paths = glob.glob("/sys/class/drm/card*/device/hwmon/hwmon*")
   def get_gpu_power_draw() -> list[int]:
     gpu_power_draws = []
     try:
-      for i in range(1, 7):
-        with open(f"/sys/class/drm/card{i}/device/hwmon/hwmon{i+4}/power1_average", "r") as f:
+      for path in hwmon_paths:
+        with open(f"{path}/power1_average", "r") as f:
           gpu_power_draws.append(int(f.read().strip()) // 1000000)
     except:
       logging.warning("Failed to read GPU power draw")
