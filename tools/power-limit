@@ -11,9 +11,9 @@ function main {
     ercho "Limit not provided"
     exit 1
   fi
-  if ((limit < 100 || limit > 350)); then
+  if ((limit < 100 || limit > 402)); then
     ercho "Invalid limit: $limit"
-    ercho "Valid range: 100-350 W"
+    ercho "Valid range: 100-402 W"
     exit 1
   fi
 
