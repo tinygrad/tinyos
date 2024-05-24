@@ -3,6 +3,9 @@ set -x
 
 echo "atext,Preparing.. ,Preparing ..,Preparing. ." | nc -U /run/tinybox-screen.sock
 
+# Check which gpus are installed
+IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+
 # clone tinygrad
 su tiny -c "git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad"
 
@@ -10,6 +13,13 @@ su tiny -c "git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad"
 pushd /home/tiny/tinygrad
 su tiny -c "pip install -e ."
 su tiny -c "pip install pillow"
+
+# install pytorch
+if [ -z "$IS_NVIDIA_GPU" ]; then
+  su tiny -c "pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.0"
+else
+  su tiny -c "pip install torch torchvision torchaudio"
+fi
 
 # symlink datasets and weights
 su tiny -c "ln -s /raid/datasets/imagenet extra/datasets/"
