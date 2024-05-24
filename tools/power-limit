@@ -3,7 +3,16 @@
 # echo to stderr
 function ercho { printf "%s\n" "$*" >&2; }
 
-IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+IS_NVIDIA_GPU="$(lspci | grep -i nvidia)"
+
+# find maximum and minimum power limits
+if [ -z "$IS_NVIDIA_GPU" ]; then
+  MINIMUM="$(cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap_min | sort -n | tail -n1)"
+  MAXIMUM="$(cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap_max | sort -n | head -n1)"
+else
+  MINIMUM="$(nvidia-smi -q -d POWER | sed -nr "s/Min Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
+  MAXIMUM="$(nvidia-smi -q -d POWER | sed -nr "s/Max Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
+fi
 
 function main {
   local limit="$1"
@@ -11,16 +20,16 @@ function main {
     ercho "Limit not provided"
     exit 1
   fi
-  if ((limit < 100 || limit > 402)); then
+  if ((limit < MINIMUM || limit > MAXIMUM)); then
     ercho "Invalid limit: $limit"
-    ercho "Valid range: 100-402 W"
+    ercho "Valid range: $MINIMUM-$MAXIMUM W"
     exit 1
   fi
 
   if [ -z "$IS_NVIDIA_GPU" ]; then
-    echo "$limit""000000" | tee /sys/class/drm/card{1..6}/device/hwmon/hwmon*/power1_cap
+    echo "$limit""000000" | tee /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap
   else
-    ercho "not implemented"
+    nvidia-smi -pl "$limit"
   fi
 }
 
