@@ -9,6 +9,8 @@ IS_NVIDIA_GPU="$(lspci | grep -i nvidia)"
 if [ -z "$IS_NVIDIA_GPU" ]; then
   MINIMUM="$(cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap_min | sort -n | tail -n1)"
   MAXIMUM="$(cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap_max | sort -n | head -n1)"
+  MINIMUM=$((MINIMUM / 1000000))
+  MAXIMUM=$((MAXIMUM / 1000000))
 else
   MINIMUM="$(nvidia-smi -q -d POWER | sed -nr "s/Min Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
   MAXIMUM="$(nvidia-smi -q -d POWER | sed -nr "s/Max Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
