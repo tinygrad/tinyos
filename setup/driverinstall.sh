@@ -11,8 +11,8 @@ if [ -z "$IS_NVIDIA_GPU" ]; then
   # Install AMD drivers
   mkdir -p -m=0755 /etc/apt/keyrings
   wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | tee /etc/apt/keyrings/rocm.gpg > /dev/null
-  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/6.1/ubuntu jammy main" | tee /etc/apt/sources.list.d/amdgpu.list > /dev/null
-  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/6.1 jammy main" | tee --append /etc/apt/sources.list.d/rocm.list > /dev/null
+  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/6.1.1/ubuntu jammy main" | tee /etc/apt/sources.list.d/amdgpu.list > /dev/null
+  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/6.1.1 jammy main" | tee --append /etc/apt/sources.list.d/rocm.list > /dev/null
   echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600 > /dev/null
   apt update -y
   apt install amdgpu-dkms rocm -y
