@@ -8,7 +8,7 @@ clean:
 
 download-deps:
 	mkdir -p build/deps
-	[ -f build/deps/gum.deb ] || curl -o build/deps/gum.deb -L "https://github.com/charmbracelet/gum/releases/download/v0.14.0/gum_0.14.0_amd64.deb"
+	[ -f build/deps/gum.deb ] || curl -o build/deps/gum.deb -L "https://github.com/charmbracelet/gum/releases/download/v0.14.1/gum_0.14.1_amd64.deb"
 
 build-venv:
 	bash build/build-venv.sh

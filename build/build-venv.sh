@@ -9,7 +9,7 @@ source build/venv/bin/activate
 pip install --upgrade pip
 
 # install deps
-pip install numpy numba pillow pyserial psutil
+pip install numpy numba pillow pyserial psutil evdev
 
 # exit venv
 deactivate

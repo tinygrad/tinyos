@@ -1,0 +1,15 @@
+[Unit]
+Description=tinybox LLM serve
+After=network.target
+
+[Service]
+Type=simple
+User=tiny
+Group=tiny
+Environment="JITBEAM=4"
+Environment="TQDM_DISABLE=1"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=python3 /home/tiny/tinygrad/examples/llama3.py --api --model /raid/weights/LLaMA-3/8B-SF-DPO/model.safetensors.index.json --size 8B --shard 4
+
+[Install]
+WantedBy=multi-user.target

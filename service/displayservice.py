@@ -4,7 +4,7 @@ sys.path.insert(0, "/opt/tinybox/tinyturing/")
 from display import Display, WIDTH, HEIGHT
 from socketserver import UnixStreamServer, StreamRequestHandler
 import threading, time, signal, os, random, logging, math, subprocess, glob
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] <%(filename)s:%(lineno)d::%(funcName)s> - %(message)s")
 from enum import Enum
 from abc import ABC, abstractmethod
 from queue import Queue
@@ -35,6 +35,16 @@ class AText(Displayable):
     text = display.text(self.text_states[self.current_state])
     display.blit(text, (400 - text.shape[0] // 2, 225 + (120 - text.shape[1] // 2)))
     self.current_state = (self.current_state + 1) % len(self.text_states)
+
+class Menu(Displayable):
+  def __init__(self, text: str): self.text = text
+  def display(self, display: Display):
+    # split text into lines
+    lines = self.text.split("\n")
+    starting_offset = 175 - (70 * (len(lines) - 1)) // 2
+    for i, line in enumerate(lines):
+      text = display.text(line)
+      display.blit(text, (400 - text.shape[0] // 2, starting_offset + (text.shape[1] // 2) + i * 70))
 
 class PositionableText(Displayable):
   def __init__(self, text: str, xy: tuple[int, int], align: str = "center"):
@@ -326,7 +336,7 @@ def get_disk_io_per_second() -> tuple[int, int]:
   last_disk_read, last_disk_write, last_disk_time = counter.read_bytes, counter.write_bytes, current_time
   return int(disk_read / 1e6), int(disk_write / 1e6)
 
-DisplayState = Enum("DisplayState", ["TEXT", "STATUS", "SLEEP"])
+DisplayState = Enum("DisplayState", ["STARTUP", "TEXT", "MENU", "STATUS", "SLEEP"])
 control_queue = Queue()
 display_thread_alive = True
 def display_thread():
@@ -340,7 +350,7 @@ def display_thread():
     logo = Image("/opt/tinybox/service/logo.png", (200, 56), (400, 154))
     sleep_screen = SleepScreen()
 
-    display_state = DisplayState.TEXT
+    display_state = DisplayState.STARTUP
     display_last_active = time.monotonic()
     start_time = time.monotonic()
     to_display: Displayable = AText([" ....", ". ...", ".. ..", "... .", ".... ", "... .", ".. ..", ". ..."])
@@ -355,6 +365,10 @@ def display_thread():
           display_state = DisplayState.TEXT
           to_display = args
           start_time = time.monotonic()
+        elif command == "menu":
+          display_state = DisplayState.MENU
+          to_display = args
+          start_time = time.monotonic()
         elif command == "status":
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
@@ -364,7 +378,7 @@ def display_thread():
             sleep_screen = SleepScreen()
       else:
         # reset display state if inactive for 30 seconds
-        if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
+        if time.monotonic() - display_last_active > 30 and (display_state == DisplayState.STATUS or display_state == DisplayState.STARTUP):
           logging.info("Display inactive for 30 seconds, switching back to sleep state")
           display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
@@ -373,14 +387,18 @@ def display_thread():
         # check if display should be in status state
         gpu_utilizations = get_gpu_utilizations()
         logging.debug(f"GPU Utilizations: {gpu_utilizations}")
-        if sum(gpu_utilizations) > 1 and time.monotonic() - start_time > 10:
+        if sum(gpu_utilizations) > 1 and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU:
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
 
         display.clear()
+        if display_state == DisplayState.STARTUP:
+          logo.display(display)
+          to_display.display(display)
         if display_state == DisplayState.TEXT:
           logo.display(display)
-          logging.debug(f"Displaying: {to_display}")
+          to_display.display(display)
+        elif display_state == DisplayState.MENU:
           to_display.display(display)
         elif display_state == DisplayState.STATUS:
           status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
@@ -410,6 +428,8 @@ class ControlHandler(StreamRequestHandler):
       control_queue.put(("text", Text("\n".join(args))))
     elif command == "atext":
       control_queue.put(("text", AText(args)))
+    elif command == "menu":
+      control_queue.put(("menu", Menu("\n".join(args))))
     elif command == "status":
       control_queue.put(("status", None))
     elif command == "sleep":
