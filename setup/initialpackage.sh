@@ -12,7 +12,7 @@ su tiny -c "git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad"
 # install tinygrad and deps
 pushd /home/tiny/tinygrad
 su tiny -c "pip install -e ."
-su tiny -c "pip install pillow"
+su tiny -c "pip install pillow tiktoken blobfile bottle"
 
 # install pytorch
 if [ -z "$IS_NVIDIA_GPU" ]; then
