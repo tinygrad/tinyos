@@ -53,7 +53,7 @@ async def power_button_pressed(count: int):
     case 1:
       if not in_menu:
         logging.info("powering off")
-        # subprocess.run(["systemctl", "poweroff"])
+        subprocess.run(["systemctl", "poweroff"])
       else:
         menu_selection = (menu_selection + 1) % len(MENU)
         update_menu()
