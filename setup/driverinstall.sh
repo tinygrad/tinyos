@@ -45,8 +45,5 @@ else
   # install cuda
   apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
 
-  # enable persistence mode
-  nvidia-smi -pm 1
-
   popd
 fi
