@@ -198,8 +198,11 @@ class SleepScreen(Displayable):
     if os.path.exists("/root/.bmc_password"):
       try:
         with open("/root/.bmc_password", "r") as f:
-          bmc_password = f.read().strip().split("=")[1]
+          bmc_password = f.read().strip().split("=")[1].strip()
         self.bmc_password_text = PositionableText(f"BMC PW: {bmc_password}", (WIDTH // 2, HEIGHT - 172), "center")
+        # try setting the bmc password
+        try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
+        except: logging.warning("Failed to set BMC password")
       except: logging.warning("Failed to read BMC password")
     else: logging.warning("BMC password file not found")
 
