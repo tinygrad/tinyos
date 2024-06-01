@@ -37,7 +37,7 @@ if [ -f /root/.bmc_password ]; then
   . /root/.bmc_password
 else
   # generate a random password for the bmc
-  BMC_PASSWORD="$(tr -cd '1234567890!@#$%^&*()-_=+[]{},.<>/?|qwertyuiopasdfghjkl;zxcvbnm' < /dev/random | head -c 12)"
+  BMC_PASSWORD="$(tr -cd '1234567890!@#$%^&*-_=+?qwertyuiopasdfghjkzxcvbnm' < /dev/random | head -c 12)"
   # write bmc password to file
   echo "BMC_PASSWORD=$BMC_PASSWORD" > /root/.bmc_password
 fi
