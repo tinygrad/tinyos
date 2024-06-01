@@ -1,0 +1,12 @@
+[Unit]
+Description=Second Boot
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=bash /opt/tinybox/setup/secondboot.sh
+
+[Install]
+WantedBy=multi-user.target

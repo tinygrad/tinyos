@@ -75,6 +75,7 @@ customization:
         - [ /dev/md/0, /raid, auto, "defaults,noatime,nofail", "0", "2" ]
       users: []
       runcmd:
+        - [ cloud-init-per, once, enablesecondboot, systemctl, enable, secondboot.service ]
         - [ cloud-init-per, once, enabledisplayservice, systemctl, enable, displayservice.service ]
         - [ cloud-init-per, always, startdisplayservice, systemctl, start, displayservice.service ]
         - [ cloud-init-per, once, enablebuttonservice, systemctl, enable, buttonservice.service ]
