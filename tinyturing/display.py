@@ -170,7 +170,7 @@ def _build_update(dirty:np.ndarray, fb, update):
 
 def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
   update = _build_update(dirty, fb, update_buffer).tobytes()
-  if len(update) % 249 == 0 or len(update) % 249 == 248: update = update + b"\x80\x00\x00\x00\x00\x00"
+  if len(update) % 249 == 0 or len(update) % 249 == 248 or len(update) % 249 == 247: update = update + b"\x80\x00\x00\x00\x00\x00"
   update_size = (len(update) + 2).to_bytes(4, "big")
   payload = UPDATE_BITMAP + update_size + b"\x00\x00\x00" + partial_update_count.to_bytes(4, "big")
   update_chunks = []
