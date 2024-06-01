@@ -19,8 +19,15 @@ fi
 function main {
   local limit="$1"
   if [ -z "$limit" ]; then
-    ercho "Limit not provided"
-    exit 1
+    # print the current limit
+    local curr
+    if [ -z "$IS_NVIDIA_GPU" ]; then
+      curr="$(cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap | sort -n | tail -n1)"
+    else
+      curr="$(nvidia-smi -q -d POWER | sed -nr "s/Current Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
+    fi
+    echo "Current power limit: $curr W"
+    exit 0
   fi
   if ((limit < MINIMUM || limit > MAXIMUM)); then
     ercho "Invalid limit: $limit"
