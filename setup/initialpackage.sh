@@ -26,3 +26,7 @@ su tiny -c "ln -s /raid/datasets/imagenet extra/datasets/"
 su tiny -c "ln -s /raid/weights ./"
 
 popd
+
+# remove the initial /opt/tinybox and clone the correct one into place
+rm -rf /opt/tinybox
+git clone "https://github.com/tinygrad/tinybox" /opt/tinybox
