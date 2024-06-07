@@ -1,0 +1,12 @@
+[Unit]
+Description=autoupdate tinybox
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=bash /opt/tinybox/service/autoupdate-tinybox.sh
+
+[Install]
+WantedBy=multi-user.target
