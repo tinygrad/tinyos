@@ -24,7 +24,7 @@ EOF
 
   # disable cwsr
   cat <<EOF > /etc/modprobe.d/amdgpu.conf
-options amdgpu cwsr_enable=0
+options amdgpu cwsr_enable=0 ppfeaturemask=0xffffffff
 EOF
 
   # update initramfs

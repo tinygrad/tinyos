@@ -4,6 +4,8 @@ set -eo pipefail
 # echo to stderr
 function ercho { printf "%s\n" "$*" >&2; }
 
+IS_NVIDIA_GPU="$(lspci | grep -i nvidia)"
+
 function main {
   local mode="$1"
   if [ -z "$mode" ]; then
@@ -12,7 +14,16 @@ function main {
   fi
   case "$mode" in
     auto)
+      # set case fan speeds
       ipmitool raw 0x3a 0xd8 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
+
+      # set gpu fan speeds
+      if [ -z "$IS_NVIDIA_GPU" ]; then
+        echo r > /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
+        echo c > /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
+      else
+        ercho "NVIDIA GPUs are not supported yet"
+      fi
       ;;
     manual)
       local fan_speed="$2"
@@ -25,11 +36,20 @@ function main {
         ercho "Valid range: 20-100"
         exit 1
       fi
-      # convert fan speed to hex
+
+      # set case fan speeds
       local fan_speed_hex
       fan_speed_hex=$(printf "%02x" "$fan_speed")
       ipmitool raw 0x3a 0xd8 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1
       ipmitool raw 0x3a 0xd6 $(printf "0x$fan_speed_hex %.0s" {1..16})
+
+      # set gpu fan speeds
+      if [ -z "$IS_NVIDIA_GPU" ]; then
+        echo "$fan_speed" > /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
+        echo c > /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
+      else
+        ercho "NVIDIA GPUs are not supported yet"
+      fi
       ;;
     *)
       ercho "Invalid mode: $mode"
