@@ -8,7 +8,7 @@ def find_power_button():
   raise Exception("power button not found")
 
 in_menu, menu_selection = False, 0
-MENU = ["exit", "start llm", "stop llm"]
+MENU = ["exit", "start llm", "stop llm", "provision"]
 def update_menu():
   global in_menu, menu_selection
 
@@ -72,10 +72,17 @@ async def power_button_pressed(count: int):
           case 1:
             logging.info("starting llm")
             subprocess.run(["systemctl", "start", "llmserve"])
+            in_menu = False
             update_menu()
           case 2:
             logging.info("stopping llm")
             subprocess.run(["systemctl", "stop", "llmserve"])
+            in_menu = False
+            update_menu()
+          case 3:
+            logging.info("provisioning")
+            subprocess.run(["systemctl", "start", "provision"])
+            in_menu = False
             update_menu()
     case 3:
       logging.info("entering menu")

@@ -1,0 +1,12 @@
+[Unit]
+Description=tinybox provisioning
+After=network.target
+
+[Service]
+Type=simple
+User=tiny
+Group=tiny
+ExecStart=bash /opt/tinybox/setup/provision.sh
+
+[Install]
+WantedBy=multi-user.target
