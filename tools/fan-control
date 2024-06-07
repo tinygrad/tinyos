@@ -19,8 +19,8 @@ function main {
 
       # set gpu fan speeds
       if [ -z "$IS_NVIDIA_GPU" ]; then
-        echo r > /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
-        echo c > /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
+        echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
+        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
       else
         ercho "NVIDIA GPUs are not supported yet"
       fi
@@ -45,8 +45,8 @@ function main {
 
       # set gpu fan speeds
       if [ -z "$IS_NVIDIA_GPU" ]; then
-        echo "$fan_speed" > /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
-        echo c > /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
+        echo "$fan_speed" | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
+        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
       else
         ercho "NVIDIA GPUs are not supported yet"
       fi
