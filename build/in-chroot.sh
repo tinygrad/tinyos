@@ -17,6 +17,7 @@ ln -s /opt/tinybox/tools/power-limit_completion.sh /etc/bash_completion.d/
 
 # symlink service files
 ln -s /opt/tinybox/setup/secondboot.service /etc/systemd/system/
+ln -s /opt/tinynbox/service/autoupdate-tinybox.service /etc/systemd/system/
 ln -s /opt/tinybox/service/buttonservice.service /etc/systemd/system/
 ln -s /opt/tinybox/service/displayservice.service /etc/systemd/system/
 ln -s /opt/tinybox/service/poweroff.service /etc/systemd/system/
