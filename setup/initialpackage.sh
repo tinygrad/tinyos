@@ -29,4 +29,4 @@ popd
 
 # remove the initial /opt/tinybox and clone the correct one into place
 rm -rf /opt/tinybox
-git clone "https://github.com/tinygrad/tinybox" /opt/tinybox
+git clone "https://github.com/tinygrad/tinyos" /opt/tinybox
