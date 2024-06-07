@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -x
 
+ROCM_VERSION=6.1.2
+NVIDIA_DRIVER_VERSION=550.90.07
+
 echo "atext,Installing Drivers.. ,Installing Drivers ..,Installing Drivers. ." | nc -U /run/tinybox-screen.sock
 
 # Check which gpus are installed
@@ -11,8 +14,8 @@ if [ -z "$IS_NVIDIA_GPU" ]; then
   # Install AMD drivers
   mkdir -p -m=0755 /etc/apt/keyrings
   wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | tee /etc/apt/keyrings/rocm.gpg > /dev/null
-  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/6.1.1/ubuntu jammy main" | tee /etc/apt/sources.list.d/amdgpu.list > /dev/null
-  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/6.1.1 jammy main" | tee --append /etc/apt/sources.list.d/rocm.list > /dev/null
+  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/$ROCM_VERSION/ubuntu jammy main" | tee /etc/apt/sources.list.d/amdgpu.list > /dev/null
+  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/$ROCM_VERSION jammy main" | tee --append /etc/apt/sources.list.d/rocm.list > /dev/null
   echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600 > /dev/null
   apt update -y
   apt install amdgpu-dkms rocm -y
@@ -39,7 +42,7 @@ else
   apt update -y
 
   # grab the patched p2p driver source
-  curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/550.54.15-p2p/nvidia-kernel-source-550-open-0ubuntu1_amd64.deb"
+  curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/$NVIDIA_DRIVER_VERSION-p2p/nvidia-kernel-source-550-open-0ubuntu1_amd64.deb"
   dpkg -i driver.deb
 
   # install cuda
