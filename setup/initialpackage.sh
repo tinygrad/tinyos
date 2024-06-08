@@ -30,3 +30,20 @@ popd
 # remove the initial /opt/tinybox and clone the correct one into place
 rm -rf /opt/tinybox
 git clone "https://github.com/tinygrad/tinyos" /opt/tinybox
+
+# write the correct environment variables for llmserve to function correctly
+cat <<EOF > /etc/llmserve.env
+JITBEAM=4
+TQDM_DISABLE=1
+PYTHONUNBUFFERED=1
+EOF
+
+if [ -z "$IS_NVIDIA_GPU" ]; then
+  tee --append /etc/llmserve.env <<EOF
+AMD=1
+EOF
+else
+  tee --append /etc/llmserve.env <<EOF
+NV=1
+EOF
+fi

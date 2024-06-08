@@ -9,6 +9,9 @@ chmod -x /etc/update-motd.d/*
 # install extra packages
 dpkg -i /opt/tinybox/build/deps/gum.deb
 
+# disable unattended-upgrades
+apt remove -y unattended-upgrades
+
 # symlink tools
 ln -s /opt/tinybox/tools/fan-control /usr/local/bin/
 ln -s /opt/tinybox/tools/fan-control_completion.sh /etc/bash_completion.d/
