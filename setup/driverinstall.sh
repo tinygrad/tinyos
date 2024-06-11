@@ -49,6 +49,11 @@ else
   # install cuda
   apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
 
+  # add /usr/local/cuda/bin to the path
+  cat <<EOF > /etc/profile.d/cuda.sh
+export PATH=\$PATH:/usr/local/cuda/bin
+EOF
+
   # disable unattended-upgrades for nvidia driver
   cat <<EOF > /etc/apt/apt.conf.d/50unattended-upgrades
 Unattended-Upgrade::Package-Blacklist {
