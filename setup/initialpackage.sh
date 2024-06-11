@@ -31,6 +31,14 @@ popd
 rm -rf /opt/tinybox
 git clone "https://github.com/wozeparrot/tinyos" /opt/tinybox
 
+# rebuild the venv
+pushd /opt/tinybox
+bash /opt/tinybox/build/build-venv.sh
+if [ -n "$IS_NVIDIA_GPU" ]; then
+  /opt/tinybox/build/venv/bin/python3 -m pip install nvidia-ml-py
+fi
+popd
+
 # write the correct environment variables for llmserve to function correctly
 cat <<EOF > /etc/llmserve.env
 JITBEAM=4

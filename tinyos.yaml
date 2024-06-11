@@ -93,7 +93,6 @@ customization:
         - [ cloud-init-per, once, driverinstall, bash, /opt/tinybox/setup/driverinstall.sh ]
         - [ cloud-init-per, once, initialpackage, bash, /opt/tinybox/setup/initialpackage.sh ]
         - [ cloud-init-per, once, correctperms, bash, /opt/tinybox/setup/correctperms.sh ]
-        - [ cloud-init-per, once, ensuredspackage, bash, /opt/tinybox/setup/ensuredspackage.sh ]
         - [ cloud-init-per, once, reboot, bash, /opt/tinybox/service/reboot.sh ]
       byobu_by_default: enable
       power_state:
