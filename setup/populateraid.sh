@@ -14,6 +14,7 @@ sysctl net.core.optmem_max=4194304
 sysctl net.ipv4.tcp_rmem="4096 87380 4194304"
 sysctl net.ipv4.tcp_wmem="4096 65536 4194304"
 sysctl net.ipv4.tcp_low_latency=1
+sysctl net.ipv4.tcp_congestion_control=bbr
 
 ip ad add 10.0.0.2/24 dev enp65s0f0np0
 ip link set enp65s0f0np0 up
@@ -31,4 +32,6 @@ rclone copy --config /opt/tinybox/setup/rclone.conf -P --copy-links --multi-thre
       ;;
   esac
 done
+sudo chown -R tiny:tiny /raid
 ip ad del 10.0.0.2/24 dev enp65s0f0np0
+echo "sleep" | nc -U /run/tinybox-screen.sock
