@@ -9,7 +9,7 @@ source build/venv/bin/activate
 pip install --upgrade pip
 
 # install deps
-pip install numpy numba pillow pyserial psutil evdev
+pip install numpy numba pillow pyserial psutil evdev redfish
 
 # exit venv
 deactivate
