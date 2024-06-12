@@ -29,7 +29,7 @@ popd
 
 # remove the initial /opt/tinybox and clone the correct one into place
 rm -rf /opt/tinybox
-git clone "https://github.com/wozeparrot/tinyos" /opt/tinybox
+git clone "https://github.com/tinygrad/tinyos" /opt/tinybox
 
 # rebuild the venv
 pushd /opt/tinybox
