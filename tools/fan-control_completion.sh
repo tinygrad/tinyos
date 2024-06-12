@@ -6,7 +6,7 @@ _fan-control()
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="auto manual"
+  opts="auto manual gpuauto gpumanual"
 
   # only complete the first argument
   if [[ ${COMP_CWORD} -eq 1 ]] ; then

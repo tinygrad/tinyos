@@ -2,7 +2,15 @@
 set -o pipefail
 
 # echo to stderr
-function ercho { printf "%s\n" "$*" >&2; }
+function ercho {
+  # see if -n was passed
+  if [ "$1" == "-n" ]; then
+    shift
+    printf "%s" "$*" >&2;
+  else
+    printf "%s\n" "$*" >&2;
+  fi
+}
 
 IS_NVIDIA_GPU="$(lspci | grep -i nvidia)"
 
@@ -16,14 +24,6 @@ function main {
     auto)
       # set case fan speeds
       ipmitool raw 0x3a 0xd8 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0 0x0
-
-      # set gpu fan speeds
-      if [ -z "$IS_NVIDIA_GPU" ]; then
-        echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
-        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
-      else
-        ercho "NVIDIA GPUs are not supported yet"
-      fi
       ;;
     manual)
       local fan_speed="$2"
@@ -42,18 +42,48 @@ function main {
       fan_speed_hex=$(printf "%02x" "$fan_speed")
       ipmitool raw 0x3a 0xd8 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1 0x1
       ipmitool raw 0x3a 0xd6 $(printf "0x$fan_speed_hex %.0s" {1..16})
+      ;;
+    gpuauto)
+      # set gpu fan speeds
+      if [ -z "$IS_NVIDIA_GPU" ]; then
+        echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
+        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
+      else
+        ercho "tinybox green does not support manual fan speed control."
+      fi
+      ;;
+    gpumanual)
+      local fan_speed="$2"
+      if [ -z "$fan_speed" ]; then
+        ercho "Fan speed not provided"
+        exit 1
+      fi
+      if ((fan_speed < 20 || fan_speed > 100)); then
+        ercho "Invalid fan speed: $fan_speed"
+        ercho "Valid range: 20-100"
+        exit 1
+      fi
 
       # set gpu fan speeds
       if [ -z "$IS_NVIDIA_GPU" ]; then
         echo "$fan_speed" | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
         echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
       else
-        ercho "NVIDIA GPUs are not supported yet"
+        ercho "tinybox green does not support manual fan speed control."
       fi
       ;;
     *)
       ercho "Invalid mode: $mode"
-      ercho "Valid modes: auto, manual"
+      ercho -n "Valid modes: auto, manual"
+      if [ -n "$IS_NVIDIA_GPU" ]; then
+        ercho -n ", gpuauto, gpumanual"
+      fi
+      ercho "               auto) set case fan speeds automatically"
+      ercho "     manual <speed>) set case fan speeds manually"
+      if [ -n "$IS_NVIDIA_GPU" ]; then
+        ercho "            gpuauto) set gpu fan speeds automatically"
+        ercho "  gpumanual <speed>) set gpu fan speeds manually"
+      fi
       exit 1
       ;;
   esac
