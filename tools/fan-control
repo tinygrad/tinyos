@@ -18,6 +18,17 @@ function main {
   local mode="$1"
   if [ -z "$mode" ]; then
     ercho "Mode not provided"
+    ercho -n "Valid modes: auto, manual"
+    if [ -n "$IS_NVIDIA_GPU" ]; then
+      ercho -n ", gpuauto, gpumanual"
+    fi
+    ercho
+    ercho "               auto) set case fan speeds automatically"
+    ercho "     manual <speed>) set case fan speeds manually"
+    if [ -n "$IS_NVIDIA_GPU" ]; then
+      ercho "            gpuauto) set gpu fan speeds automatically"
+      ercho "  gpumanual <speed>) set gpu fan speeds manually"
+    fi
     exit 1
   fi
   case "$mode" in
@@ -78,6 +89,7 @@ function main {
       if [ -n "$IS_NVIDIA_GPU" ]; then
         ercho -n ", gpuauto, gpumanual"
       fi
+      ercho
       ercho "               auto) set case fan speeds automatically"
       ercho "     manual <speed>) set case fan speeds manually"
       if [ -n "$IS_NVIDIA_GPU" ]; then
