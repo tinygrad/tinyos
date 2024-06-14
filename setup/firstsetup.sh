@@ -89,7 +89,7 @@ function set_timezone {
 
 function add_keys {
   local fetch_keys_method
-  fetch_keys_method="$(gum choose --header "Where to add SSH keys from?" github gitlab paste none)"
+  fetch_keys_method="$(gum choose --header "Where to add SSH keys from?" github gitlab manual none)"
   if [[ $? -eq 1 ]]; then
     return 2
   fi
@@ -161,11 +161,10 @@ function add_keys {
       gum log -sl info "" keys "$keys"
       gum confirm "Are the keys correct?" && break
     done
-  elif [[ "$fetch_keys_method" == "paste" ]]; then
-    # paste keys
+  elif [[ "$fetch_keys_method" == "manual" ]]; then
     local keys
     while true; do
-      keys="$(gum write --header "Paste your SSH keys one per line. Press Ctrl+D to save and continue." --placeholder "ssh-ed25519...")"
+      keys="$(gum write --header "Paste or type your SSH keys one per line. Press Ctrl+D to save and continue." --placeholder "ssh-ed25519...")"
       if [[ $? -eq 1 ]]; then
         return 2
       fi
@@ -192,6 +191,10 @@ function add_keys {
   echo "$keys" > "$HOME"/.ssh/authorized_keys
 }
 
+function prompt_update {
+  gum confirm "Update packages?" && sudo apt update -y && sudo apt upgrade -y
+}
+
 function prompt_reboot {
   if [[ $NEED_REBOOT -eq 0 ]]; then
     gum log -sl info "No changes require a reboot."
@@ -215,6 +218,8 @@ function main {
     fi
     break
   done
+
+  prompt_update
 
   # remove from .profile
   sed -i '/bash \/opt\/tinybox\/setup\/firstsetup.sh/d' "$HOME"/.profile
