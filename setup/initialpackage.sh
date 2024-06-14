@@ -10,7 +10,7 @@ IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 su tiny -c "git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad"
 
 # install tinygrad and deps
-pushd /home/tiny/tinygrad
+pushd /home/tiny/tinygrad || exit
 su tiny -c "pip install -e ."
 su tiny -c "pip install pillow tiktoken blobfile bottle tqdm"
 
@@ -25,19 +25,26 @@ fi
 su tiny -c "ln -s /raid/datasets/imagenet extra/datasets/"
 su tiny -c "ln -s /raid/weights ./"
 
-popd
+popd || exit
 
 # remove the initial /opt/tinybox and clone the correct one into place
 rm -rf /opt/tinybox
 git clone "https://github.com/tinygrad/tinyos" /opt/tinybox
 
 # rebuild the venv
-pushd /opt/tinybox
+pushd /opt/tinybox || exit
 bash /opt/tinybox/build/build-venv.sh
 if [ -n "$IS_NVIDIA_GPU" ]; then
   /opt/tinybox/build/venv/bin/python3 -m pip install nvidia-ml-py
 fi
-popd
+popd || exit
+
+# install gum
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.charm.sh/apt/gpg.key | gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | tee /etc/apt/sources.list.d/charm.list
+apt update -y
+apt install gum -y
 
 # write the correct environment variables for llmserve to function correctly
 cat <<EOF > /etc/llmserve.env
