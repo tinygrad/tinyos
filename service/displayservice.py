@@ -211,6 +211,7 @@ class SleepScreen(Displayable):
     self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH // 2, HEIGHT - 172), "center")
 
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
+    ip = ip.split(" ")[0] if ip else "N/A"
     self.ip_text = PositionableText(f"IP: {ip}", (WIDTH // 2, HEIGHT - 102), "center")
 
     hostname = subprocess.run(["hostname"], capture_output=True).stdout.decode().strip()
