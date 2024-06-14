@@ -1,4 +1,4 @@
-all: download-deps build
+all: build
 
 clean:
 	rm -rf build/venv
