@@ -18,7 +18,7 @@ if [ -z "$IS_NVIDIA_GPU" ]; then
   echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/$ROCM_VERSION jammy main" | tee --append /etc/apt/sources.list.d/rocm.list > /dev/null
   echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600 > /dev/null
   apt update -y
-  apt install amdgpu-dkms rocm -y
+  apt install amdgpu-dkms rocm rocm-bandwidth-test -y
   tee --append /etc/ld.so.conf.d/rocm.conf <<EOF
 /opt/rocm/lib
 /opt/rocm/lib64
