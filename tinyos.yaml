@@ -123,6 +123,7 @@ customization:
     - name: time
     # for services
     - name: python3
+    - name: python-is-python3
     - name: python3-pip
     - name: python3-venv
     - name: netcat-openbsd
