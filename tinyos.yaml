@@ -104,8 +104,8 @@ customization:
   extra-packages:
     # bootloader
     - name: grub-efi-amd64-signed
-    - name: shim-signed
     - name: grub2-common
+    - name: shim-signed
     # preinstalled
     - name: bash-completion
     - name: btop
@@ -117,16 +117,17 @@ customization:
     - name: jq
     - name: locales
     - name: nfs-common
+    - name: parallel
     - name: rclone
     - name: ripgrep
     - name: rsync
     - name: time
     # for services
-    - name: python3
+    - name: netcat-openbsd
     - name: python-is-python3
+    - name: python3
     - name: python3-pip
     - name: python3-venv
-    - name: netcat-openbsd
     # mdns
     - name: avahi-daemon
   extra-snaps:
