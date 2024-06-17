@@ -1,0 +1,117 @@
+#!/bin/bash
+set -e
+# Inspired by https://gist.github.com/akorn/644855ddaa8065f564be
+
+# Usage:
+#   rsync_parallel.sh [--parallel=N] [rsync args...]
+# 
+# Options:
+#   --parallel=N	Use N parallel processes for transfer. Default is to use all available processors (`nproc`) or fail back to 10.
+#
+# Notes:
+#   * Requires GNU Parallel
+#   * Use with ssh-keys. Lots of password prompts will get very annoying.
+#   * Does an itemize-changes first, then chunks the resulting file list and launches N parallel
+#     rsyncs to transfer a chunk each.
+#   * be a little careful with the options you pass through to rsync. Normal ones will work, you 
+#     might want to test weird options upfront.
+#
+
+# Define colours for STDERR text
+RED='\033[0;31m'
+ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+if ! command -v parallel &> /dev/null
+then
+  echo -e "${RED}parallel could not be found${NC}"
+  exit
+fi
+
+if [[ "$1" == --parallel=* ]]; then
+  PARALLEL_RSYNC="${1##*=}"
+  shift
+else
+  PARALLEL_RSYNC=$(nproc 2> /dev/null || echo 10)
+fi
+echo -e "${GREEN}INFO: Using up to ${PARALLEL_RSYNC} processes for transfer ...${NC}"
+
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "${TMPDIR}"' EXIT
+
+echo -e "${GREEN}INFO: Determining file list for transfer ...${NC}"
+# sorted by size (descending)
+rsync "$@" --out-format="%l %n" --no-v --dry-run 2> /dev/null \
+  | grep -v "sending incremental file list" \
+  | sort --numeric-sort --reverse \
+  > "${TMPDIR}/files.all"
+
+# check for nothing-to-do
+TOTAL_FILES=$(wc -l < "${TMPDIR}/files.all")
+TOTAL_SIZE=$(awk '{ts+=$1}END{printf "%.0f", ts}' < "${TMPDIR}/files.all")
+echo -e "${GREEN}INFO: ${TOTAL_FILES} ($(( TOTAL_SIZE/1024**2 )) MB) files to transfer.${NC}"
+if [ "${TOTAL_FILES}" -eq "0" ]; then
+  echo -e "${ORANGE}WARN: Nothing to transfer :)${NC}"
+  exit 0
+fi
+
+function array_min {
+  ARR=("$@")
+
+  # Default index for min value
+  min_i=0
+
+  # Default min value
+  min_v=${ARR[$min_i]}
+
+  for i in "${!ARR[@]}"; do
+    v="${ARR[$i]}"
+
+    (( v < min_v )) && min_v=${v} && min_i=${i}
+  done
+
+  MIN_I="${min_i}"
+  #echo "${min_i}"
+}
+
+echo -e "${GREEN}INFO: Distributing files among chunks ...${NC}"
+# declare chunk-size array
+for ((I = 0 ; I < PARALLEL_RSYNC ; I++ )); do
+  CHUNKS["${I}"]=0 
+done
+
+# add each file to the emptiest chunk, so they're as balanced by size as possible
+PROGRESS=0
+SECONDS=0
+while read -r FSIZE FPATH; do
+  PROGRESS=$((PROGRESS+1))
+
+  array_min "${CHUNKS[@]}"
+  #MIN_I=$(array_min ${CHUNKS[@]})
+
+  CHUNKS[MIN_I]=$(( CHUNKS[MIN_I] + FSIZE ))
+  echo "${FPATH}" >> "${TMPDIR}/chunk.${MIN_I}"
+
+  if ! ((PROGRESS % 25000)); then
+    >&2 echo -e "${GREEN}INFO: ${PROGRESS} of ${TOTAL_FILES} (${SECONDS}s)${NC}"
+  fi
+done < "${TMPDIR}/files.all"
+# Reverse the list of files in every other chunk so some are sorted largest->smallest and others smallest->largest
+# This will aid transfer efficiency, so some "queues" are processing large files first, while others are processing small files first.
+for ((I = 1 ; I < PARALLEL_RSYNC ; I+=2 )); do
+  # If the list of files to transfer is small, we may not have any files to work with
+  if [ ! -f "${TMPDIR}/chunk.${I}" ]; then
+    continue
+  fi
+  
+  tac "${TMPDIR}/chunk.${I}" > "${TMPDIR}/chunk.${I}.r" && mv "${TMPDIR}/chunk.${I}.r" "${TMPDIR}/chunk.${I}"
+done
+
+echo -e "${GREEN}DONE (${SECONDS}s)${NC}"
+
+#find "${TMPDIR}" -type f -name "chunk.*" -exec cat {} \;
+
+echo -e "${GREEN}INFO: Starting transfers ...${NC}"
+find "${TMPDIR}" -type f -name "chunk.*" | parallel -j "${PARALLEL_RSYNC}" -t --verbose --progress rsync --files-from={} "$@"
+echo -e "${GREEN}DONE (${SECONDS}s)${NC}"
