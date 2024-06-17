@@ -17,3 +17,7 @@ sleep 1
 if [ -z "$IS_NVIDIA_GPU" ]; then
   su tiny -c "bash /opt/tinybox/setup/trainresnet.sh"
 fi
+
+sleep 1
+echo "text,Provisioning Complete" | nc -U /run/tinybox-screen.sock
+sleep 1
