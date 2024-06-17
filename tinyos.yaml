@@ -115,6 +115,8 @@ customization:
     - name: git
     - name: ipmitool
     - name: jq
+    - name: linux-cloud-tools-generic-hwe-22.04
+    - name: linux-tools-generic-hwe-22.04
     - name: locales
     - name: man-db
     - name: nfs-common
