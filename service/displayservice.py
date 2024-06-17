@@ -199,7 +199,7 @@ class SleepScreen(Displayable):
       try:
         with open("/root/.bmc_password", "r") as f:
           bmc_password = f.read().strip().split("=")[1].strip()
-        self.bmc_password_text = PositionableText(f"BMC PW: {bmc_password}", (WIDTH // 2, HEIGHT - 242), "center")
+        self.bmc_password_text = PositionableText(f"BMC PW: {bmc_password}", (WIDTH // 2, HEIGHT - 172), "center")
         # try setting the bmc password
         try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
         except: logging.warning("Failed to set BMC password")
@@ -208,26 +208,21 @@ class SleepScreen(Displayable):
 
     bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
     bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
-    self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH // 2, HEIGHT - 172), "center")
+    self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH // 2, HEIGHT - 102), "center")
 
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
-    ip = ip.split(" ")[0] if ip else "N/A"
-    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH // 2, HEIGHT - 102), "center")
-
-    hostname = subprocess.run(["hostname"], capture_output=True).stdout.decode().strip()
-    self.hostname_text = PositionableText(f"{hostname}.local", (WIDTH // 2, HEIGHT - 32), "center")
+    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH // 2, HEIGHT - 32), "center")
 
     if hasattr(self, "bmc_password_text"):
-      self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 277, WIDTH - WIDTH // 5, (255, 255, 255))
-      self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154), lower_bound=HEIGHT - 277)
-    else:
       self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 207, WIDTH - WIDTH // 5, (255, 255, 255))
       self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154), lower_bound=HEIGHT - 207)
+    else:
+      self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 137, WIDTH - WIDTH // 5, (255, 255, 255))
+      self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154), lower_bound=HEIGHT - 137)
 
   def display(self, display: Display):
     self.logo.display(display)
     self.horizontal_line.display(display)
-    self.hostname_text.display(display)
     self.ip_text.display(display)
     self.bmc_ip_text.display(display)
     if hasattr(self, "bmc_password_text"): self.bmc_password_text.display(display)
