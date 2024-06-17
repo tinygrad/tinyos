@@ -116,6 +116,7 @@ customization:
     - name: ipmitool
     - name: jq
     - name: locales
+    - name: man-db
     - name: nfs-common
     - name: parallel
     - name: rclone
