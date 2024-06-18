@@ -44,6 +44,9 @@ customization:
       # default grub config
       - source: ./misc/grub
         destination: /etc/default/grub
+      # default initramfs modules
+      - source: ./misc/modules
+        destination: /etc/initramfs-tools/modules
       # fix raid array mounting quirks
       - source: ./misc/mdadm.conf
         destination: /etc/mdadm/mdadm.conf
