@@ -86,7 +86,7 @@ customization:
         - [ cloud-init-per, once, enablereboot, systemctl, enable, reboot.service ]
         - [ cloud-init-per, once, enablesleeping, systemctl, enable, sleeping.service ]
         - [ cloud-init-per, once, hostname, hostnamectl, hostname, tinybox ]
-        - [ cloud-init-per, once, ntp, timedatectl, set-ntp, true ]
+        - [ cloud-init-per, once, ntp, timedatectl, set-ntp, "true" ]
         - [ cloud-init-per, once, adduser, bash, /opt/tinybox/setup/adduser.sh ]
         - [ cloud-init-per, once, update, bash, /opt/tinybox/setup/update.sh ]
         - [ cloud-init-per, once, raidsetup, bash, /opt/tinybox/setup/raidsetup.sh ]
