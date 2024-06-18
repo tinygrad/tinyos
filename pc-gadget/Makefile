@@ -23,6 +23,7 @@ ARCHIVE := $(if $(findstring $(ARCH),amd64 i386),http://archive.ubuntu.com/ubunt
 EFI_ARCH_amd64 := x64
 EFI_ARCH_arm64 := aa64
 EFI_ARCH = $(EFI_ARCH_$(ARCH))
+EFI_ARCH_UPPER = $(shell echo $(EFI_ARCH) | tr '[:lower:]' '[:upper:]')
 GRUB_TARGET_amd64 := x86_64-efi-signed
 GRUB_TARGET_arm64 := arm64-efi-signed
 GRUB_TARGET = $(GRUB_TARGET_$(ARCH))
@@ -87,16 +88,20 @@ boot:
 	$(MAKE) stage-package package=shim-signed
 
 	if [ -f "$(SHIM_LATEST)" ]; then \
-		cp $(SHIM_LATEST) shim.efi.signed; \
+		cp $(SHIM_LATEST) shim$(EFI_ARCH).efi; \
 	else \
-		cp $(SHIM_SIGNED) shim.efi.signed; \
+		cp $(SHIM_SIGNED) shim$(EFI_ARCH).efi; \
 	fi
 	cp $(STAGEDIR)/usr/lib/grub/$(GRUB_TARGET)/grub$(EFI_ARCH).efi.signed grub$(EFI_ARCH).efi
+	cp $(STAGEDIR)/usr/lib/shim/BOOT$(EFI_ARCH_UPPER).CSV BOOT$(EFI_ARCH_UPPER).CSV
+	cp $(STAGEDIR)/usr/lib/shim/fb$(EFI_ARCH).efi fb$(EFI_ARCH).efi
+	cp $(STAGEDIR)/usr/lib/shim/mm$(EFI_ARCH).efi mm$(EFI_ARCH).efi
 
 install: boot
 	mkdir -p $(DESTDIR)
 	install -m 644 \
-	    $(if $(LEGACY_BOOT),pc-boot.img pc-core.img) shim.efi.signed grub$(EFI_ARCH).efi \
+	    $(if $(LEGACY_BOOT),pc-boot.img pc-core.img) shim$(EFI_ARCH).efi grub$(EFI_ARCH).efi \
+	    BOOT$(EFI_ARCH_UPPER).CSV fb$(EFI_ARCH).efi mm$(EFI_ARCH).efi \
 	    $(DESTDIR)/
 	install -m 644 grub.conf grub.cfg $(DESTDIR)/
 	# For classic builds we also need to prime the gadget.yaml
@@ -107,7 +112,8 @@ install: boot
 # only used locally, not relevant for snapcraft, livecd-rootfs or ubuntu-image
 clean:
 	rm -rf $(STAGEDIR)
-	rm -f shim.efi.signed grub$(EFI_ARCH).efi
+	rm -f pc-boot.img pc-core.img shim$(EFI_ARCH).efi grub$(EFI_ARCH).efi \
+	    BOOT$(EFI_ARCH_UPPER).CSV fb$(EFI_ARCH).efi mm$(EFI_ARCH).efi
 	rm -f gadget.yaml
 	rm -rf $(DESTDIR)
 

@@ -6,11 +6,21 @@ volumes:
         type: EF,C12A7328-F81F-11D2-BA4B-00A0C93EC93B
         filesystem: vfat
         filesystem-label: system-boot
-        size: 50M
+        size: 256M
         content:
+          - source: shimaa64.efi
+            target: EFI/BOOT/BOOTAA64.efi
+          - source: fbaa64.efi
+            target: EFI/BOOT/fbaa64.efi
+          - source: mmaa64.efi
+            target: EFI/BOOT/mmaa64.efi
+          - source: BOOTAA64.CSV
+            target: EFI/ubuntu/BOOTAA64.CSV
           - source: grubaa64.efi
-            target: EFI/boot/grubaa64.efi
-          - source: shim.efi.signed
-            target: EFI/boot/bootaa64.efi
+            target: EFI/ubuntu/grubaa64.efi
           - source: grub.cfg
             target: EFI/ubuntu/grub.cfg
+          - source: mmaa64.efi
+            target: EFI/ubuntu/mmaa64.efi
+          - source: shimaa64.efi
+            target: EFI/ubuntu/shimaa64.efi

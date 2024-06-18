@@ -9,12 +9,22 @@ volumes:
         filesystem-label: system-boot
         size: 1G
         content:
-          - source: grubx64.efi
-            target: EFI/boot/grubx64.efi
-          - source: shim.efi.signed
-            target: EFI/boot/bootx64.efi
+          - source: shimx64.efi
+            target: EFI/BOOT/BOOTX64.EFI
+          - source: fbx64.efi
+            target: EFI/BOOT/fbx64.efi
+          - source: mmx64.efi
+            target: EFI/BOOT/mmx64.efi
+          - source: BOOTX64.CSV
+            target: EFI/ubuntu/BOOTX64.CSV
           - source: grub.cfg
             target: EFI/ubuntu/grub.cfg
+          - source: grubx64.efi
+            target: EFI/ubuntu/grubx64.efi
+          - source: mmx64.efi
+            target: EFI/ubuntu/mmx64.efi
+          - source: shimx64.efi
+            target: EFI/ubuntu/shimx64.efi
       - name: writable
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         role: system-data
