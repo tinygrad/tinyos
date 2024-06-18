@@ -3,24 +3,24 @@
 sleep 1
 
 # TCP/IP performance tuning
-sysctl net.ipv4.tcp_timestamps=0
-sysctl net.ipv4.tcp_sack=1
-sysctl net.core.netdev_max_backlog=250000
-sysctl net.core.rmem_max=4194304
-sysctl net.core.wmem_max=4194304
-sysctl net.core.rmem_default=4194304
-sysctl net.core.wmem_default=4194304
-sysctl net.core.optmem_max=4194304
-sysctl net.ipv4.tcp_rmem="4096 87380 4194304"
-sysctl net.ipv4.tcp_wmem="4096 65536 4194304"
-sysctl net.ipv4.tcp_low_latency=1
-sysctl net.ipv4.tcp_congestion_control=bbr
+sudo sysctl net.ipv4.tcp_timestamps=0
+sudo sysctl net.ipv4.tcp_sack=1
+sudo sysctl net.core.netdev_max_backlog=250000
+sudo sysctl net.core.rmem_max=4194304
+sudo sysctl net.core.wmem_max=4194304
+sudo sysctl net.core.rmem_default=4194304
+sudo sysctl net.core.wmem_default=4194304
+sudo sysctl net.core.optmem_max=4194304
+sudo sysctl net.ipv4.tcp_rmem="4096 87380 4194304"
+sudo sysctl net.ipv4.tcp_wmem="4096 65536 4194304"
+sudo sysctl net.ipv4.tcp_low_latency=1
+sudo sysctl net.ipv4.tcp_congestion_control=bbr
 
-ip ad add 10.0.0.2/24 dev enp65s0f0np0
-ip link set enp65s0f0np0 up
-ip link set enp65s0f0np0 mtu 9000
+sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
+sudo ip link set enp65s0f0np0 up
+sudo ip link set enp65s0f0np0 mtu 9000
 
-/opt/tinybox/setup/parallel-rsync/prsync -az --zc=zstd --inplace rsync://10.0.0.1:2555/raid/ /raid/ &
+/opt/tinybox/setup/parallel-rsync/prsync -aWz --zc=zstd --inplace rsync://10.0.0.1:2555/raid/ /raid/ &
 sleep 1
 
 # grab the total size of all the files
@@ -29,6 +29,9 @@ while [ -z "$total_size" ]; do
   sleep 1
   total_size=$(find /tmp -name "total.size" -exec cat {} \;)
 done
+
+# total_size is including what is already on the disk
+total_size=$((total_size + $(df -B1 /raid | tail -n 1 | awk '{print $3}')))
 
 # watch the progress of all the rsyncs
 last_transferred_size=0
@@ -42,7 +45,11 @@ while true; do
   # calculate the speed of the transfer in MB/s
   speed=$(echo "scale=2; ($transferred_size - $last_transferred_size) / 1024 / 1024" | bc)
   # calculate the ETA
-  eta=$(echo "scale=2; ($total_size - $transferred_size) / ($transferred_size - $last_transferred_size)" | bc | awk '{printf "%d:%02d:%02d", $1/3600, $1%3600/60, $1%60}')
+  if [ "$speed" == "0" ]; then
+    eta="Unknown"
+  else
+    eta=$(echo "scale=2; ($total_size - $transferred_size) / ($transferred_size - $last_transferred_size)" | bc | awk '{printf "%d:%02d:%02d", $1/3600, $1%3600/60, $1%60}')
+  fi
   last_transferred_size=$transferred_size
 
   echo "text,Populating RAID,${speed}MB/s,${percentage}% - ${eta}" | nc -U /run/tinybox-screen.sock
@@ -52,8 +59,8 @@ while true; do
   fi
 done
 
-chown -R tiny:tiny /raid
+sudo chown -R tiny:tiny /raid
 
 
-ip ad del 10.0.0.2/24 dev enp65s0f0np0
+sudo ip ad del 10.0.0.2/24 dev enp65s0f0np0
 echo "sleep" | nc -U /run/tinybox-screen.sock

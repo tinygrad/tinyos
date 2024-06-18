@@ -15,7 +15,7 @@ echo "text,RAID Populated,Starting ResNet Train" | nc -U /run/tinybox-screen.soc
 sleep 1
 
 if [ -z "$IS_NVIDIA_GPU" ]; then
-  su tiny -c "bash /opt/tinybox/setup/trainresnet.sh"
+  bash /opt/tinybox/setup/trainresnet.sh
 fi
 
 sleep 1
