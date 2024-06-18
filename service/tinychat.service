@@ -1,12 +1,12 @@
 [Unit]
-Description=tinybox LLM serve
+Description=tinychat LLM
 After=network.target
 
 [Service]
 Type=simple
 User=tiny
 Group=tiny
-EnvironmentFile=/etc/llmserve.env
+EnvironmentFile=/etc/tinychat.env
 ExecStart=python3 /home/tiny/tinygrad/examples/llama3.py --model /raid/weights/LLaMA-3/8B-SF-DPO/model.safetensors.index.json --size 8B --shard 4 --port 80
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 

@@ -81,7 +81,7 @@ customization:
         - [ cloud-init-per, once, enablebuttonservice, systemctl, enable, buttonservice.service ]
         - [ cloud-init-per, always, startbuttonservice, systemctl, start, buttonservice.service ]
         - [ cloud-init-per, once, enableautoupdate, systemctl, enable, autoupdate-tinybox.service ]
-        - [ cloud-init-per, once, enablellmserve, systemctl, enable, llmserve.service ]
+        - [ cloud-init-per, once, enabletinychat, systemctl, enable, tinychat.service ]
         - [ cloud-init-per, once, enablepoweroff, systemctl, enable, poweroff.service ]
         - [ cloud-init-per, once, enablereboot, systemctl, enable, reboot.service ]
         - [ cloud-init-per, once, enablesleeping, systemctl, enable, sleeping.service ]
@@ -111,6 +111,7 @@ customization:
     - name: btop
     - name: build-essential
     - name: clang
+    - name: fd-find
     - name: file
     - name: git
     - name: ipmitool

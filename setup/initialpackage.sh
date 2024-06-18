@@ -46,19 +46,19 @@ echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *
 apt update -y
 apt install gum -y
 
-# write the correct environment variables for llmserve to function correctly
-cat <<EOF > /etc/llmserve.env
+# write the correct environment variables for tinychat to function correctly
+cat <<EOF > /etc/tinychat.env
 JITBEAM=4
 TQDM_DISABLE=1
 PYTHONUNBUFFERED=1
 EOF
 
 if [ -z "$IS_NVIDIA_GPU" ]; then
-  tee --append /etc/llmserve.env <<EOF
+  tee --append /etc/tinychat.env <<EOF
 AMD=1
 EOF
 else
-  tee --append /etc/llmserve.env <<EOF
+  tee --append /etc/tinychat.env <<EOF
 NV=1
 EOF
 fi

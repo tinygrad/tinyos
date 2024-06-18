@@ -8,19 +8,19 @@ def find_power_button():
   raise Exception("power button not found")
 
 in_menu, menu_selection = False, 0
-MENU = ["exit", "start llm", "stop llm", "provision"]
+MENU = ["exit", "start tinychat", "stop tinychat", "provision"]
 def update_menu():
   global in_menu, menu_selection
 
-  llm_status = subprocess.run(["systemctl", "is-active", "llmserve"], capture_output=True).stdout.decode().strip() == "active"
-  llm_status = " (running)" if llm_status else " (stopped)"
+  tc_status = subprocess.run(["systemctl", "is-active", "tinychat"], capture_output=True).stdout.decode().strip() == "active"
+  tc_status = " (running)" if tc_status else " (stopped)"
 
   if in_menu:
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
       s.connect("/run/tinybox-screen.sock")
       # build menu text
       # add running status
-      menu = [f"{t}{llm_status if 'llm' in t else ''}" for t in MENU]
+      menu = [f"{t}{tc_status if 'tinychat' in t else ''}" for t in MENU]
       # add selection marker
       menu = ",".join(f"{'> ' if i == menu_selection else ''}{item}" for i, item in enumerate(menu))
       s.sendall(f"menu,{menu}".encode())
@@ -70,13 +70,13 @@ async def power_button_pressed(count: int):
             in_menu = False
             update_menu()
           case 1:
-            logging.info("starting llm")
-            subprocess.run(["systemctl", "start", "llmserve"])
+            logging.info("starting tinychat")
+            subprocess.run(["systemctl", "start", "tinychat"])
             in_menu = False
             update_menu()
           case 2:
-            logging.info("stopping llm")
-            subprocess.run(["systemctl", "stop", "llmserve"])
+            logging.info("stopping tinychat")
+            subprocess.run(["systemctl", "stop", "tinychat"])
             in_menu = False
             update_menu()
           case 3:
