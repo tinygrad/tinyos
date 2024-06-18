@@ -8,6 +8,8 @@ while ! ip ad | grep -q enp65s0f0np0; do
   sleep 1
 done
 
+echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
+
 bash /opt/tinybox/setup/populateraid.sh
 sleep 1
 
