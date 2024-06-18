@@ -39,8 +39,6 @@ customization:
       # build-time chroot setup
       - source: ./build/in-chroot.sh
         destination: /opt/tinybox/build/in-chroot.sh
-      - source: ./build/deps/
-        destination: /opt/tinybox/build/deps/
       # default grub config
       - source: ./misc/grub
         destination: /etc/default/grub
