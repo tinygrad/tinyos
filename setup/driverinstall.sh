@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -x
 
-ROCM_VERSION=6.1.2
+ROCM_VERSION=6.1.3
 NVIDIA_DRIVER_VERSION=550.90.07
 
 echo "atext,Installing Drivers.. ,Installing Drivers ..,Installing Drivers. ." | nc -U /run/tinybox-screen.sock
@@ -62,4 +62,6 @@ Unattended-Upgrade::Package-Blacklist {
 };
 EOF
 
+  # hold the nvidia driver
+  apt-mark hold nvidia-driver-550-open cuda-drivers-550 cuda-toolkit-12-4
 fi
