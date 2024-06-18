@@ -4,10 +4,13 @@ TMPDIR = sys.argv[1]
 PARALLEL_RSYNC = int(sys.argv[2])
 
 with open(f"{TMPDIR}/files.all", "r") as f:
-  files = f.readlines()
+  rawfiles = f.readlines()
 
 # format is "fsize fname"
-files = [(int(f.split(" ")[0]), " ".join(f.split(" ")[1:]).strip()) for f in files]
+files = []
+for f in rawfiles:
+  try: files.append((int(f.split(" ")[0]), " ".join(f.split(" ")[1:]).strip()))
+  except: pass
 
 # put file in the chunk with the smallest size
 chunks = [[0, []] for _ in range(PARALLEL_RSYNC)]
