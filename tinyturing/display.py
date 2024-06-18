@@ -41,7 +41,7 @@ class Display:
         break
     else:
       logging.error("Display not found")
-      raise SystemExit
+      raise RuntimeError("Display not found")
     self.lcd = serial.Serial(port.device, 1825200 * 2, timeout=1, write_timeout=1)
 
   def send_command(self, command, payload=None):
