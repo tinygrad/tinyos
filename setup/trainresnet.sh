@@ -32,6 +32,23 @@ LOGFILE="resnet_${color}_${DATETIME}_${SEED}.log"
 BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py | tee "$LOGFILE"
 
 # run
+START_TIME=$(date +%s)
 PARALLEL=0 RUNMLPERF=1 EVAL_START_EPOCH=3 EVAL_FREQ=4 python3 examples/mlperf/model_train.py | tee -a "$LOGFILE"
+END_TIME=$(date +%s)
+
+# ensure we are within 5% of the expected time or under the expected time
+if [ -z "$IS_NVIDIA_GPU" ]; then
+  EXPECTED_TIME=9900
+else
+  EXPECTED_TIME=7200
+fi
+
+if [ $((END_TIME - START_TIME)) -gt $((EXPECTED_TIME * 105 / 100)) ]; then
+  echo "text,Stress Test Failed,Expected time exceeded" | nc -U /run/tinybox-screen.sock
+  exit 1
+else
+  echo "text,Stress Test Passed,$((END_TIME - START_TIME))s" | nc -U /run/tinybox-screen.sock
+  sleep 1
+fi
 
 popd

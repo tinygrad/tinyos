@@ -39,12 +39,62 @@ if [ -n "$IS_NVIDIA_GPU" ]; then
 fi
 popd || exit
 
-# install gum
+# install gum & mods
 mkdir -p /etc/apt/keyrings
 curl -fsSL https://repo.charm.sh/apt/gpg.key | gpg --dearmor -o /etc/apt/keyrings/charm.gpg
 echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | tee /etc/apt/sources.list.d/charm.list
 apt update -y
-apt install gum -y
+apt install gum mods -y
+cat <<EOF > /home/tiny/.config/mods/mods.conf
+# Default model (gpt-3.5-turbo, gpt-4, ggml-gpt4all-j...).
+default-model: tinychat
+# Text to append when using the -f flag.
+format-text:
+  markdown: 'Format the response as markdown without enclosing backticks.'
+  json: 'Format the response as json without enclosing backticks.'
+  raw: ''
+# List of predefined system messages that can be used as roles.
+roles:
+  "default": []
+# Ask for the response to be formatted as markdown unless otherwise set.
+format: false
+# System role to use.
+role: "default"
+# Render output as raw text when connected to a TTY.
+raw: false
+# Quiet mode (hide the spinner while loading and stderr messages for success).
+quiet: false
+# Temperature (randomness) of results, from 0.0 to 2.0.
+temp: 1.0
+# TopP, an alternative to temperature that narrows response, from 0.0 to 1.0.
+topp: 1.0
+# Turn off the client-side limit on the size of the input into the model.
+no-limit: true
+# Wrap formatted output at specific width (default is 80)
+word-wrap: 120
+# Include the prompt from the arguments in the response.
+include-prompt-args: false
+# Include the prompt from the arguments and stdin, truncate stdin to specified number of lines.
+include-prompt: 0
+# Maximum number of times to retry API calls.
+max-retries: 5
+# Your desired level of fanciness.
+fanciness: 10
+# Text to show while generating.
+status-text: Generating
+# Default character limit on input to model.
+max-input-chars: 12250
+# Maximum number of tokens in response.
+# max-tokens: 100
+# Aliases and endpoints for OpenAI compatible REST API.
+apis:
+  tiny:
+    base-url: http://127.0.0.1/v1
+    models:
+      tinychat:
+        aliases: ["tinychat"]
+EOF
+chown tiny:tiny /home/tiny/.config/mods/mods.conf
 
 # write the correct environment variables for tinychat to function correctly
 cat <<EOF > /etc/tinychat.env
