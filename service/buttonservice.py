@@ -13,7 +13,7 @@ def update_menu():
   global in_menu, menu_selection
 
   tc_status = subprocess.run(["systemctl", "is-active", "tinychat"], capture_output=True).stdout.decode().strip() == "active"
-  tc_status = " (running)" if tc_status else " (stopped)"
+  tc_status = " (up)" if tc_status else " (down)"
 
   if in_menu:
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
