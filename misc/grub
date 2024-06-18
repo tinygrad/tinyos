@@ -3,5 +3,5 @@ GRUB_DISTRIBUTOR=tinyos
 GRUB_DEFAULT=0
 GRUB_TIMEOUT_STYLE=hidden
 GRUB_TIMEOUT=0
-GRUB_CMDLINE_LINUX_DEFAULT="console=ttyS1,115200n8 console=tty0 initcall_blacklist=acpi_cpufreq_init amd_pstate.shared_mem=1 amd_pstate=passive"
+GRUB_CMDLINE_LINUX_DEFAULT="console=ttyS1,115200n8 console=tty0 initcall_blacklist=acpi_cpufreq_init amd_pstate=passive"
 GRUB_CMDLINE_LINUX="nosplash"
