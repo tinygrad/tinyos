@@ -10,17 +10,13 @@ confinement: strict
 icon: icon.png
 
 parts:
-  gadget-yaml:
-    plugin: nil
-    override-build: |
-      # snapcraft reads gadget.yaml from project dir
-      install -m 644 gadget-$SNAPCRAFT_TARGET_ARCH.yaml $SNAPCRAFT_PROJECT_DIR/gadget.yaml
   grub-prepare:
     plugin: nil
     stage-packages:
-      - grub-efi-amd64-signed
-      - grub-pc-bin
       - shim-signed
+      - grub-efi-${SNAPCRAFT_TARGET_ARCH}-signed
+      - to amd64:
+        - grub-pc-bin
     prime: [ -* ]
   grub:
     source: .
@@ -28,4 +24,8 @@ parts:
       - grub-common
     plugin: make
     after: [grub-prepare]
-
+    override-build: |
+      make install
+      cp -r install/* ${SNAPCRAFT_PART_INSTALL}
+      # snapcraft reads gadget.yaml from project dir
+      install -m 644 gadget-${SNAPCRAFT_TARGET_ARCH}.yaml ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml
