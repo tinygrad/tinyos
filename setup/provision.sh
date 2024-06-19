@@ -35,6 +35,7 @@ gpu_max_temps1=$(echo "${gpu_max_temps[@]:0:3}" | tr ' ' ':')
 gpu_max_temps2=$(echo "${gpu_max_temps[@]:3:3}" | tr ' ' ':')
 echo "text,Max Temps: ${cpu_max_temp},${gpu_max_temps1},${gpu_max_temps2}" | nc -U /run/tinybox-screen.sock
 
+cpu_max_temp=$(echo "$cpu_max_temp" | cut -d. -f1)
 if [ "$cpu_max_temp" -gt 90 ] || [ "${gpu_max_temps[0]}" -gt 100 ] || [ "${gpu_max_temps[1]}" -gt 100 ] || [ "${gpu_max_temps[2]}" -gt 100 ] || [ "${gpu_max_temps[3]}" -gt 100 ] || [ "${gpu_max_temps[4]}" -gt 100 ] || [ "${gpu_max_temps[5]}" -gt 100 ]; then
   exit 1
 fi
