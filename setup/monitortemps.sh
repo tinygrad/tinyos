@@ -7,7 +7,7 @@ echo "date,cpu_temp,gpu_temps" > "$LOGFILE"
 IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 
 while true; do
-  cpu_temp=$(sensors -j | jq '.k10temp-pci-00c3.Tctl.temp1_input')
+  cpu_temp=$(sensors -j | jq '."k10temp-pci-00c3".Tctl.temp1_input')
 
   gpu_temps=""
   if [ -z "$IS_NVIDIA_GPU" ]; then
