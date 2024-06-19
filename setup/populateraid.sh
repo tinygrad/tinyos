@@ -20,6 +20,19 @@ sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
 sudo ip link set enp65s0f0np0 up
 sudo ip link set enp65s0f0np0 mtu 9000
 
+# first log dmidecode
+if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/opt/dmi /mnt; then
+  echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
+
+json_dmi=$(sudo dmidecode | jc --dmidecode)
+cpu_serial=$(echo "$json_dmi" | jq -r '.[] | select(.description | contains("Processor Information")) | .values.id' | tr -d '[:space:]')
+echo "$json_dmi" > "/mnt/${cpu_serial}.json"
+
+sudo umount /mnt
+
+# mount NFS
 if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/raid /mnt; then
   echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
   exit 1

@@ -114,6 +114,7 @@ customization:
     - name: git
     - name: infiniband-diags
     - name: ipmitool
+    - name: jc
     - name: jq
     - name: linux-tools-generic-hwe-22.04
     - name: lm-sensors

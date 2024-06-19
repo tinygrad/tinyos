@@ -9,6 +9,7 @@ done
 
 echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
 
+# populate raid
 bash /opt/tinybox/setup/populateraid.sh
 sleep 1
 
