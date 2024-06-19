@@ -45,6 +45,8 @@ curl -fsSL https://repo.charm.sh/apt/gpg.key | gpg --dearmor -o /etc/apt/keyring
 echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | tee /etc/apt/sources.list.d/charm.list
 apt update -y
 apt install gum mods -y
+mkdir -p /home/tiny/.config/mods/
+chown -R tiny:tiny /home/tiny/.config/
 cat <<EOF > /home/tiny/.config/mods/mods.conf
 # Default model (gpt-3.5-turbo, gpt-4, ggml-gpt4all-j...).
 default-model: tinychat
@@ -90,6 +92,7 @@ max-input-chars: 12250
 apis:
   tiny:
     base-url: http://127.0.0.1/v1
+    api-key: tiny
     models:
       tinychat:
         aliases: ["tinychat"]
