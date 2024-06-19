@@ -43,6 +43,7 @@ fi
 
 sudo systemctl start tinychat
 sleep 30
+echo "status" | nc -U /run/tinybox-screen.sock
 
 # check that tinychat is up and working
 if ! mods "hi" | grep -q "Hello"; then
