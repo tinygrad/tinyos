@@ -31,10 +31,16 @@ LOGFILE="resnet_${color}_${DATETIME}_${SEED}.log"
 # init
 BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py | tee "$LOGFILE"
 
+# start temp monitor
+bash /opt/tinybox/setup/monitortemps.sh &
+
 # run
 START_TIME=$(date +%s)
 PARALLEL=0 RUNMLPERF=1 EVAL_START_EPOCH=3 EVAL_FREQ=4 python3 examples/mlperf/model_train.py | tee -a "$LOGFILE"
 END_TIME=$(date +%s)
+
+# stop temp monitor
+pkill -f monitortemps.sh
 
 # ensure we are within 5% of the expected time or under the expected time
 if [ -z "$IS_NVIDIA_GPU" ]; then
