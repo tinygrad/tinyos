@@ -26,6 +26,10 @@ sudo systemctl start tinychat
 sleep 10
 
 # check that tinychat is up and working
+if ! mods "hi" | grep -q "Hello"; then
+  echo "text,tinychat check failed" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
 
 sleep 1
 echo "text,Provisioning Complete" | nc -U /run/tinybox-screen.sock
