@@ -28,6 +28,11 @@ fi
 
 json_dmi=$(sudo dmidecode | jc --dmidecode)
 cpu_serial=$(echo "$json_dmi" | jq -r '.[] | select(.description | contains("Processor Information")) | .values.id' | tr -d '[:space:]')
+# ensure there isn't already a file with the same serial
+if [ -f "/mnt/${cpu_serial}.json" ]; then
+  echo "text,Serial already exists" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
 echo "$json_dmi" > "/mnt/${cpu_serial}.json"
 
 sudo umount /mnt
