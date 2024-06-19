@@ -20,47 +20,28 @@ sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
 sudo ip link set enp65s0f0np0 up
 sudo ip link set enp65s0f0np0 mtu 9000
 
-/opt/tinybox/setup/parallel-rsync/prsync -aWz --zc=zstd --inplace rsync://10.0.0.1:2555/raid/ /raid/ &
-sleep 1
+if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/raid /mnt; then
+  echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
 
-# grab the total size of all the files
-total_size=$(find /tmp -name "total.size" -exec cat {} \;)
-while [ -z "$total_size" ]; do
-  sleep 1
-  total_size=$(find /tmp -name "total.size" -exec cat {} \;)
-done
-
-# total_size is including what is already on the disk
-total_size=$((total_size + $(df -B1 /raid | tail -n 1 | awk '{print $3}')))
-
-# watch the progress of all the rsyncs
-last_transferred_size=0
-while true; do
-  sleep 1
-
-  # calculate the total size of all the files transferred
-  transferred_size=$(df -B1 /raid | tail -n 1 | awk '{print $3}')
-  # calculate the percentage of files transferred
-  percentage=$(echo "scale=2; $transferred_size / $total_size * 100" | bc | cut -d. -f1)
-  # calculate the speed of the transfer in MB/s
-  speed=$(echo "scale=2; ($transferred_size - $last_transferred_size) / 1024 / 1024" | bc)
-  # calculate the ETA
-  if [ "$speed" == "0" ]; then
-    eta="Unknown"
-  else
-    eta=$(echo "scale=2; ($total_size - $transferred_size) / ($transferred_size - $last_transferred_size)" | bc | awk '{printf "%d:%02d:%02d", $1/3600, $1%3600/60, $1%60}')
-  fi
-  last_transferred_size=$transferred_size
-
-  echo "text,Populating RAID,${speed}MB/s,${percentage}% - ${eta}" | nc -U /run/tinybox-screen.sock
-
-  if ! pgrep -f prsync; then
-    break
-  fi
+rclone copy -P --links --multi-thread-streams 32 --transfers 32 /mnt/ /raid/ | while read -r line; do
+  case "$line" in
+    *ETA*)
+      # extract transfer speed
+      speed=$(echo "$line" | grep -oP '\d+\.\d+ [kMG]Bytes/s')
+      # extract percentage
+      percentage=$(echo "$line" | grep -oP '\d+%,' | grep -oP '\d+')
+      # extract ETA
+      eta=$(echo "$line" | grep -oP '(\d+h\d+m\d+s)|(\d+m\d+s)|(\d+s)')
+      echo "text,Populating RAID,${speed},${percentage}% - ${eta}" | nc -U /run/tinybox-screen.sock
+      ;;
+  esac
 done
 
 sudo chown -R tiny:tiny /raid
 
+sudo umount /mnt
 
 sudo ip ad del 10.0.0.2/24 dev enp65s0f0np0
 echo "sleep" | nc -U /run/tinybox-screen.sock

@@ -111,6 +111,7 @@ customization:
     - name: fd-find
     - name: file
     - name: git
+    - name: infiniband-diags
     - name: ipmitool
     - name: jq
     - name: linux-tools-generic-hwe-22.04
@@ -119,6 +120,7 @@ customization:
     - name: nfs-common
     - name: parallel
     - name: rclone
+    - name: rdma-core
     - name: ripgrep
     - name: rsync
     - name: time
