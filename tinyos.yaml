@@ -108,6 +108,7 @@ customization:
     - name: btop
     - name: build-essential
     - name: clang
+    - name: csvtool
     - name: fd-find
     - name: file
     - name: git

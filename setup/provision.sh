@@ -22,6 +22,19 @@ if ! bash /opt/tinybox/setup/trainresnet.sh; then
   exit 1
 fi
 
+# check maximum temps hit
+cpu_max_temp=$(cut -d, -f2 < /home/tiny/stress_test_temps.log | sort -n | tail -n 1)
+# declare an array for gpu temps
+gpu_max_temps=()
+for gpu_id in $(seq 0 5); do
+  gpu_max_temps+=("$(cut -d, -f$((gpu_id + 3)) < /home/tiny/stress_test_temps.log | sort -n | tail -n 1)")
+done
+
+# split gpu temps into 3 and 3
+gpu_max_temps1=$(echo "${gpu_max_temps[@]:0:3}" | tr ' ' ',')
+gpu_max_temps2=$(echo "${gpu_max_temps[@]:3:3}" | tr ' ' ',')
+echo "text,Max Temps: ${cpu_max_temp},${gpu_max_temps1},${gpu_max_temps2}" | nc -U /run/tinybox-screen.sock
+
 sudo systemctl start tinychat
 sleep 30
 
