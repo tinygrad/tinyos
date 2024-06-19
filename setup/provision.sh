@@ -14,6 +14,7 @@ sleep 1
 
 echo "text,RAID Populated,Starting ResNet Train" | nc -U /run/tinybox-screen.sock
 sleep 1
+echo "sleep" | nc -U /run/tinybox-screen.sock
 
 sudo systemctl stop tinychat
 
@@ -22,7 +23,7 @@ if ! bash /opt/tinybox/setup/trainresnet.sh; then
 fi
 
 sudo systemctl start tinychat
-sleep 1
+sleep 10
 
 # check that tinychat is up and working
 
