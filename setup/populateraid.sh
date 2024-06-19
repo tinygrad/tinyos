@@ -27,7 +27,7 @@ if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/opt/dmi /mnt; then
 fi
 
 json_dmi=$(sudo dmidecode | jc --dmidecode)
-cpu_serial=$(echo "$json_dmi" | jq -r '.[] | select(.description | contains("Processor Information")) | .values.id' | tr -d '[:space:]')
+cpu_serial=$(echo "$json_dmi" | jq -r '.[] | select(.description | contains("Base Board Information")) | .values.serial_number' | tr -d '[:space:]')
 # ensure there isn't already a file with the same serial
 if [ -f "/mnt/${cpu_serial}.json" ]; then
   echo "text,Serial already exists" | nc -U /run/tinybox-screen.sock
