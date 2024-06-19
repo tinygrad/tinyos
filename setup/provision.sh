@@ -23,7 +23,7 @@ if ! bash /opt/tinybox/setup/trainresnet.sh; then
 fi
 
 sudo systemctl start tinychat
-sleep 10
+sleep 30
 
 # check that tinychat is up and working
 if ! mods "hi" | grep -q "Hello"; then
