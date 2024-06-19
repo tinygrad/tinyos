@@ -215,10 +215,10 @@ class SleepScreen(Displayable):
     self.ip_text = PositionableText(f"IP: {ip}", (WIDTH // 2, HEIGHT - 32), "center")
 
     if hasattr(self, "bmc_password_text"):
-      self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 207, WIDTH - WIDTH // 5, (255, 0, 0))
+      self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 207, WIDTH - WIDTH // 5, (255, 255, 255))
       self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154), lower_bound=HEIGHT - 207)
     else:
-      self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 137, WIDTH - WIDTH // 5, (255, 0, 0))
+      self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 137, WIDTH - WIDTH // 5, (255, 255, 255))
       self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154), lower_bound=HEIGHT - 137)
 
   def display(self, display: Display):
