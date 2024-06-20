@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-set -xe
+set -x
 
-pushd /home/tiny/tinygrad
+pushd /home/tiny/tinygrad || exit
 
 # Check which gpus are installed
 IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 if [ -z "$IS_NVIDIA_GPU" ]; then
-  color="tinybox_red"
+  color="red"
 else
-  color="tinybox_green"
+  color="green"
 fi
 
 export PYTHONPATH="."
@@ -57,4 +57,4 @@ else
   sleep 1
 fi
 
-popd
+popd || exit

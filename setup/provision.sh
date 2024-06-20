@@ -13,6 +13,7 @@ echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
 # populate raid
 if ! bash /opt/tinybox/setup/populateraid.sh; then
   echo "text,Failed to populate RAID" | nc -U /run/tinybox-screen.sock
+  exit 1
 fi
 sleep 1
 
