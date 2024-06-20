@@ -7,7 +7,14 @@ echo "atext,Preparing.. ,Preparing ..,Preparing. ." | nc -U /run/tinybox-screen.
 IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 
 # clone tinygrad
-su tiny -c "git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad"
+if ! su tiny -c "git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad"; then
+  echo "text,Failed to clone tinygrad,retrying" | nc -U /run/tinybox-screen.sock
+  rm -rf /home/tiny/tinygrad
+  if ! su tiny -c "git clone https://github.com/tinygrad/tinygrad /home/tiny/tinygrad"; then
+    echo "text,Failed to clone tinygrad" | nc -U /run/tinybox-screen.sock
+    exit 1
+  fi
+fi
 
 # install tinygrad and deps
 pushd /home/tiny/tinygrad || exit
@@ -29,7 +36,13 @@ popd || exit
 
 # remove the initial /opt/tinybox and clone the correct one into place
 rm -rf /opt/tinybox
-git clone "https://github.com/tinygrad/tinyos" /opt/tinybox
+if ! git clone "https://github.com/tinygrad/tinyos" /opt/tinybox; then
+  echo "text,Failed to clone tinyos,retrying" | nc -U /run/tinybox-screen.sock
+  if ! git clone "https://github.com/tinygrad/tinyos" /opt/tinybox; then
+    echo "text,Failed to clone tinyos" | nc -U /run/tinybox-screen.sock
+    exit 1
+  fi
+fi
 
 # rebuild the venv
 pushd /opt/tinybox || exit
