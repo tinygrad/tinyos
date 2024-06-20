@@ -20,24 +20,6 @@ sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
 sudo ip link set enp65s0f0np0 up
 sudo ip link set enp65s0f0np0 mtu 9000
 
-# first log dmidecode
-if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/opt/dmi /mnt; then
-  echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
-  exit 1
-fi
-
-json_dmi=$(sudo dmidecode | jc --dmidecode)
-cpu_serial=$(echo "$json_dmi" | jq -r '.[] | select(.description | contains("Base Board Information")) | .values.serial_number' | tr -d '[:space:]')
-# ensure there isn't already a file with the same serial
-if [ -f "/mnt/${cpu_serial}.json" ]; then
-  echo "text,Serial already exists" | nc -U /run/tinybox-screen.sock
-  exit 1
-fi
-echo "$json_dmi" > "/mnt/${cpu_serial}.json"
-cp /var/log/cloud-init-output.log "/mnt/${cpu_serial}_cloud-init-output.log"
-
-sudo umount /mnt
-
 # mount NFS
 if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/raid /mnt; then
   echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
@@ -62,6 +44,6 @@ done
 sudo chown -R tiny:tiny /raid
 
 sudo umount /mnt
-
 sudo ip ad del 10.0.0.2/24 dev enp65s0f0np0
+
 echo "sleep" | nc -U /run/tinybox-screen.sock

@@ -11,6 +11,7 @@ if [ $changed -eq 1 ]; then
   git pull
   systemctl restart displayservice
   systemctl restart buttonservice
+  systemctl restart tinychat
 fi
 
 popd || true

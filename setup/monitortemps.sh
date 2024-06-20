@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-LOGFILE="/home/tiny/stress_test_temps.log"
+LOGFILE="/home/tiny/stress_test/temps.log"
 echo "date,cpu_temp,gpu_temps" > "$LOGFILE"
 
 # Check which gpus are installed
