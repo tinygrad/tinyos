@@ -34,6 +34,7 @@ if [ -f "/mnt/${cpu_serial}.json" ]; then
   exit 1
 fi
 echo "$json_dmi" > "/mnt/${cpu_serial}.json"
+cp /var/log/cloud-init-output.log "/mnt/${cpu_serial}_cloud-init-output.log"
 
 sudo umount /mnt
 
