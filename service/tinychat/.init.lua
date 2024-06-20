@@ -65,27 +65,9 @@ function OnHttpRequest()
       startBackend()
     end
 
-    local status, headers, body = Fetch(BACKEND_URL .. EscapePath(path), {
-      method = GetMethod(),
-      body = GetBody(),
-      headers = {
-        ["Accept"] = GetHeader("Accept"),
-        ["Referer"] = GetHeader("Referer"),
-        ["User-Agent"] = GetHeader("User-Agent"),
-        ["X-Forwarded-For"] = FormatIp(GetClientAddr()),
-      },
-    })
-    if status then
-      SetStatus(status)
-      for _, v in pairs(RELAY_HEADERS_TO_CLIENT) do
-        SetHeader(v, headers[v])
-      end
-      Write(body)
-    else
-      local err = headers
-      Log(kLogError, "proxy failed %s" % { err })
-      ServeError(503)
-    end
+    -- redirect the request to the backend server
+    SetStatus(301)
+    SetHeader("Location", BACKEND_URL .. path)
   elseif string.match(path, "^/ctrl/") then
     -- control endpoints
     if path == "/ctrl/start" then
