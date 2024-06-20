@@ -56,6 +56,7 @@ end
 function OnHttpRequest()
   local path = GetPath()
   Log(kLogInfo, "path: %s" % { path })
+  print(BACKEND_PID)
 
   -- forward all /v1 paths to the backend server
   if string.match(path, "^/v1/") then
