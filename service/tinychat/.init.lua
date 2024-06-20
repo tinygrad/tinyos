@@ -111,20 +111,16 @@ function OnHttpRequest()
       SetStatus(200)
       Write("ok")
     elseif path == "/ctrl/stop" then
-      if BACKEND_PID then
-        unix.kill(BACKEND_PID, unix.SIGTERM)
-        BACKEND_PID = nil
+      Lock()
+      local pid = MEM:load(BACKEND_PID)
+      if pid ~= 0 then
+        Log(kLogInfo, "stopping backend server")
+        unix.kill(pid, unix.SIGTERM)
+        MEM:store(BACKEND_PID, 0)
       end
+      Unlock()
       SetStatus(200)
       Write("ok")
-    elseif path == "/ctrl/status" then
-      if BACKEND_PID then
-        SetStatus(200)
-        Write("ok")
-      else
-        SetStatus(503)
-        Write("ok")
-      end
     end
   else
     if path == "/" then
