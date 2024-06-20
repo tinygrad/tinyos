@@ -44,6 +44,7 @@ if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/raid /mnt; then
   exit 1
 fi
 
+sudo chown -R tiny:tiny /raid
 rclone copy -P --auto-confirm --links --check-first --checkers 32 --multi-thread-streams 8 --transfers 32 /mnt/ /raid/ | while read -r line; do
   echo "$line"
   case "$line" in
@@ -58,7 +59,6 @@ rclone copy -P --auto-confirm --links --check-first --checkers 32 --multi-thread
       ;;
   esac
 done
-
 sudo chown -R tiny:tiny /raid
 
 sudo umount /mnt
