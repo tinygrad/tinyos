@@ -35,7 +35,7 @@
   <main x-data="state" x-init="
     console.log(endpoint);
     // check backend status from server
-    fetch(`${this.endpoint}/chat/token/encode`, {
+    fetch(`${endpoint}/chat/token/encode`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: [] }),
