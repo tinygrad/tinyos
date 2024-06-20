@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 sleep 2
 
@@ -10,7 +11,9 @@ done
 echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
 
 # populate raid
-bash /opt/tinybox/setup/populateraid.sh
+if ! bash /opt/tinybox/setup/populateraid.sh; then
+  echo "text,Failed to populate RAID" | nc -U /run/tinybox-screen.sock
+fi
 sleep 1
 
 echo "text,RAID Populated,Starting ResNet Train" | nc -U /run/tinybox-screen.sock
