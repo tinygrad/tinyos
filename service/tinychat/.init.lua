@@ -15,8 +15,8 @@ LAST_BACKEND_USE = 0
 local function startBackend()
   -- start up the backend server if it's not already running
   if not BACKEND_PID then
-    BACKEND_PID = unix.fork()
-    if BACKEND_PID == 0 then
+    local pid = unix.fork()
+    if pid == 0 then
       local python_prog = assert(unix.commandv("python3"))
 
       -- read environment variables from /etc/tinychat.env
@@ -37,6 +37,8 @@ local function startBackend()
         "--shard",
         "4",
       }, env)
+    else
+      BACKEND_PID = pid
     end
   end
 end
