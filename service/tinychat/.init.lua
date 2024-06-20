@@ -24,8 +24,7 @@ local function startBackend()
       local f = assert(io.open("/etc/tinychat.env", "r"))
       for line in f:lines() do
         local key, value = string.match(line, "([^=]+)=(.*)")
-        print("setting env", key, value)
-        env[key] = value
+        table.insert(env, key .. "=" .. value)
       end
 
       unix.execve(python_prog, {
