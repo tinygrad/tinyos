@@ -1,0 +1,22 @@
+{
+    "diagnostics.globals": [
+        "vim",
+        "GetPath",
+        "GetMethod",
+        "GetHeader",
+        "FormatIp",
+        "GetClientAddr",
+        "Fetch",
+        "EscapePath",
+        "SetHeader",
+        "SetStatus",
+        "Write",
+        "Log",
+        "kLogError",
+        "ServeError",
+        "kLogInfo",
+        "ServeAsset",
+        "unix",
+        "GetTime"
+    ]
+}
