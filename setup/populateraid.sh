@@ -44,6 +44,7 @@ if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/raid /mnt; then
 fi
 
 rclone copy -P --links --multi-thread-streams 32 --transfers 32 /mnt/ /raid/ | while read -r line; do
+  echo "$line"
   case "$line" in
     *ETA*)
       # extract transfer speed
