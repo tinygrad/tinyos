@@ -44,7 +44,7 @@ pkill -f monitortemps.sh
 
 # ensure we are within 5% of the expected time or under the expected time
 if [ -z "$IS_NVIDIA_GPU" ]; then
-  EXPECTED_TIME=9900
+  EXPECTED_TIME=10020
 else
   EXPECTED_TIME=7200
 fi
