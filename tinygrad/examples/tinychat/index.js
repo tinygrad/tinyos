@@ -26,12 +26,12 @@ document.addEventListener("alpine:init", () => {
       // wait for backend to start
       const interval = setInterval(() => {
         fetch(`${this.endpoint}/chat/token/encode`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ messages: [] }),
-        }).then(response => {
+        }).then((response) => {
           if (response.ok) {
-            this.backendStatus = 'running';
+            this.backendStatus = "running";
             this.backendRunning = true;
             clearInterval(interval);
           } else {
@@ -84,7 +84,15 @@ document.addEventListener("alpine:init", () => {
       let tokens = 0;
       this.tokens_per_second = 0;
 
-      // start receiving server sent events
+      // wait for the backend to start
+      if (!this.backendRunning) {
+        await this.startBackend();
+      }
+      while (!this.backendRunning) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      // start server sent events
       let gottenFirstChunk = false;
       for await (
         const chunk of this.openaiChatCompletion(this.cstate.messages)
