@@ -47,8 +47,10 @@ if [ "$cpu_max_temp" -gt 90 ] || [ "${gpu_max_temps[0]}" -gt 100 ] || [ "${gpu_m
 fi
 
 sudo systemctl start tinychat
-sleep 30
+sleep 10
+curl http://127.0.0.1/ctrl/start
 echo "status" | nc -U /run/tinybox-screen.sock
+sleep 30
 
 # check that tinychat is up and working
 if ! mods "hi" | grep -q "Hello"; then
