@@ -92,7 +92,8 @@ function OnHttpRequest()
   -- forward all /v1 paths to the backend server
   if string.match(path, "^/v1/") then
     Lock()
-    MEM:store(LAST_BACKEND_USE, unix.clock_gettime()[1])
+    local seconds, _ = unix.clock_gettime()
+    MEM:store(LAST_BACKEND_USE, seconds)
     Unlock()
 
     -- if this is a completion request, start the backend server if it's not already running
