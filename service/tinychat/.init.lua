@@ -38,7 +38,8 @@ LAST_BACKEND_USE = 2
 local function startBackend()
   -- start up the backend server if it's not already running
   Lock()
-  MEM:store(LAST_BACKEND_USE, unix.clock_gettime()[1])
+  local seconds, _ = unix.clock_gettime()
+  MEM:store(LAST_BACKEND_USE, seconds)
   local pid = MEM:load(BACKEND_PID)
   if pid == 0 then
     pid = unix.fork()
