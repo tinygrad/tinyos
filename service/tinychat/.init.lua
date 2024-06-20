@@ -26,6 +26,7 @@ local function startBackend()
         local key, value = string.match(line, "([^=]+)=(.*)")
         env[key] = value
       end
+      print(env)
 
       unix.execve(python_prog, {
         python_prog,
@@ -66,6 +67,7 @@ function OnHttpRequest()
 
     local status, headers, body = Fetch(BACKEND_URL .. EscapePath(path), {
       method = GetMethod(),
+      body = GetBody(),
       headers = {
         ["Accept"] = GetHeader("Accept"),
         ["Referer"] = GetHeader("Referer"),
