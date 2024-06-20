@@ -18,6 +18,7 @@
         "ServeAsset",
         "unix",
         "GetTime",
-        "GetBody"
+        "GetBody",
+        "GetHost"
     ]
 }
