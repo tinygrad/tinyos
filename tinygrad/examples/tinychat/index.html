@@ -32,7 +32,23 @@
 </head>
 
 <body>
-  <main x-data="state" x-init="console.log(endpoint)">
+  <main x-data="state" x-init="
+    console.log(endpoint);
+    // check backend status from server
+    fetch(`${this.endpoint}/chat/token/encode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [] }),
+    }).then(response => {
+      if (response.ok) {
+        backendStatus = 'running';
+        backendRunning = true;
+      } else {
+        backendStatus = 'stopped';
+        backendRunning = false;
+      }
+    });
+  ">
     <div class="home centered" x-show="home === 0" x-transition x-effect="
       $refs.inputForm.focus();
       if (home === 1) setTimeout(() => home = 2, 100);
@@ -47,6 +63,17 @@
       }
     ">
       <h1 class="title megrim-regular">tinychat</h1>
+      <div class="backend-controls">
+        <h2 class="backend-status megrim-regular" x-text="backendStatus"></h2>
+        <button class="backend-button" @click="stopBackend()" x-show="backendRunning">
+          <i class="fas fa-stop"></i>
+          <span>Stop Backend</span>
+        </button>
+        <button class="backend-button" @click="startBackend()" x-show="!backendRunning">
+          <i class="fas fa-play"></i>
+          <span>Start Backend</span>
+        </button>
+      </div>
       <div class="histories-container-container">
         <template x-if="histories.length">
           <div class="histories-start"></div>

@@ -47,7 +47,42 @@ main {
 
 .title {
   font-size: 3rem;
-  margin: 3rem 0;
+  margin: 1rem 0;
+  margin-top: 3rem;
+}
+
+.backend-controls {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.backend-status {
+  width: 6rem;
+  height: 3rem;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  background-color: var(--secondary-bg-color);
+  color: var(--foreground-color);
+  border-radius: 10px;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.backend-button {
+  height: 3rem;
+  width: 6rem;
+  background-color: var(--tertiary-bg-color);
+  color: var(--foreground-color);
+  border-radius: 10px;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+.backend-button:hover {
+  background-color: var(--secondary-bg-color);
 }
 
 .histories-container-container {

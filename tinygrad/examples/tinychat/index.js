@@ -12,11 +12,41 @@ document.addEventListener("alpine:init", () => {
     home: 0,
     generating: false,
     endpoint: `${window.location.origin}/v1`,
+    backendRunning: false,
+    backendStatus: "stopped",
 
     // performance tracking
     time_till_first: 0,
     tokens_per_second: 0,
     total_tokens: 0,
+
+    async startBackend() {
+      this.backendStatus = "starting";
+      await fetch(`${window.location.origin}/ctrl/start`, {});
+      // wait for backend to start
+      const interval = setInterval(() => {
+        fetch(`${this.endpoint}/chat/token/encode`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [] }),
+        }).then(response => {
+          if (response.ok) {
+            this.backendStatus = 'running';
+            this.backendRunning = true;
+            clearInterval(interval);
+          } else {
+            this.backendRunning = false;
+          }
+        });
+      }, 1000);
+    },
+
+    async stopBackend() {
+      this.backendStatus = "stopping";
+      await fetch(`${window.location.origin}/ctrl/stop`, {});
+      this.backendStatus = "stopped";
+      this.backendRunning = false;
+    },
 
     removeHistory(cstate) {
       const index = this.histories.findIndex((state) => {
@@ -74,7 +104,7 @@ document.addEventListener("alpine:init", () => {
           start_time = Date.now();
           this.time_till_first = start_time - prefill_start;
         } else {
-          const diff = Date.now() - start_time
+          const diff = Date.now() - start_time;
           if (diff > 0) {
             this.tokens_per_second = tokens / (diff / 1000);
           }
@@ -108,10 +138,10 @@ document.addEventListener("alpine:init", () => {
 
     updateTotalTokens(messages) {
       fetch(`${this.endpoint}/chat/token/encode`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages })
-      }).then(response => response.json()).then(data => {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages }),
+      }).then((response) => response.json()).then((data) => {
         this.total_tokens = data.length;
       }).catch(console.error);
     },
