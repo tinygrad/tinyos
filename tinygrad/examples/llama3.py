@@ -316,7 +316,7 @@ if __name__ == "__main__":
       toks = [tokenizer.bos_id]
       for message in rjson["messages"]:
         toks += encode_message(message["role"], message["content"])
-      if message["role"] == "user":
+      if len(rjson["messages"]) > 0 and message["role"] == "user":
         toks += encode_role("assistant")
       return json.dumps(toks)
 
