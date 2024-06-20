@@ -16,7 +16,15 @@ sudo sysctl net.ipv4.tcp_wmem="4096 65536 4194304"
 sudo sysctl net.ipv4.tcp_low_latency=1
 sudo sysctl net.ipv4.tcp_congestion_control=bbr
 
-sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
+# figure out which ip range we should be using
+if ping -c 1 10.0.0.1; then
+  ip="10.0.0.2/24"
+  sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
+else
+  ip="10.0.1.2/24"
+fi
+
+sudo ip ad add "$ip" dev enp65s0f0np0
 sudo ip link set enp65s0f0np0 up
 sudo ip link set enp65s0f0np0 mtu 9000
 
@@ -44,6 +52,7 @@ done
 sudo chown -R tiny:tiny /raid
 
 sudo umount /mnt
-sudo ip ad del 10.0.0.2/24 dev enp65s0f0np0
+
+sudo ip ad del "$ip" dev enp65s0f0np0
 
 echo "sleep" | nc -U /run/tinybox-screen.sock

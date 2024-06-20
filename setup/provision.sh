@@ -81,7 +81,13 @@ if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
 fi
 
 # log everything from provisioning
-sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
+if ping -c 1 10.0.0.1; then
+  ip="10.0.0.2/24"
+  sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
+else
+  ip="10.0.1.2/24"
+fi
+sudo ip ad add "$ip" dev enp65s0f0np0
 sudo ip link set enp65s0f0np0 up
 
 if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/opt/dmi /mnt; then
@@ -102,7 +108,7 @@ cp /var/log/cloud-init-output.log "/mnt/${serial}/cloud-init-output.log"
 cp -r /home/tiny/stress_test "/mnt/${serial}/stress_test"
 
 sudo umount /mnt
-sudo ip ad del 10.0.0.2/24 dev enp65s0f0np0
+sudo ip ad del "$ip" dev enp65s0f0np0
 
 sleep 1
 echo "text,Provisioning Complete" | nc -U /run/tinybox-screen.sock
