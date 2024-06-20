@@ -80,6 +80,14 @@ function OnHttpRequest()
       end
       SetStatus(200)
       Write("ok")
+    elseif path == "/ctrl/status" then
+      if BACKEND_PID then
+        SetStatus(200)
+        Write("ok")
+      else
+        SetStatus(503)
+        Write("ok")
+      end
     end
   else
     if path == "/" then
