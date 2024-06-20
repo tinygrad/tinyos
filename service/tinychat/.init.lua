@@ -66,7 +66,7 @@ function OnHttpRequest()
 
     -- redirect the request to the backend server
     SetStatus(301)
-    SetHeader("Location", GetHost() .. ":7776" .. path)
+    SetHeader("Location", "http://" .. GetHost() .. ":7776" .. path)
   elseif string.match(path, "^/ctrl/") then
     -- control endpoints
     if path == "/ctrl/start" then
