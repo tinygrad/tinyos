@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -x
 
+# Check which gpus are installed
+IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+
 sleep 2
 
 echo "atext,Waiting for NIC.. ,Waiting for NIC ..,Waiting for NIC. ." | nc -U /run/tinybox-screen.sock
@@ -10,20 +13,46 @@ done
 
 echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
 
-# setup nic for provisioning
-if ping -c 1 10.0.0.1; then
-  ip="10.0.0.2/24"
-  sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
-else
-  ip="10.0.1.2/24"
+# determine NIC
+interfaces=$(ip ad | grep -oP 'ens33\w+' | sort | uniq)
+ip=""
+iface=""
+for interface in $interfaces; do
+  sudo ip ad add 10.0.0.2/24 dev "$interface"
+  sudo ip link set "$interface" up
+  if ping -c 1 10.0.0.1; then
+    echo "text,Using $interface,10.0.0.2" | nc -U /run/tinybox-screen.sock
+    ip="10.0.0."
+    iface="$interface"
+    break
+  else
+    sudo ip ad del 10.0.0.2/24 dev "$interface"
+  fi
+  sudo ip ad add 10.0.1.2/24 dev "$interface"
+  sudo ip link set "$interface" up
+  if ping -c 1 10.0.1.1; then
+    echo "text,Using $interface,10.0.1.2" | nc -U /run/tinybox-screen.sock
+    ip="10.0.1."
+    iface="$interface"
+    break
+  else
+    sudo ip ad del 10.0.1.2/24 dev "$interface"
+  fi
+done
+if [ -z "$ip" ]; then
+  echo "text,Failed to setup NIC" | nc -U /run/tinybox-screen.sock
+  exit 1
 fi
-sudo ip ad add "$ip" dev enp65s0f0np0
-sudo ip link set enp65s0f0np0 up
-sudo ip link set enp65s0f0np0 mtu 9000
+sudo ip link set "$iface" mtu 9000
 
-# Check which gpus are installed
-IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+# populate raid
+if ! bash /opt/tinybox/setup/populateraid.sh "$ip"; then
+  echo "text,Failed to populate RAID" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
+sleep 1
 
+# start stress testing
 mkdir -p /home/tiny/stress_test
 
 # run p2p bandwidth test
@@ -42,14 +71,7 @@ else
   fi
 fi
 
-# populate raid
-if ! bash /opt/tinybox/setup/populateraid.sh; then
-  echo "text,Failed to populate RAID" | nc -U /run/tinybox-screen.sock
-  exit 1
-fi
-sleep 1
-
-echo "text,RAID Populated,Starting ResNet Train" | nc -U /run/tinybox-screen.sock
+echo "text,Starting ResNet Train" | nc -U /run/tinybox-screen.sock
 sleep 1
 echo "sleep" | nc -U /run/tinybox-screen.sock
 
@@ -115,8 +137,11 @@ sudo ipmitool bmc info | tee "/mnt/${serial}/bmc_info.log"
 cp /var/log/cloud-init-output.log "/mnt/${serial}/cloud-init-output.log"
 cp -r /home/tiny/stress_test "/mnt/${serial}/stress_test"
 
+# log provisioning logs
+sudo journalctl -o export --unit=provision | tee "/mnt/${serial}/provision.log"
+
 sudo umount /mnt
-sudo ip ad del "$ip" dev enp65s0f0np0
+sudo ip ad del "$ip.2" dev "$iface"
 
 sleep 1
 echo "text,Provisioning Complete" | nc -U /run/tinybox-screen.sock
