@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ip="$1"
-echo "connecting to ${ip}.1"
+echo "connecting to ${ip}1"
 
 sleep 1
 
@@ -20,7 +20,7 @@ sudo sysctl net.ipv4.tcp_low_latency=1
 sudo sysctl net.ipv4.tcp_congestion_control=bbr
 
 # mount NFS
-if ! sudo mount -o rdma,port=20049,vers=4.2 "${ip}.1":/raid /mnt; then
+if ! sudo mount -o rdma,port=20049,vers=4.2 "${ip}1":/raid /mnt; then
   echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
   exit 1
 fi

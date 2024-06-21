@@ -121,7 +121,7 @@ if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
 fi
 
 # log everything from provisioning
-if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/opt/dmi /mnt; then
+if ! sudo mount -o rdma,port=20049,vers=4.2 "${ip}1":/opt/dmi /mnt; then
   echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
   exit 1
 fi
@@ -148,7 +148,7 @@ cp -r /home/tiny/stress_test "/mnt/${serial}/stress_test"
 sudo journalctl -o export --unit=provision | tee "/mnt/${serial}/provision.log"
 
 sudo umount /mnt
-sudo ip ad del "$ip.2" dev "$iface"
+sudo ip ad del "${ip}2" dev "$iface"
 
 sleep 1
 echo "text,Provisioning Complete" | nc -U /run/tinybox-screen.sock
