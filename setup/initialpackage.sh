@@ -60,7 +60,7 @@ apt update -y
 apt install gum mods -y
 mkdir -p /home/tiny/.config/mods/
 chown -R tiny:tiny /home/tiny/.config/
-cat <<EOF > /home/tiny/.config/mods/mods.conf
+cat <<EOF > /home/tiny/.config/mods/mods.yml
 # Default model (gpt-3.5-turbo, gpt-4, ggml-gpt4all-j...).
 default-model: tinychat
 # Text to append when using the -f flag.
