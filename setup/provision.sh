@@ -8,7 +8,7 @@ sleep 2
 
 # check if either enp65s0f0np0, ens33np0, or ens33f0np0 exists
 ip_ad=$(ip ad)
-if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -q "ens33np0" && ! echo "$ip_ad" | grep -q "ens33f0np0"; then
+if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -q "ens\w+np\d"; then
   echo "not provisioning, no NICs found"
   exit 0
 fi
