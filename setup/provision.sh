@@ -16,7 +16,7 @@ fi
 echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
 
 # determine NIC
-interfaces=$(ip ad | grep -oP 'ens33\w+' | sort | uniq)
+interfaces=$(ip ad | grep -oP 'ens\w+np\d' | sort | uniq)
 ip=""
 iface=""
 for interface in $interfaces; do
