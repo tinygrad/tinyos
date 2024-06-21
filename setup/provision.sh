@@ -10,6 +10,17 @@ done
 
 echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
 
+# setup nic for provisioning
+if ping -c 1 10.0.0.1; then
+  ip="10.0.0.2/24"
+  sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
+else
+  ip="10.0.1.2/24"
+fi
+sudo ip ad add "$ip" dev enp65s0f0np0
+sudo ip link set enp65s0f0np0 up
+sudo ip link set enp65s0f0np0 mtu 9000
+
 # Check which gpus are installed
 IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 
@@ -81,15 +92,6 @@ if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
 fi
 
 # log everything from provisioning
-if ping -c 1 10.0.0.1; then
-  ip="10.0.0.2/24"
-  sudo ip ad add 10.0.0.2/24 dev enp65s0f0np0
-else
-  ip="10.0.1.2/24"
-fi
-sudo ip ad add "$ip" dev enp65s0f0np0
-sudo ip link set enp65s0f0np0 up
-
 if ! sudo mount -o rdma,port=20049,vers=4.2 10.0.0.1:/opt/dmi /mnt; then
   echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
   exit 1
