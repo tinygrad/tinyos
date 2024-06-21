@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -x
 
-# This script is used to update the tinyos repository
 pushd /opt/tinybox || true
 
 changed=1
