@@ -8,7 +8,7 @@ sleep 2
 
 if ! ip ad | grep -q enp65s0f0np0 || ! ip ad | grep -q ens33np0 || ! ip ad | grep -q ens33f0np0; then
   echo "not provisioning, no NICs found"
-  exit 1
+  exit 0
 fi
 
 echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
