@@ -65,3 +65,5 @@ EOF
   # hold the nvidia driver
   apt-mark hold nvidia-driver-550-open cuda-drivers-550 cuda-toolkit-12-4
 fi
+
+update-pciids
