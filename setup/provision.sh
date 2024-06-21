@@ -6,10 +6,10 @@ IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 
 sleep 2
 
-echo "atext,Waiting for NIC.. ,Waiting for NIC ..,Waiting for NIC. ." | nc -U /run/tinybox-screen.sock
-while ! ip ad | grep -q enp65s0f0np0 && ! ip ad | grep -q ens33np0 && ! ip ad | grep -q ens33f0np0; do
-  sleep 1
-done
+if ! ip ad | grep -q enp65s0f0np0 || ! ip ad | grep -q ens33np0 || ! ip ad | grep -q ens33f0np0; then
+  echo "not provisioning, no NICs found"
+  exit 1
+fi
 
 echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
 
