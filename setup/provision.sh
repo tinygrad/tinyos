@@ -6,7 +6,9 @@ IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 
 sleep 2
 
-if ! ip ad | grep -q enp65s0f0np0 || ! ip ad | grep -q ens33np0 || ! ip ad | grep -q ens33f0np0; then
+# check if either enp65s0f0np0, ens33np0, or ens33f0np0 exists
+ip_ad=$(ip ad)
+if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -q "ens33np0" && ! echo "$ip_ad" | grep -q "ens33f0np0"; then
   echo "not provisioning, no NICs found"
   exit 0
 fi
