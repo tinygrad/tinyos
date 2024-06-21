@@ -71,6 +71,11 @@ else
   fi
 fi
 
+# run pytorch test
+pushd /home/tiny/tinygrad || exit
+python3 extra/gemm/torch_gemm.py | tee /home/tiny/stress_test/pytorch.log
+popd || exit
+
 echo "text,Starting ResNet Train" | nc -U /run/tinybox-screen.sock
 sleep 1
 echo "sleep" | nc -U /run/tinybox-screen.sock
