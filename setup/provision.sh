@@ -103,7 +103,13 @@ if [ -d "/mnt/${serial}" ]; then
   exit 1
 fi
 mkdir -p "/mnt/${serial}"
+
+# log dmidecode
 echo "$json_dmi" > "/mnt/${serial}/dmidecode.json"
+
+# log bmc info
+sudo ipmitool bmc info | tee "/mnt/${serial}/bmc_info.log"
+
 cp /var/log/cloud-init-output.log "/mnt/${serial}/cloud-init-output.log"
 cp -r /home/tiny/stress_test "/mnt/${serial}/stress_test"
 
