@@ -8,6 +8,7 @@ git fetch -v --dry-run 2>&1 | grep -q "up to date" && changed=0
 
 if [ $changed -eq 1 ]; then
   git pull
+  systemctl daemon-reload
   systemctl restart displayservice
   systemctl restart buttonservice
   systemctl restart tinychat
