@@ -89,7 +89,7 @@ if ! bash /opt/tinybox/setup/trainresnet.sh; then
 fi
 
 # check maximum temps hit
-cpu_max_temp=$(cut -d, -f2 < /home/tiny/stress_test/temps.log | sort -n | tail -n 1)
+cpu_max_temp=$(cut -d, -f2 < /home/tiny/stress_test/temps.log | sort -n | tail -n 1 | awk '{print int($1)}')
 # declare an array for gpu temps
 gpu_max_temps=()
 for gpu_id in $(seq 0 5); do
@@ -101,7 +101,7 @@ gpu_max_temps1=$(echo "${gpu_max_temps[@]:0:3}" | tr ' ' ' : ')
 gpu_max_temps2=$(echo "${gpu_max_temps[@]:3:3}" | tr ' ' ' : ')
 echo "text,${cpu_max_temp},${gpu_max_temps1},${gpu_max_temps2}" | nc -U /run/tinybox-screen.sock
 
-cpu_max_temp=$(echo "$cpu_max_temp" | cut -d. -f1)
+# check if any of the temps are above the threshold
 if [ "$cpu_max_temp" -gt 90 ] || [ "${gpu_max_temps[0]}" -gt 100 ] || [ "${gpu_max_temps[1]}" -gt 100 ] || [ "${gpu_max_temps[2]}" -gt 100 ] || [ "${gpu_max_temps[3]}" -gt 100 ] || [ "${gpu_max_temps[4]}" -gt 100 ] || [ "${gpu_max_temps[5]}" -gt 100 ]; then
   echo "text,** ${cpu_max_temp} **,${gpu_max_temps1},${gpu_max_temps2}" | nc -U /run/tinybox-screen.sock
   exit 1
@@ -148,7 +148,7 @@ cp -r /home/tiny/stress_test "/mnt/${serial}/stress_test"
 sudo journalctl -o export --unit=provision > "/mnt/${serial}/provision.log"
 
 sudo umount /mnt
-sudo ip ad del "${ip}2" dev "$iface"
+sudo ip ad del "${ip}2/24" dev "$iface"
 
 sleep 1
 echo "text,Provisioning Complete" | nc -U /run/tinybox-screen.sock
