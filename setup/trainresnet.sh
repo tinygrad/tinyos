@@ -3,6 +3,12 @@ set -x
 
 pushd /home/tiny/tinygrad || exit
 
+# if we already have a checkpoint saved we can skip training
+if [ -d "ckpts" ]; then
+  echo "text,skipping training" | nc -U /run/tinybox-screen.sock
+  exit 0
+fi
+
 # Check which gpus are installed
 IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
 if [ -z "$IS_NVIDIA_GPU" ]; then
