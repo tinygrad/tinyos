@@ -145,7 +145,7 @@ cp /var/log/cloud-init-output.log "/mnt/${serial}/cloud-init-output.log"
 cp -r /home/tiny/stress_test "/mnt/${serial}/stress_test"
 
 # log provisioning logs
-sudo journalctl -o export --unit=provision | tee "/mnt/${serial}/provision.log"
+sudo journalctl -o export --unit=provision > "/mnt/${serial}/provision.log"
 
 sudo umount /mnt
 sudo ip ad del "${ip}2" dev "$iface"
