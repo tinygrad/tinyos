@@ -19,6 +19,7 @@
         "unix",
         "GetTime",
         "GetBody",
-        "GetHost"
+        "GetHost",
+        "GetParam"
     ]
 }
