@@ -76,7 +76,7 @@ function OnServerHeartbeat()
   local pid = MEM:load(BACKEND_PID)
   if pid ~= 0 then
     local last_time = MEM:load(LAST_BACKEND_USE)
-    if GetTime() - last_time > 15 * 60 then
+    if GetTime() - last_time > 10 * 60 then
       Log(kLogInfo, "killing backend server")
       unix.kill(pid, unix.SIGTERM)
       MEM:store(BACKEND_PID, 0)
