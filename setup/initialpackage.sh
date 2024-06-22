@@ -59,7 +59,6 @@ echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *
 apt update -y
 apt install gum mods -y
 mkdir -p /home/tiny/.config/mods/
-chown -R tiny:tiny /home/tiny/.config/
 cat <<EOF > /home/tiny/.config/mods/mods.yml
 # Default model (gpt-3.5-turbo, gpt-4, ggml-gpt4all-j...).
 default-model: tinychat
@@ -110,7 +109,7 @@ apis:
       tinychat:
         aliases: ["tinychat"]
 EOF
-chown tiny:tiny /home/tiny/.config/mods/mods.conf
+chown -R tiny:tiny /home/tiny/.config/
 
 # write the correct environment variables for tinychat to function correctly
 cat <<EOF > /etc/tinychat.env
