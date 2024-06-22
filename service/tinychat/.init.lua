@@ -34,7 +34,6 @@ end
 
 BACKEND_PID = 1
 LAST_BACKEND_USE = 2
-TIMEOUT = 3
 
 local function startBackend()
   -- start up the backend server if it's not already running
@@ -77,11 +76,7 @@ function OnServerHeartbeat()
   local pid = MEM:load(BACKEND_PID)
   if pid ~= 0 then
     local last_time = MEM:load(LAST_BACKEND_USE)
-    local timeout = MEM:load(TIMEOUT)
-    if timeout == 0 then
-      timeout = 5 * 60
-    end
-    if GetTime() - last_time > timeout then
+    if GetTime() - last_time > 15 * 60 then
       Log(kLogInfo, "killing backend server")
       unix.kill(pid, unix.SIGTERM)
       MEM:store(BACKEND_PID, 0)
@@ -126,21 +121,6 @@ function OnHttpRequest()
       Unlock()
       SetStatus(200)
       Write("ok")
-    elseif path == "/ctrl/timeout" then
-      local timeout = tonumber(GetParam("timeout"))
-      if timeout then
-        Lock()
-        MEM:store(TIMEOUT, int(timeout))
-        Unlock()
-        SetStatus(200)
-        Write("ok")
-      else
-        SetStatus(400)
-        Write("invalid timeout")
-      end
-    else
-      SetStatus(404)
-      Write("not found")
     end
   else
     if path == "/" then
