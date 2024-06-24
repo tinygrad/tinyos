@@ -138,6 +138,9 @@ mkdir -p "/mnt/${serial}"
 # log dmidecode
 echo "$json_dmi" > "/mnt/${serial}/dmidecode.json"
 
+# log lshw
+sudo lshw -json > "/mnt/${serial}/lshw.json"
+
 # log bmc info
 sudo ipmitool bmc info | tee "/mnt/${serial}/bmc_info.log"
 
