@@ -208,7 +208,7 @@ function prompt_reboot {
 function main {
   check_cloudinit
 
-  set_locale
+  # set_locale
   set_timezone
 
   while true; do
