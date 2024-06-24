@@ -9,17 +9,8 @@ if [ -d "ckpts" ]; then
   exit 0
 fi
 
-# Check which gpus are installed
-IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
-if [ -z "$IS_NVIDIA_GPU" ]; then
-  color="red"
-else
-  color="green"
-fi
-
 export PYTHONPATH="."
 export MODEL="resnet"
-export SUBMISSION_PLATFORM="tinybox_$color"
 
 export DEFAULT_FLOAT="HALF" GPUS=6 BS=1536 EVAL_BS=192
 export LAZYCACHE=0 RESET_STEP=0
