@@ -30,19 +30,18 @@ else
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=1500 BEAM_UPCAST_MAX=64 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=10 BEAM_PADTO=0
 fi
 
+# set seed
 export SEED=$RANDOM
-DATETIME=$(date "+%m%d%H%M")
-LOGFILE="resnet_${color}_${DATETIME}_${SEED}.log"
 
 # init
-BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py | tee "$LOGFILE"
+BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py
 
 # start temp monitor
 bash /opt/tinybox/setup/monitortemps.sh &
 
 # run
 START_TIME=$(date +%s)
-PARALLEL=0 RUNMLPERF=1 EVAL_START_EPOCH=3 EVAL_FREQ=4 python3 examples/mlperf/model_train.py | tee -a "$LOGFILE"
+PARALLEL=0 RUNMLPERF=1 EVAL_START_EPOCH=3 EVAL_FREQ=4 python3 examples/mlperf/model_train.py
 END_TIME=$(date +%s)
 
 # stop temp monitor
