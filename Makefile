@@ -14,13 +14,13 @@ clean:
 
 red:
 	sed 's/<|ARTIFACT_NAME|>/tinyos.red.img/g' tinyos.template.yaml > tinyos.yaml
-	echo "COLOR=red" | tee --append userspace/etc/tinybox-release
+	echo "TINYBOX_COLOR=red" | tee --append userspace/etc/tinybox-release
 	time sudo ubuntu-image classic --debug tinyos.yaml
 	rm -f tinyos.yaml userspace/etc/tinybox-release
 
 green:
 	sed 's/<|ARTIFACT_NAME|>/tinyos.green.img/g' tinyos.template.yaml > tinyos.yaml
-	echo "COLOR=green" | tee --append userspace/etc/tinybox-release
+	echo "TINYBOX_COLOR=green" | tee --append userspace/etc/tinybox-release
 	time sudo ubuntu-image classic --debug tinyos.yaml
 	rm -f tinyos.yaml userspace/etc/tinybox-release
 
