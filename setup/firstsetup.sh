@@ -3,6 +3,7 @@
 trap "" SIGINT SIGHUP
 
 NEED_REBOOT=0
+OLD_TERM="$TERM"
 
 function check_cloudinit {
   # check if cloud-init succeeded
@@ -206,6 +207,12 @@ function prompt_reboot {
 }
 
 function main {
+  # check if we are logged in over serial
+  # and need to force color
+  if tty | grep -q "ttyS"; then
+    export TERM=xterm-256color
+  fi
+
   check_cloudinit
 
   # set_locale
@@ -225,6 +232,9 @@ function main {
   sed -i '/bash \/opt\/tinybox\/setup\/firstsetup.sh/d' "$HOME"/.profile
 
   prompt_reboot
+
+  # restore TERM
+  export TERM="$OLD_TERM"
 }
 
 main "$@"
