@@ -67,8 +67,7 @@ customization:
         - [ cloud-init-per, once, ntp, timedatectl, set-ntp, "true" ]
         - [ cloud-init-per, once, setbmcpass, bash, /opt/tinybox/setup/setbmcpass.sh ]
         - [ cloud-init-per, once, raidsetup, bash, /opt/tinybox/setup/raidsetup.sh ]
-        - [ cloud-init-per, once, driverinstall, bash, /opt/tinybox/setup/driverinstall.sh ]
-        - [ cloud-init-per, once, initialpackage, bash, /opt/tinybox/setup/initialpackage.sh ]
+        - [ cloud-init-per, once, fixdisk, bash, /opt/tinybox/setup/fixdisk.sh ]
         - [ cloud-init-per, once, reboot, bash, /opt/tinybox/service/reboot.sh ]
       power_state:
         delay: now

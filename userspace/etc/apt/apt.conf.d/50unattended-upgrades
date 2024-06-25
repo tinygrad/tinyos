@@ -6,6 +6,6 @@ Unattended-Upgrade::Allowed-Origins {
 };
 
 Unattended-Upgrade::Package-Blacklist {
-  "nvidia-*";
-  "libnvidia-*";
+  "nvidia-";
+  "libnvidia-";
 };
