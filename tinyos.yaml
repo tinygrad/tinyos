@@ -31,33 +31,13 @@ customization:
   pocket: updates
   manual:
     make-dirs:
-      - path: /opt/tinybox/build/
+      - path: /opt/tinybox/
         permissions: 0755
       - path: /raid/
         permissions: 0777
     copy-file:
-      # build-time chroot setup
-      - source: ./build/in-chroot.sh
-        destination: /opt/tinybox/build/in-chroot.sh
-      # default grub config
-      - source: ./misc/grub
-        destination: /etc/default/grub
-      # fix raid array mounting quirks
-      - source: ./misc/mdadm.conf
-        destination: /etc/mdadm/mdadm.conf
-      # displayservice
-      - source: ./build/venv
-        destination: /opt/tinybox/build/venv
-      - source: ./tinyturing/
-        destination: /opt/tinybox/tinyturing/
-      - source: ./service/
-        destination: /opt/tinybox/service/
-      # setup
-      - source: ./setup/
-        destination: /opt/tinybox/setup/
-      # tools
-      - source: ./tools/
-        destination: /opt/tinybox/tools/
+      - source: ./build/
+        destination: /opt/tinybox/build/
     execute:
       - path: /opt/tinybox/build/in-chroot.sh
   cloud-init:
@@ -85,8 +65,7 @@ customization:
         - [ cloud-init-per, once, enablesleeping, systemctl, enable, sleeping.service ]
         - [ cloud-init-per, once, hostname, hostnamectl, hostname, tinybox ]
         - [ cloud-init-per, once, ntp, timedatectl, set-ntp, "true" ]
-        - [ cloud-init-per, once, adduser, bash, /opt/tinybox/setup/adduser.sh ]
-        - [ cloud-init-per, once, update, bash, /opt/tinybox/setup/update.sh ]
+        - [ cloud-init-per, once, setbmcpass, bash, /opt/tinybox/setup/setbmcpass.sh ]
         - [ cloud-init-per, once, raidsetup, bash, /opt/tinybox/setup/raidsetup.sh ]
         - [ cloud-init-per, once, driverinstall, bash, /opt/tinybox/setup/driverinstall.sh ]
         - [ cloud-init-per, once, initialpackage, bash, /opt/tinybox/setup/initialpackage.sh ]

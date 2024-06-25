@@ -1,26 +1,33 @@
 #!/usr/bin/env bash
 set -xeo pipefail
 
-pushd /tmp
+# enable networking in chroot
+mkdir -p /run/systemd/resolve
+echo "nameserver 1.1.1.1" > /run/systemd/resolve/stub-resolv.conf
 
-# disable default motd
-chmod -x /etc/update-motd.d/*
+# replace /opt/tinybox with the git repo
+rm -rf /opt/tinybox
+git clone https://github.com/tinygrad/tinyos /opt/tinybox
 
-# symlink tools
-ln -s /opt/tinybox/tools/fan-control /usr/local/bin/
-ln -s /opt/tinybox/tools/fan-control_completion.sh /etc/bash_completion.d/
-ln -s /opt/tinybox/tools/power-limit /usr/local/bin/
-ln -s /opt/tinybox/tools/power-limit_completion.sh /etc/bash_completion.d/
+# run in-chroot-pre scripts
+scripts=$(find /opt/tinybox/build/in-chroot-pre.d/ -type f -name "*.sh" | sort)
+for script in $scripts; do
+  bash "$script"
+done
 
-# symlink service files
-ln -s /opt/tinybox/setup/secondboot.service /etc/systemd/system/
-ln -s /opt/tinybox/service/autoupdate-tinybox.service /etc/systemd/system/
-ln -s /opt/tinybox/setup/provision.service /etc/systemd/system/
-ln -s /opt/tinybox/service/buttonservice.service /etc/systemd/system/
-ln -s /opt/tinybox/service/displayservice.service /etc/systemd/system/
-ln -s /opt/tinybox/service/poweroff.service /etc/systemd/system/
-ln -s /opt/tinybox/service/sleeping.service /etc/systemd/system/
-ln -s /opt/tinybox/service/reboot.service /etc/systemd/system/
-ln -s /opt/tinybox/service/tinychat.service /etc/systemd/system/
+# merge /opt/tinybox/userspace into /
+rsync -ah --info=progress2 /opt/tinybox/userspace/ /
+chown -R tiny:tiny /home/tiny/
 
-popd
+# run in-chroot-post scripts
+scripts=$(find /opt/tinybox/build/in-chroot-post.d/ -type f -name "*.sh" | sort)
+for script in $scripts; do
+  if [[ $script == *"__user"* ]]; then
+    su tiny -c "bash $script"
+  else
+    bash "$script"
+  fi
+done
+
+# remove the chroot networking hack
+rm -r /run/systemd
