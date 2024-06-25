@@ -7,9 +7,7 @@ help:
 	@echo "       clean up"
 
 clean:
-	rm -f build/tinybox-release
-	rm -f tinyos.yaml
-	rm -f tinyos.red.img tinyos.green.img
+	rm -f tinyos.yaml build/tinybox-release
 	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev || true
 	sudo rm -rf result
 
