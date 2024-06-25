@@ -5,15 +5,15 @@ set -xeo pipefail
 mkdir -p /run/systemd/resolve
 echo "nameserver 1.1.1.1" > /run/systemd/resolve/stub-resolv.conf
 
-# replace /opt/tinybox with the git repo
-rm -rf /opt/tinybox
-git clone https://github.com/tinygrad/tinyos /opt/tinybox
-
 # run in-chroot-pre scripts
 scripts=$(find /opt/tinybox/build/in-chroot-pre.d/ -type f -name "*.sh" | sort)
 for script in $scripts; do
   bash "$script"
 done
+
+# replace /opt/tinybox with the git repo
+rm -rf /opt/tinybox
+git clone https://github.com/tinygrad/tinyos /opt/tinybox
 
 # merge /opt/tinybox/userspace into /
 rsync -ah --info=progress2 /opt/tinybox/userspace/ /
