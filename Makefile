@@ -24,11 +24,13 @@ red: workdir
 	echo "TINYBOX_COLOR=red" | tee --append build/tinybox-release
 	time sudo ubuntu-image classic --debug -w result tinyos.yaml
 	rm -f tinyos.yaml build/tinybox-release
+	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev
 
 green: workdir
 	sed 's/<|ARTIFACT_NAME|>/tinyos.green.img/g' tinyos.template.yaml > tinyos.yaml
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
 	time sudo ubuntu-image classic --debug -w result tinyos.yaml
 	rm -f tinyos.yaml build/tinybox-release
+	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev
 
 .PHONY: clean red green
