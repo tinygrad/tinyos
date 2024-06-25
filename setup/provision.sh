@@ -109,16 +109,17 @@ if [ "$cpu_max_temp" -gt 90 ] || [ "${gpu_max_temps[0]}" -gt 100 ] || [ "${gpu_m
   exit 1
 fi
 
+# check that tinychat is up and working
 sudo systemctl start tinychat
 sleep 10
 curl http://127.0.0.1/ctrl/start
 echo "status" | nc -U /run/tinybox-screen.sock
 sleep 30
 
-# check that tinychat is up and working
 mods "hi" | tee /home/tiny/stress_test/tinychat.log
 if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
   echo "text,tinychat check failed" | nc -U /run/tinybox-screen.sock
+  journalctl --unit=tinychat
   exit 1
 fi
 
