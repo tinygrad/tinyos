@@ -8,9 +8,6 @@ echo "nameserver 1.1.1.1" > /run/systemd/resolve/stub-resolv.conf
 # replace /opt/tinybox with the git repo
 rm -rf /opt/tinybox
 git clone https://github.com/tinygrad/tinyos /opt/tinybox
-pushd /opt/tinybox
-bash /opt/tinybox/build/build-venv.sh
-popd
 
 # run in-chroot-pre scripts
 scripts=$(find /opt/tinybox/build/in-chroot-pre.d/ -type f -name "*.sh" | sort)
