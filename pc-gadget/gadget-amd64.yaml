@@ -30,4 +30,4 @@ volumes:
         role: system-data
         filesystem: ext4
         filesystem-label: writable
-        size: 64G
+        size: 72G
