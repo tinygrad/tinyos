@@ -22,7 +22,7 @@ rootfs:
       - server
       - server-minimal
       - minimal
-  sources-list-deb822: true
+  sources-list-deb822: false
 customization:
   components:
     - main
