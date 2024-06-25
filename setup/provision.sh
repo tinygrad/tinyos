@@ -16,6 +16,7 @@ fi
 echo "text,Found NIC" | nc -U /run/tinybox-screen.sock
 
 # determine NIC
+set +e
 interfaces=$(ip ad | grep -oP 'ens\w+np\d' | sort | uniq)
 ip=""
 iface=""
@@ -46,6 +47,7 @@ if [ -z "$ip" ]; then
   exit 1
 fi
 sudo ip link set "$iface" mtu 9000
+set -e
 
 # populate raid
 if ! bash /opt/tinybox/setup/populateraid.sh "$ip"; then
