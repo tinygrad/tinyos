@@ -123,6 +123,4 @@ customization:
     - name: nvtop
 artifacts:
   img:
-    - name: tinyos.img
-  manifest:
-    name: tinyos.manifest
+    - name: <|ARTIFACT_NAME|>
