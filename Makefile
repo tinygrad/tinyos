@@ -11,7 +11,7 @@ clean:
 	rm -f tinyos.yaml
 	rm -f tinyos.img
 	rm -f tinyos.manifest
-	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev
+	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev || true
 	sudo rm -rf result
 
 workdir:
