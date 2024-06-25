@@ -15,7 +15,9 @@ clean:
 	sudo rm -rf result
 
 workdir:
-	mkdir -p result/chroot
+	mkdir -p result
+	mkdir -p result/chroot/proc result/chroot/sys result/chroot/dev
+	sudo chown -R root: result
 	sudo mount -t proc none result/chroot/proc
 	sudo mount -t sysfs none result/chroot/sys
 	sudo mount -o bind /dev result/chroot/dev
