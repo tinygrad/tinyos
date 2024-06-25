@@ -56,10 +56,8 @@ class UOp:
   def __mod__(self, x): return UOp.alu(BinaryOps.MOD, self, ufix(self.dtype, x))
   def lt(self, x): return UOp.alu(BinaryOps.CMPLT, self, ufix(self.dtype, x))
   def ge(self, x): return -self.lt(x)
-  @staticmethod
-  def max(x, y): return UOp.alu(BinaryOps.MAX, x, y)
-  @staticmethod
-  def min(x, y): return -UOp.alu(BinaryOps.MAX, -x, -y)
+  def max(self, x): return UOp.alu(BinaryOps.MAX, self, x)
+  def min(self, x): return -UOp.alu(BinaryOps.MAX, -self, -x)
   @staticmethod
   def const(dtype:Optional[DType], b:ConstType|Variable):
     if isinstance(b, Variable): return UOp(UOps.DEFINE_VAR, dtype, (), b)
@@ -173,9 +171,9 @@ constant_folder = PatternMatcher([
       src=[UPat(UOps.CONST, name="mval"), UPat(UOps.RANGE, src=(UPat(name="loop_start"), UPat(name="loop_end")))])]),
       UPat(UOps.CONST, name="compval"))), UPat(UOps.CONST, name="multconst"), UPat(UOps.CONST, 0))), loop_collapse),
   # sum collapse to mul (with possible GEP)
-  (UPat(UOps.PHI, src=(UPat(UOps.DEFINE_ACC, name="phi_input", src=(UPat(UOps.RANGE, name="loop"),)),
+  (UPat(UOps.PHI, src=(UPat(UOps.DEFINE_ACC, name="phi_input", src=[UPat(UOps.CONST), UPat(UOps.RANGE, name="loop")]),
                        UPat(UOps.ALU, BinaryOps.ADD, src=(UPat(name="val1"), UPat(name="val2"))))), sum_collapse),
-  (UPat(UOps.PHI, src=(UPat(UOps.GEP, name="phi_input", src=(UPat(UOps.DEFINE_ACC, src=(UPat(UOps.RANGE, name="loop"),)),)),
+  (UPat(UOps.PHI, src=(UPat(UOps.GEP, name="phi_input", src=(UPat(UOps.DEFINE_ACC, src=[UPat(UOps.CONST), UPat(UOps.RANGE, name="loop")]),)),
                        UPat(UOps.ALU, BinaryOps.ADD, src=(UPat(name="val1"), UPat(name="val2"))))), sum_collapse),
   # deal with UNMUL
   (UPat(UOps.ALU, BinaryOps.MUL, [UPat(UOps.CONST, name="c1"), UPat(UOps.UNMUL, src=[UPat(UOps.CONST, name="c2"), UPat(name="v")])]),
@@ -188,11 +186,11 @@ constant_folder = PatternMatcher([
   (UPat(UOps.GEP, name="root", src=(UPat(UOps.CONST, name="c"),)), lambda root, c: UOp.const(root.dtype, c.arg)),
   (UPat(UOps.CAST, name="root", src=UPat(UOps.CONST, name="c")), lambda root, c: UOp.const(root.dtype, c.arg)),
   # a phi on a DEFINE_ACC without loops or a CONST is a noop. this is for correctness, not just speed
-  (UPat(UOps.PHI, src=(UPat(UOps.DEFINE_ACC, name="acc"), UPat(name="acc"))), lambda acc: UOp.const(acc.dtype, acc.arg[0])),
-  (UPat(UOps.PHI, src=(UPat(UOps.DEFINE_ACC, src=tuple()), UPat(name="x"))), lambda x: x),
+  (UPat(UOps.PHI, src=(UPat(UOps.DEFINE_ACC, name="acc"), UPat(name="acc"))), lambda acc: UOp.cast(acc.src[0], acc.dtype)),
+  (UPat(UOps.PHI, src=(UPat(UOps.DEFINE_ACC, src=(UPat(UOps.CONST),)), UPat(name="x"))), lambda x: x),
   (UPat(UOps.PHI, src=(UPat(UOps.CONST), UPat(name="x"))), lambda x: x),
   # a DEFINE_ACC without inputs is a const + GEP on a const is the const
-  (UPat(UOps.DEFINE_ACC, name="root", src=tuple()), lambda root: UOp.const(root.dtype, root.arg[0])),
+  (UPat(UOps.DEFINE_ACC, name="root", src=(UPat(UOps.CONST),)), lambda root: UOp.cast(root.src[0], root.dtype)),
   (UPat(UOps.GEP, name="root", src=(UPat(UOps.CONST, name="x"),)), lambda root,x: UOp.const(root.dtype, x.arg)),
   # max -2147483648
   (UOp.max(UOp.var('x'), UOp.const(dtypes.int, -2147483648)), lambda x: x),
@@ -214,6 +212,7 @@ constant_folder = PatternMatcher([
   (UOp.var('x') * 1, lambda x: x),    # x*1 -> x
   (UOp.var('x') // 1, lambda x: x),   # x/1 -> x
   (UOp.var('x') // -1, lambda x: -x), # x/-1 -> -x
+  (UOp.var('x', dtype=dtypes.bool).max(UOp.const(dtypes.bool, False)), lambda x: x),  # max(x, False) -> x
   # ** zero folding **
   #x*0 -> 0 or 0*x -> 0
   #if x is nan it should render the nan value.
@@ -325,18 +324,15 @@ class UOpGraph:
     # dedup all nodes
     # TODO: i feel like this BFS is written in a few places, possible to library it?
     unprocessed_nodes = [sink]
-    early_in_degree: DefaultDict[UOp, int] = defaultdict(int)
+    early_in_degree: Dict[UOp, int] = {}
     children: DefaultDict[UOp, List[UOp]] = defaultdict(list)
-    all_nodes: Dict[UOp, None] = dict()
     while len(unprocessed_nodes):
       n = unprocessed_nodes.pop(0)
-      if n in all_nodes: continue
-      all_nodes[n] = None
-      for x in n.src:
-        early_in_degree[n] += 1
-        children[x].append(n)
+      if n in early_in_degree: continue
+      early_in_degree[n] = len(n.src)
+      for x in n.src: children[x].append(n)
       unprocessed_nodes += list(n.src)
-    early_queue = [x for x in all_nodes if early_in_degree[x] == 0]
+    early_queue = [k for k, v in early_in_degree.items() if v == 0]
     replace_nodes: Dict[UOp, UOp] = {}
     while len(early_queue):
       n = early_queue.pop(0)
@@ -408,8 +404,8 @@ class UOpGraph:
     while queue:
       p,x = heapq.heappop(queue)
       if DEBUG >= 7: print(p,x)
-      if x.op is UOps.DEFINE_ACC and len(x.src):
-        idx = min([self._uops.index(l) for l in x.src])
+      if x.op is UOps.DEFINE_ACC and len(x.src) > 1:
+        idx = min([self._uops.index(l) for l in x.src if l.op is UOps.RANGE])
         self._uops.insert(idx, x)
       else:
         self._uops.append(x)
@@ -464,8 +460,10 @@ class UOpGraph:
   def type_verify(self):
     for u in self.uops:
       uop, arg, src, dtype = u.op, u.arg, u.src, u.dtype
-      if uop in {UOps.CONST, UOps.DEFINE_ACC}:
-        if uop is UOps.DEFINE_ACC: arg = arg[0]
+      if uop in (UOps.CONST, UOps.DEFINE_ACC):
+        if uop is UOps.DEFINE_ACC:
+          assert dtype is not None and src[0].dtype == dtype.scalar(), f"type of {src[0].dtype=} must be a scalar {dtype.scalar()}"
+          arg = src[0].arg
         assert dtype is not None and type(arg) is type(dtypes.as_const(arg, dtype)), f"type of {arg=} does not match {dtype}"
       if uop in {UOps.CAST, UOps.BITCAST}: assert arg is None   # type is the output type, not an arg
       if uop is UOps.LOAD and len(src) > 2 and src[2].op not in {UOps.IF, UOps.BARRIER}: assert src[2].dtype == dtypes.bool
