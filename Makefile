@@ -11,17 +11,21 @@ clean:
 	rm -f tinyos.yaml
 	rm -f tinyos.img
 	rm -f tinyos.manifest
+	sudo rm -rf result
+
+workdir:
+	mkdir -p result
 
 red:
 	sed 's/<|ARTIFACT_NAME|>/tinyos.red.img/g' tinyos.template.yaml > tinyos.yaml
 	echo "TINYBOX_COLOR=red" | tee --append build/tinybox-release
-	time sudo ubuntu-image classic --debug tinyos.yaml
+	time sudo ubuntu-image classic --debug -w result tinyos.yaml
 	rm -f tinyos.yaml build/tinybox-release
 
 green:
 	sed 's/<|ARTIFACT_NAME|>/tinyos.green.img/g' tinyos.template.yaml > tinyos.yaml
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
-	time sudo ubuntu-image classic --debug tinyos.yaml
+	time sudo ubuntu-image classic --debug -w result tinyos.yaml
 	rm -f tinyos.yaml build/tinybox-release
 
 .PHONY: clean red green
