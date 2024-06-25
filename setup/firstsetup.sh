@@ -17,43 +17,6 @@ function check_cloudinit {
   done
 }
 
-function set_locale {
-  local locales
-  locales="$(sed -e '1,6d' /etc/locale.gen | sed 's/^#[ ]*//' | sed 's/ .*//')"
-  readarray -t locales <<< "$locales"
-
-  local current_locale
-  current_locale="$(locale | grep LANG | cut -d= -f2)"
-  gum confirm "Current locale is $current_locale. Change?"
-  if [[ $? -eq 1 ]]; then
-    gum log -sl info "Not changing locale."
-    return
-  fi
-
-  local locale
-  while true; do
-    locale="$(gum filter --header "Select a locale" --placeholder "C.UTF-8" "${locales[@]}")"
-
-    if [[ -z "$locale" ]]; then
-      gum log -sl warn "No locale selected."
-      gum confirm "Try again?" && continue
-      gum log -sl error "No locale selected."
-      return
-    fi
-
-    # confirm locale
-    gum confirm "Confirm locale: $locale" && break
-  done
-
-  # set locale
-  gum spin -s jump --title "Generating locale..." -- sudo locale-gen "$locale"
-  sudo update-locale LANG="$locale"
-  sudo localectl set-locale "LANG=$locale"
-  NEED_REBOOT=1
-
-  gum log -sl info "Locale set to $locale."
-}
-
 function set_timezone {
   local timezones
   timezones="$(timedatectl list-timezones)"
@@ -215,7 +178,6 @@ function main {
 
   check_cloudinit
 
-  # set_locale
   set_timezone
 
   while true; do
