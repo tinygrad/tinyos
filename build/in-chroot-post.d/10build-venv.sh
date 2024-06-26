@@ -12,12 +12,18 @@ source build/venv/bin/activate
 # upgrade pip
 pip install --upgrade pip
 
-# install deps
+# install deps for display and button services
 pip install numpy numba pillow pyserial psutil evdev redfish
 
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
   pip install nvidia-ml-py
 fi
+
+# install deps for tinychat
+pip install tiktoken blobfile
+pushd /opt/tinybox/tinygrad
+pip install -e .
+popd
 
 # exit venv
 deactivate

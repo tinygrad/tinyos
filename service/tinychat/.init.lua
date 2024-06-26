@@ -44,7 +44,7 @@ local function startBackend()
   if pid == 0 then
     pid = unix.fork()
     if pid == 0 then
-      local python_prog = assert(unix.commandv("python3"))
+      local python_prog = "/opt/tinybox/build/venv/bin/python3"
 
       -- read environment variables from /etc/tinychat.env
       local env = {}
