@@ -30,7 +30,6 @@ image:
 	sudo mount -t devpts none result/chroot/dev/pts
 	sudo ubuntu-image classic --debug -w result -r -t perform_manual_customization tinyos.yaml
 	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev
-	sudo rmdir result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev
 	sudo ubuntu-image classic --debug -w result -r tinyos.yaml
 	rm -f tinyos.yaml build/tinybox-release
 
