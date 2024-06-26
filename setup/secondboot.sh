@@ -14,7 +14,7 @@ else
 fi
 
 # disable this service
-systemctl disable secondboot.service
+systemctl disable on-secondboot.service
 
 # start provisioning
 systemctl start provision.service
