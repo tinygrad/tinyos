@@ -8,10 +8,9 @@ help:
 
 clean:
 	rm -f tinyos.yaml build/tinybox-release
-	mountpoint -q result/chroot/proc && sudo umount result/chroot/proc
-	mountpoint -q result/chroot/sys && sudo umount result/chroot/sys
-	mountpoint -q result/chroot/dev/pts && sudo umount result/chroot/dev/pts
-	mountpoint -q result/chroot/dev && sudo umount result/chroot/dev
+	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev || true
+	# ensure that nothing is still mounted when we do this
+	(mount | grep result/chroot) && echo "ERROR: something is still mounted" && exit 1
 	sudo rm -rf result
 
 red:
