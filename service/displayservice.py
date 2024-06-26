@@ -381,8 +381,15 @@ def display_thread():
             display_state = DisplayState.SLEEP
             sleep_screen = SleepScreen()
       else:
+        # 10 second timeout from startup to sleep
+        if time.monotonic() - start_time > 10 and display_state == DisplayState.STARTUP:
+          logging.info("Startup timeout, switching to sleep state")
+          display_state = DisplayState.SLEEP
+          display_last_active = time.monotonic()
+          sleep_screen = SleepScreen()
+
         # reset display state if inactive for 30 seconds
-        if time.monotonic() - display_last_active > 30 and (display_state == DisplayState.STATUS or display_state == DisplayState.STARTUP):
+        if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
           logging.info("Display inactive for 30 seconds, switching back to sleep state")
           display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
