@@ -3,6 +3,8 @@ set -xeo pipefail
 
 source /etc/tinybox-release
 
+pushd /opt/tinybox
+
 # build a venv to be copied to the image
 python3 -m venv build/venv
 source build/venv/bin/activate
@@ -19,3 +21,5 @@ fi
 
 # exit venv
 deactivate
+
+popd
