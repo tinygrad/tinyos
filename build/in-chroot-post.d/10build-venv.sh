@@ -20,7 +20,7 @@ if [[ "$TINYBOX_COLOR" == "green" ]]; then
 fi
 
 # install deps for tinychat
-pip install tiktoken blobfile
+pip install tiktoken blobfile bottle
 pushd /opt/tinybox/tinygrad
 pip install -e .
 popd

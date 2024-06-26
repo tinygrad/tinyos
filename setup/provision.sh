@@ -114,7 +114,6 @@ else
   exit 1
 fi
 
-
 # check maximum temps hit
 cpu_max_temp=$(cut -d, -f2 < /home/tiny/stress_test/temps.log | sort -n | tail -n 1 | awk '{print int($1)}')
 # declare an array for gpu temps
@@ -143,9 +142,14 @@ sleep 30
 
 mods "hi" | tee /home/tiny/stress_test/tinychat.log
 if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
-  echo "text,tinychat check failed" | nc -U /run/tinybox-screen.sock
+  echo "text,tinychat check failed,retrying..." | nc -U /run/tinybox-screen.sock
   journalctl --unit=tinychat
-  exit 1
+
+  mods "hi" | tee /home/tiny/stress_test/tinychat.log
+  if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
+    echo "text,tinychat check failed" | nc -U /run/tinybox-screen.sock
+    exit 1
+  fi
 fi
 
 # log everything from provisioning
