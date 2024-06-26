@@ -10,7 +10,7 @@ clean:
 	rm -f tinyos.yaml build/tinybox-release
 	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev || true
 	# ensure that nothing is still mounted when we do this
-	(mount | grep result/chroot) && echo "ERROR: something is still mounted" && exit 1
+	(mount | grep result/chroot) && echo "ERROR: something is still mounted" && exit 1 || true
 	sudo rm -rf result
 
 red:
