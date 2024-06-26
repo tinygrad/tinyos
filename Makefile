@@ -8,7 +8,7 @@ help:
 
 clean:
 	rm -f tinyos.yaml build/tinybox-release
-	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev || true
+	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev
 	sudo rm -rf result
 
 red:
