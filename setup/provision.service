@@ -1,6 +1,6 @@
 [Unit]
 Description=tinybox provisioning
-After=network.target
+After=network.target autoupdate-tinybox.service
 
 [Service]
 Type=simple
