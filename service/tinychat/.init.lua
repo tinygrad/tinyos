@@ -62,7 +62,7 @@ local function startBackend()
         "--size",
         "8B",
         "--shard",
-        "4",
+        "2",
       }, env)
     else
       MEM:store(BACKEND_PID, pid)
