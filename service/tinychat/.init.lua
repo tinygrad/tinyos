@@ -47,7 +47,7 @@ local function startBackend()
       local python_prog = "/opt/tinybox/build/venv/bin/python3"
 
       -- read environment variables from /etc/tinychat.env
-      local env = {}
+      local env = {"PYTHONPATH=/opt/tinybox/tinygrad"}
       local f = assert(io.open("/etc/tinychat.env", "r"))
       for line in f:lines() do
         local key, value = string.match(line, "([^=]+)=(.*)")
