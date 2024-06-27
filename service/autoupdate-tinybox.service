@@ -7,6 +7,7 @@ Type=oneshot
 User=root
 Group=root
 ExecStart=bash /opt/tinybox/service/autoupdate-tinybox.sh
+StandardOutput=journal+console
 
 [Install]
 WantedBy=multi-user.target
