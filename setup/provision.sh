@@ -91,10 +91,9 @@ if ! bash /opt/tinybox/setup/trainresnet.sh; then
 fi
 
 # check if we have a resnet checkpoint
-if compgen -G "/home/tiny/tinygrad/ckpts/resnet50_*.safe" > /dev/null; then
+if [ -d "/home/tiny/tinygrad/ckpts" ]; then
   # we have a checkpoint so move it to the stress_test folder
-  mv /home/tiny/tinygrad/ckpts/resnet50_*.safe /home/tiny/stress_test/resnet50.safetensors
-  rmdir /home/tiny/tinygrad/ckpts
+  mv /home/tiny/tinygrad/ckpts /home/tiny/stress_test/
 else
   echo "text,No ResNet Ckpt,Retrying..." | nc -U /run/tinybox-screen.sock
   sleep 1
@@ -105,10 +104,9 @@ else
 fi
 
 # check again if we have a resnet checkpoint
-if compgen -G "/home/tiny/tinygrad/ckpts/resnet50_*.safe" > /dev/null; then
+if [ -d "/home/tiny/tinygrad/ckpts" ]; then
   # we have a checkpoint so move it to the stress_test folder
-  mv /home/tiny/tinygrad/ckpts/resnet50_*.safe /home/tiny/stress_test/resnet50.safetensors
-  rmdir /home/tiny/tinygrad/ckpts
+  mv /home/tiny/tinygrad/ckpts /home/tiny/stress_test/
 else
   echo "text,No ResNet Ckpt" | nc -U /run/tinybox-screen.sock
   exit 1
