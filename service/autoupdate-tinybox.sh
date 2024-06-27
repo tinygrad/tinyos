@@ -9,9 +9,9 @@ git fetch -v --dry-run 2>&1 | grep -q "up to date" && changed=0
 if [ $changed -eq 1 ]; then
   git pull
   systemctl daemon-reload
-  systemctl restart displayservice
-  systemctl restart buttonservice
-  systemctl restart tinychat
+  systemctl stop displayservice
+  systemctl stop buttonservice
+  systemctl stop tinychat
 fi
 
 # check current update stage and see if there are any stages to be run
@@ -30,5 +30,9 @@ for stage_file in $stage_files; do
     echo "$stage" > /etc/tinybox-update-stage
   fi
 done
+
+systemctl start displayservice
+systemctl start buttonservice
+systemctl start tinychat
 
 popd || true
