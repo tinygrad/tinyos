@@ -86,30 +86,32 @@ echo "status" | nc -U /run/tinybox-screen.sock
 
 sudo systemctl stop tinychat
 
-if ! bash /opt/tinybox/setup/trainresnet.sh; then
-  exit 1
-fi
-
-# check if we have a resnet checkpoint
-if [ -d "/home/tiny/tinygrad/ckpts" ]; then
-  # we have a checkpoint so move it to the stress_test folder
-  mv /home/tiny/tinygrad/ckpts /home/tiny/stress_test/
-else
-  echo "text,No ResNet Ckpt,Retrying..." | nc -U /run/tinybox-screen.sock
-  sleep 1
-
+if [ ! -d "/home/tiny/stress_test/ckpts" ]; then
   if ! bash /opt/tinybox/setup/trainresnet.sh; then
     exit 1
   fi
-fi
 
-# check again if we have a resnet checkpoint
-if [ -d "/home/tiny/tinygrad/ckpts" ]; then
-  # we have a checkpoint so move it to the stress_test folder
-  mv /home/tiny/tinygrad/ckpts /home/tiny/stress_test/
-else
-  echo "text,No ResNet Ckpt" | nc -U /run/tinybox-screen.sock
-  exit 1
+  # check if we have a resnet checkpoint
+  if [ -d "/home/tiny/tinygrad/ckpts" ]; then
+    # we have a checkpoint so move it to the stress_test folder
+    mv /home/tiny/tinygrad/ckpts /home/tiny/stress_test/
+  else
+    echo "text,No ResNet Ckpt,Retrying..." | nc -U /run/tinybox-screen.sock
+    sleep 1
+
+    if ! bash /opt/tinybox/setup/trainresnet.sh; then
+      exit 1
+    fi
+
+    # check again if we have a resnet checkpoint
+    if [ -d "/home/tiny/tinygrad/ckpts" ]; then
+      # we have a checkpoint so move it to the stress_test folder
+      mv /home/tiny/tinygrad/ckpts /home/tiny/stress_test/
+    else
+      echo "text,No ResNet Ckpt" | nc -U /run/tinybox-screen.sock
+      exit 1
+    fi
+  fi
 fi
 
 # check maximum temps hit
