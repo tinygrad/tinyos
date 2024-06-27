@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -x
 
+# Check which gpus are installed
+IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+
 pushd /home/tiny/tinygrad || exit
 
 # if we already have a checkpoint saved we can skip training
@@ -23,6 +26,7 @@ fi
 
 # set seed
 export SEED=$RANDOM
+export EPOCHS=39
 
 # init
 BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py
