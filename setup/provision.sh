@@ -68,7 +68,7 @@ else
   python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
   popd || exit
   # ensure that it is above 12 GB/s
-  allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
+  allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/stress_test/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
   if [ "$allreduce_bw" -lt 12 ]; then
     echo "text,Allreduce bandwidth test failed" | nc -U /run/tinybox-screen.sock
     exit 1
