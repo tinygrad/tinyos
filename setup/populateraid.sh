@@ -31,11 +31,11 @@ rclone copy -P --auto-confirm --links --check-first --checkers 32 --multi-thread
   case "$line" in
     *ETA*)
       # extract transfer speed
-      speed=$(echo "$line" | grep -oP 'ETA[ ]+\d+\.\d+ [kMG]Bytes/s' | grep -oP '\d+\.\d+ [kMG]Bytes/s')
+      speed=$(echo "$line" | grep -oP ', \d+\.\d+ [kMG]Bytes/s,' | grep -oP '\d+\.\d+ [kMG]Bytes/s')
       # extract percentage
       percentage=$(echo "$line" | grep -oP '\d+%,' | grep -oP '\d+')
       # extract ETA
-      eta=$(echo "$line" | grep -oP '(\d+h\d+m\d+s)|(\d+m\d+s)|(\d+s)')
+      eta=$(echo "$line" | grep -oP 'ETA (\d+h\d+m\d+s)|(\d+m\d+s)|(\d+s)')
       echo "text,Populating RAID,${speed},${percentage}% - ${eta}" | nc -U /run/tinybox-screen.sock
       ;;
   esac
