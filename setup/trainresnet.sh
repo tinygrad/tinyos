@@ -23,6 +23,7 @@ fi
 
 # set seed
 export SEED=$RANDOM
+export EPOCHS=45
 
 # init
 BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py
@@ -40,9 +41,9 @@ pkill -f monitortemps.sh
 
 # ensure we are within 5% of the expected time or under the expected time
 if [ -z "$IS_NVIDIA_GPU" ]; then
-  EXPECTED_TIME=11400
+  EXPECTED_TIME=14250
 else
-  EXPECTED_TIME=9300
+  EXPECTED_TIME=11625
 fi
 
 if [ $((END_TIME - START_TIME)) -gt $((EXPECTED_TIME * 105 / 100)) ]; then
