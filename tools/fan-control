@@ -18,17 +18,11 @@ function main {
   local mode="$1"
   if [ -z "$mode" ]; then
     ercho "Mode not provided"
-    ercho -n "Valid modes: auto, manual"
-    if [ -z "$IS_NVIDIA_GPU" ]; then
-      ercho -n ", gpuauto, gpumanual"
-    fi
-    ercho
+    ercho "Valid modes: auto, manual, gpuauto, gpumanual"
     ercho "               auto) set case fan speeds automatically"
     ercho "     manual <speed>) set case fan speeds manually"
-    if [ -z "$IS_NVIDIA_GPU" ]; then
-      ercho "            gpuauto) set gpu fan speeds automatically"
-      ercho "  gpumanual <speed>) set gpu fan speeds manually"
-    fi
+    ercho "            gpuauto) set gpu fan speeds automatically"
+    ercho "  gpumanual <speed>) set gpu fan speeds manually"
     exit 1
   fi
   case "$mode" in
@@ -60,7 +54,10 @@ function main {
         echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
         echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
       else
-        ercho "tinybox green does not support manual fan speed control."
+        /opt/tinybox/build/venv/bin/python3 -c "
+from pynvml import *; nvmlInit(); handles = [nvmlDeviceGetHandleByIndex(i) for i in range(6)];
+list(map(lambda h: [nvmlDeviceSetDefaultFanSpeed_v2(h, i) for i in range(nvmlDeviceGetNumFans(h))], handles))
+"
       fi
       ;;
     gpumanual)
@@ -80,22 +77,19 @@ function main {
         echo "$fan_speed" | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
         echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
       else
-        ercho "tinybox green does not support manual fan speed control."
+        /opt/tinybox/build/venv/bin/python3 -c "
+from pynvml import *; nvmlInit(); handles = [nvmlDeviceGetHandleByIndex(i) for i in range(6)];
+list(map(lambda h: [nvmlDeviceSetFanSpeed_v2(h, i, $fan_speed) for i in range(nvmlDeviceGetNumFans(h))], handles))
+"
       fi
       ;;
     *)
       ercho "Invalid mode: $mode"
-      ercho -n "Valid modes: auto, manual"
-      if [ -z "$IS_NVIDIA_GPU" ]; then
-        ercho -n ", gpuauto, gpumanual"
-      fi
-      ercho
+      ercho "Valid modes: auto, manual, gpuauto, gpumanual"
       ercho "               auto) set case fan speeds automatically"
       ercho "     manual <speed>) set case fan speeds manually"
-      if [ -z "$IS_NVIDIA_GPU" ]; then
-        ercho "            gpuauto) set gpu fan speeds automatically"
-        ercho "  gpumanual <speed>) set gpu fan speeds manually"
-      fi
+      ercho "            gpuauto) set gpu fan speeds automatically"
+      ercho "  gpumanual <speed>) set gpu fan speeds manually"
       exit 1
       ;;
   esac
