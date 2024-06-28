@@ -51,6 +51,7 @@ function main {
     gpuauto)
       # set gpu fan speeds
       if [ -z "$IS_NVIDIA_GPU" ]; then
+        ercho "warn: requires amdgpu.ppfeaturemask=0xffffffff"
         echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
         echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
       else
@@ -74,6 +75,7 @@ list(map(lambda h: [nvmlDeviceSetDefaultFanSpeed_v2(h, i) for i in range(nvmlDev
 
       # set gpu fan speeds
       if [ -z "$IS_NVIDIA_GPU" ]; then
+        ercho "warn: requires amdgpu.ppfeaturemask=0xffffffff"
         echo "$fan_speed" | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
         echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
       else
