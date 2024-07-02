@@ -59,9 +59,6 @@ sleep 1
 # start stress testing
 mkdir -p /home/tiny/stress_test
 
-# run max fan speed test
-sudo fan-control gpumanual 100
-
 # run p2p bandwidth test
 if [ -z "$IS_NVIDIA_GPU" ]; then
   /opt/rocm/bin/rocm-bandwidth-test | tee /home/tiny/stress_test/p2p.log
