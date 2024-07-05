@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-set -xe
+set -x
 
 # Check which gpus are installed
 IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+set -e
 
 sleep 2
 
