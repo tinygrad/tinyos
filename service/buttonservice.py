@@ -1,5 +1,6 @@
 import evdev
 import asyncio, logging, socket, subprocess
+from pathlib import Path
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] <%(filename)s:%(lineno)d::%(funcName)s> - %(message)s")
 
 def find_power_button():
@@ -8,7 +9,7 @@ def find_power_button():
   raise Exception("power button not found")
 
 in_menu, menu_selection = False, 0
-MENU = ["exit", "start tinychat", "stop tinychat", "update", "provision"]
+MENU = ["exit", "start tinychat", "stop tinychat", "update", "provision", "force stress"]
 def update_menu():
   global in_menu, menu_selection
 
@@ -87,6 +88,11 @@ async def power_button_pressed(count: int):
           case 4:
             logging.info("provisioning")
             subprocess.run(["systemctl", "start", "provision"])
+            in_menu = False
+            update_menu()
+          case 5:
+            logging.info("forcing stress")
+            Path("/tmp/force_resnet_train").touch()
             in_menu = False
             update_menu()
     case 3:

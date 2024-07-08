@@ -87,7 +87,7 @@ echo "status" | nc -U /run/tinybox-screen.sock
 
 sudo systemctl stop tinychat
 
-if [ ! -d "/home/tiny/stress_test/ckpts" ]; then
+if [ ! -d "/home/tiny/stress_test/ckpts" ] || [ -f "/tmp/force_resnet_train" ]; then
   if ! bash /opt/tinybox/setup/trainresnet.sh; then
     exit 1
   fi
@@ -114,6 +114,7 @@ if [ ! -d "/home/tiny/stress_test/ckpts" ]; then
     fi
   fi
 fi
+rm -f /tmp/force_resnet_train
 
 # check maximum temps hit
 cpu_max_temp=$(cut -d, -f2 < /home/tiny/stress_test/temps.log | sort -n | tail -n 1 | awk '{print int($1)}')
