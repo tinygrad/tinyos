@@ -60,9 +60,36 @@ sleep 1
 # start stress testing
 mkdir -p /home/tiny/stress_test
 
-# run p2p bandwidth test
 if [ -z "$IS_NVIDIA_GPU" ]; then
+  # run p2p bandwidth test
   /opt/rocm/bin/rocm-bandwidth-test | tee /home/tiny/stress_test/p2p.log
+  bi_bw=$(tail -n 20 /home/tiny/stress_test/p2p.log)
+
+  while read -r line; do
+    [[ -z "$line" || "$line" =~ ^D/D ]] && continue
+
+    read -ra values <<< "$line"
+    values=("${values[@]:1}")
+
+    for i in "${!values[@]}"; do
+      value="${values[i]}"
+
+      [[ "$value" == "N/A" ]] && continue
+
+      if [[ -z "$lowest_bandwidth" || "$value" < "$lowest_bandwidth" ]]; then
+        lowest_bandwidth="$value"
+      fi
+    done
+  done <<< "$bi_bw"
+
+  # convert to int
+  lowest_bandwidth=$(echo "$lowest_bandwidth" | cut -d. -f1)
+
+  # check to ensure that bidirectional bandwidth is above 47
+  if [ -z "$lowest_bandwidth" ] || [ "$lowest_bandwidth" -lt 47 ]; then
+    echo "text,P2P bandwidth test failed" | nc -U /run/tinybox-screen.sock
+    exit 1
+  fi
 else
   # run allreduce bandwidth test
   pushd /home/tiny/tinygrad || exit
