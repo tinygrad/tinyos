@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
 set -x
 
-# Check which gpus are installed
-IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+source /etc/tinybox-release
 
-if [ -z "$IS_NVIDIA_GPU" ]; then
-  echo "AMD GPU found."
-else
-  echo "NVIDIA GPU found."
-
+if [[ "$TINYBOX_COLOR" == "green" ]]; then
   # enable persistence mode
   nvidia-smi -pm 1
 fi

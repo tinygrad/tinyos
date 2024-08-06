@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -x
 
-# Check which gpus are installed
-IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+source /etc/tinybox-release
 set -e
 
 sleep 2
@@ -60,7 +59,19 @@ sleep 1
 # start stress testing
 mkdir -p /home/tiny/stress_test
 
-if [ -z "$IS_NVIDIA_GPU" ]; then
+# run allreduce bandwidth test
+pushd /home/tiny/tinygrad || exit
+python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
+popd || exit
+# ensure that it is above 12 GB/s
+allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/stress_test/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
+if [ "$allreduce_bw" -lt 12 ]; then
+  echo "text,Allreduce bandwidth test failed" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
+
+# on red additionally run rocm-bandwidth-test
+if [[ "$TINYBOX_COLOR" == "red" ]]; then
   # run p2p bandwidth test
   /opt/rocm/bin/rocm-bandwidth-test | tee /home/tiny/stress_test/p2p.log
   bi_bw=$(tail -n 20 /home/tiny/stress_test/p2p.log)
@@ -88,17 +99,6 @@ if [ -z "$IS_NVIDIA_GPU" ]; then
   # check to ensure that bidirectional bandwidth is above 47
   if [ -z "$lowest_bandwidth" ] || [ "$lowest_bandwidth" -lt 47 ]; then
     echo "text,P2P bandwidth test failed" | nc -U /run/tinybox-screen.sock
-    exit 1
-  fi
-else
-  # run allreduce bandwidth test
-  pushd /home/tiny/tinygrad || exit
-  python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
-  popd || exit
-  # ensure that it is above 12 GB/s
-  allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/stress_test/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
-  if [ "$allreduce_bw" -lt 12 ]; then
-    echo "text,Allreduce bandwidth test failed" | nc -U /run/tinybox-screen.sock
     exit 1
   fi
 fi

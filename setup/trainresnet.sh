@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -x
 
-# Check which gpus are installed
-IS_NVIDIA_GPU=$(lspci | grep -i nvidia)
+source /etc/tinybox-release
 
 pushd /home/tiny/tinygrad || exit
 
@@ -12,10 +11,13 @@ export MODEL="resnet"
 export DEFAULT_FLOAT="HALF" GPUS=6 BS=1536 EVAL_BS=192
 export LAZYCACHE=0 RESET_STEP=0
 
-if [ -z "$IS_NVIDIA_GPU" ]; then
+if [[ "$TINYBOX_COLOR" == "green" ]]; then
+  export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=1500 BEAM_UPCAST_MAX=64 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=10 BEAM_PADTO=0
+elif [[ "$TINYBOX_COLOR" == "red" ]]; then
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=2000 BEAM_UPCAST_MAX=96 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=5 BEAM_PADTO=0
 else
-  export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=1500 BEAM_UPCAST_MAX=64 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=10 BEAM_PADTO=0
+  echo "Unknown tinybox color: $TINYBOX_COLOR"
+  exit 1
 fi
 
 # set seed
@@ -37,10 +39,13 @@ END_TIME=$(date +%s)
 pkill -f monitortemps.sh
 
 # ensure we are within 5% of the expected time or under the expected time
-if [ -z "$IS_NVIDIA_GPU" ]; then
-  EXPECTED_TIME=11400
+if [[ "$TINYBOX_COLOR" == "green" ]]; then
+  EXPECTED_TIME=8500
+elif [[ "$TINYBOX_COLOR" == "red" ]]; then
+  EXPECTED_TIME=10500
 else
-  EXPECTED_TIME=9300
+  echo "Unknown tinybox color: $TINYBOX_COLOR"
+  exit 1
 fi
 
 if [ $((END_TIME - START_TIME)) -gt $((EXPECTED_TIME * 105 / 100)) ]; then

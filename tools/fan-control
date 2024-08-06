@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -o pipefail
 
+source /etc/tinybox-release
+
 # echo to stderr
 function ercho {
   # see if -n was passed
@@ -11,8 +13,6 @@ function ercho {
     printf "%s\n" "$*" >&2;
   fi
 }
-
-IS_NVIDIA_GPU="$(lspci | grep -i nvidia)"
 
 function main {
   local mode="$1"
@@ -50,15 +50,18 @@ function main {
       ;;
     gpuauto)
       # set gpu fan speeds
-      if [ -z "$IS_NVIDIA_GPU" ]; then
-        ercho "warn: requires amdgpu.ppfeaturemask=0xffffffff"
-        echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
-        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
-      else
+      if [[ "$TINYBOX_COLOR" == "green" ]]; then
         /opt/tinybox/build/venv/bin/python3 -c "
 from pynvml import *; nvmlInit(); handles = [nvmlDeviceGetHandleByIndex(i) for i in range(6)];
 list(map(lambda h: [nvmlDeviceSetDefaultFanSpeed_v2(h, i) for i in range(nvmlDeviceGetNumFans(h))], handles))
 "
+      elif [[ "$TINYBOX_COLOR" == "red" ]]; then
+        ercho "warn: requires amdgpu.ppfeaturemask=0xffffffff"
+        echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
+        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
+      else
+        echo "Unknown tinybox color: $TINYBOX_COLOR"
+        exit 1
       fi
       ;;
     gpumanual)
@@ -74,15 +77,18 @@ list(map(lambda h: [nvmlDeviceSetDefaultFanSpeed_v2(h, i) for i in range(nvmlDev
       fi
 
       # set gpu fan speeds
-      if [ -z "$IS_NVIDIA_GPU" ]; then
-        ercho "warn: requires amdgpu.ppfeaturemask=0xffffffff"
-        echo "$fan_speed" | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
-        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
-      else
+      if [[ "$TINYBOX_COLOR" == "green" ]]; then
         /opt/tinybox/build/venv/bin/python3 -c "
 from pynvml import *; nvmlInit(); handles = [nvmlDeviceGetHandleByIndex(i) for i in range(6)];
 list(map(lambda h: [nvmlDeviceSetFanSpeed_v2(h, i, $fan_speed) for i in range(nvmlDeviceGetNumFans(h))], handles))
 "
+      elif [[ "$TINYBOX_COLOR" == "red" ]]; then
+        ercho "warn: requires amdgpu.ppfeaturemask=0xffffffff"
+        echo "$fan_speed" | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
+        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm > /dev/null
+      else
+        echo "Unknown tinybox color: $TINYBOX_COLOR"
+        exit 1
       fi
       ;;
     *)

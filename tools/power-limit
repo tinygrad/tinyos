@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
 
+source /etc/tinybox-release
+
 # echo to stderr
 function ercho { printf "%s\n" "$*" >&2; }
 
-IS_NVIDIA_GPU="$(lspci | grep -i nvidia)"
-
 # find maximum and minimum power limits
-if [ -z "$IS_NVIDIA_GPU" ]; then
+if [[ "$TINYBOX_COLOR" == "green" ]]; then
+  MINIMUM="$(nvidia-smi -q -d POWER | sed -nr "s/Min Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
+  MAXIMUM="$(nvidia-smi -q -d POWER | sed -nr "s/Max Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
+elif [[ "$TINYBOX_COLOR" == "red" ]]; then
   MINIMUM="$(cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap_min | sort -n | tail -n1)"
   MAXIMUM="$(cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap_max | sort -n | head -n1)"
   MINIMUM=$((MINIMUM / 1000000))
   MAXIMUM=$((MAXIMUM / 1000000))
 else
-  MINIMUM="$(nvidia-smi -q -d POWER | sed -nr "s/Min Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
-  MAXIMUM="$(nvidia-smi -q -d POWER | sed -nr "s/Max Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
+  echo "Unknown tinybox color: $TINYBOX_COLOR"
+  exit 1
 fi
 
 function main {
@@ -21,11 +24,14 @@ function main {
   if [ -z "$limit" ]; then
     # print the current limit
     local curr
-    if [ -z "$IS_NVIDIA_GPU" ]; then
+    if [[ "$TINYBOX_COLOR" == "green" ]]; then
+      curr="$(nvidia-smi -q -d POWER | sed -nr "s/Current Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
+    elif [[ "$TINYBOX_COLOR" == "red" ]]; then
       curr="$(cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap | sort -n | tail -n1)"
       curr=$((curr / 1000000))
     else
-      curr="$(nvidia-smi -q -d POWER | sed -nr "s/Current Power Limit.*: ([0-9]+).[0-9]+ W/\1/p" | sed 's/^[[:space:]]*//' | sort -n | tail -n1)"
+      echo "Unknown tinybox color: $TINYBOX_COLOR"
+      exit 1
     fi
     echo "Current power limit: $curr W"
     exit 0
@@ -36,10 +42,13 @@ function main {
     exit 1
   fi
 
-  if [ -z "$IS_NVIDIA_GPU" ]; then
+  if [[ "$TINYBOX_COLOR" == "green" ]]; then
+    nvidia-smi -pl "$limit"
+  elif [[ "$TINYBOX_COLOR" == "red" ]]; then
     echo "$limit""000000" | tee /sys/class/drm/card*/device/hwmon/hwmon*/power1_cap
   else
-    nvidia-smi -pl "$limit"
+    echo "Unknown tinybox color: $TINYBOX_COLOR"
+    exit 1
   fi
 }
 
