@@ -31,8 +31,11 @@ stage_files=$(find /opt/tinybox/service/autoupdate/ -type f -name "*.sh" | sort 
 for stage_file in $stage_files; do
   stage=$(basename "$stage_file" | cut -d'-' -f1)
   if [ "$stage" -gt "$CURRENT_STAGE" ]; then
-    bash "$stage_file"
-    echo "$stage" > /etc/tinybox-update-stage
+    # run the stage
+    # and if it succeeds, update the current stage
+    if bash "$stage_file" ; then
+      echo "$stage" > /etc/tinybox-update-stage
+    fi
   fi
 done
 
