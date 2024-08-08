@@ -61,7 +61,7 @@ class Display:
       self._connect()
       self.lcd.write(command)
 
-  def text(self, text, style="mono"):
+  def text(self, text, style="sans"):
     if style == "sans": return _blit_text(text, self.font)
     elif style == "mono": return _blit_text(text, self.font_mono)
     else: raise ValueError("Invalid style")
@@ -131,12 +131,19 @@ class Display:
 
 @njit(cache=True)
 def _blit_text(text, font):
-  text_width = len(text) * 32
-  text_height = 64
+  # split on newlines
+  text_chunks = text.split("\n")
+  # the width is the max width
+  text_width = max([len(chunk) for chunk in text_chunks]) * 32
+  # the height is the number of chunks
+  text_height = len(text_chunks) * 64
+  # create a surface to blit to
   text_surface = np.zeros((text_width, text_height), dtype=np.uint32)
-  for i, char in enumerate(text):
-    char_bitmap = font[ord(char) - 32]
-    text_surface[i*32:(i+1)*32, :64] = 0xffffff00 | char_bitmap.T
+  # blit each character from the bitmap font
+  for y, chunk in enumerate(text_chunks):
+    for i, char in enumerate(chunk):
+      char_bitmap = font[ord(char) - 32]
+      text_surface[i*32:(i+1)*32, y*64:(y+1)*64] = 0xffffff00 | char_bitmap.T
   return text_surface
 
 @njit(cache=True)

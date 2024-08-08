@@ -113,6 +113,20 @@ class Text(SimpleComponent):
   def _draw(self, display:Display):
     return display.text(self.text, style=self.style)
 
+class AnimatedText(SimpleComponent):
+  """
+  A component that cycles through a list of texts.
+  """
+  def __init__(self, texts:list[str], style:str, x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
+    super().__init__(x, y, anchor, parent)
+    self.texts: list[str] = texts
+    self.style: str = style
+    self.index = -1 # this gets incremented on the first draw
+
+  def _draw(self, display:Display):
+    self.index = (self.index + 1) % len(self.texts)
+    return display.text(self.texts[self.index], style=self.style)
+
 class Image(SimpleComponent):
   """
   A component that represents an image.
@@ -121,3 +135,5 @@ class Image(SimpleComponent):
     super().__init__(x, y, anchor, parent)
     self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(size)).transpose(1, 0, 2)
   def _draw(self, display:Display): return self.image
+
+
