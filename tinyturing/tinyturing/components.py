@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import PIL.Image
+from numba import njit
 
 from tinyturing.display import Display
 
@@ -76,7 +77,7 @@ class Component:
 
     # finally draw
     self._blit(display, x, y)
-  def _blit(self, display:Display): raise NotImplementedError()
+  def _blit(self, display:Display, x:int, y:int): raise NotImplementedError()
 
 @dataclass(frozen=True)
 class ComponentParent:
@@ -136,4 +137,87 @@ class Image(SimpleComponent):
     self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(size)).transpose(1, 0, 2)
   def _draw(self, display:Display): return self.image
 
+class Rectangle(SimpleComponent):
+  """
+  A component that represents a rectangle.
+  """
+  def __init__(self, width:int, height:int, color:int=0xffffffff, x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
+    super().__init__(x, y, anchor, parent)
+    self._width, self._height = width, height
+    self.color = color
+  def _draw(self, display:Display):
+    return np.full((self._width, self._height), self.color, dtype=np.uint32)
+
+class VerticalProgressBar(SimpleComponent):
+  """
+  A component that represents a vertical progress bar.
+  """
+  def __init__(self, width:int, height:int, value:float=0, max_value:float=100, x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
+    super().__init__(x, y, anchor, parent)
+    self._width, self._height = width, height
+    self.value, self.max_value = value, max_value
+
+  def _draw(self, display:Display):
+    filled = int(self._height * self.value // self.max_value)
+    return np.full((self._width, filled), 0xffffffff, dtype=np.uint32)
+
+class HorizontalProgressBar(SimpleComponent):
+  """
+  A component that represents a horizontal progress bar.
+  """
+  def __init__(self, width:int, height:int, value:float=0, max_value:float=100, x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
+    super().__init__(x, y, anchor, parent)
+    self._width, self._height = width, height
+    self.value, self.max_value = value, max_value
+
+  def _draw(self, display:Display):
+    filled = int(self._width * self.value // self.max_value)
+    return np.full((filled, self._height), 0xffffffff, dtype=np.uint32)
+
+@njit
+def _line(x1: int, y1: int, x2: int, y2: int) -> list[tuple[int, int]]:
+  points = []
+  dx, dy = abs(x2 - x1), abs(y2 - y1)
+  sx, sy = 1 if x1 < x2 else -1, 1 if y1 < y2 else -1
+  err = dx - dy
+  while True:
+    points.append((x1, y1))
+    if x1 == x2 and y1 == y2: break
+    e2 = 2 * err
+    if e2 > -dy:
+      err -= dy
+      x1 += sx
+    if e2 < dx:
+      err += dx
+      y1 += sy
+  return points
+
+class LineGraph(SimpleComponent):
+  """
+  A component that represents a scrolling line graph.
+  """
+  def __init__(self, width:int, height:int, max_points:int=20, x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
+    super().__init__(x, y, anchor, parent)
+    self._width, self._height = width, height
+    self.max_points, self.data = max_points, []
+
+  def add_data(self, point: float):
+    self.data.append(point)
+    if len(self.data) > self.max_points: self.data.pop(0)
+
+  def _draw(self, display:Display):
+    min_data, max_data = min(self.data), max(self.data)
+    data_range = max_data - min_data
+    if data_range == 0: data_range = 1
+    surface = np.zeros((self._width, self._height), dtype=np.uint32)
+    if len(self.data) < 2: return surface
+    for i in range(len(self.data) - 1):
+      x1, y1 = int(self._width * i / (self.max_points - 1)), self._height - int(self._height * (self.data[i] - min_data) / data_range)
+      x2, y2 = int(self._width * (i + 1) / (self.max_points - 1)), self._height - int(self._height * (self.data[i + 1] - min_data) / data_range)
+      # draw line
+      for point in _line(x1, y1, x2, y2):
+        # clamp point to graph bounds
+        point = (max(0, min(self._width - 1, point[0])), max(0, min(self.height - 1, point[1])))
+        surface[point[0], point[1]] = 0xffffffff
+    return surface
 
