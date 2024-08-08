@@ -3,8 +3,14 @@ set -x
 
 pushd /opt/tinybox || true
 
+# get the git branch
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# reset hard to the current branch not upstream
+git reset --hard HEAD
+
 changed=1
-git fetch -v --dry-run 2>&1 | grep -q "up to date" && changed=0
+git fetch -v --dry-run 2>&1 | grep "$current_branch" | grep -q "up to date" && changed=0
 
 if [ $changed -eq 1 ]; then
   git pull
