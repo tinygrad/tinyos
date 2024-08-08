@@ -115,7 +115,7 @@ def display_thread():
         logging.debug(f"Received command {command} with args {args}")
         if command == "text":
           display_state = DisplayState.TEXT
-          to_display = Text("\n".join(args), x=WIDTH // 2, y=HEIGHT // 2)
+          to_display = Text("\n".join(args), "mono", x=WIDTH // 2, y=HEIGHT // 2)
           start_time = time.monotonic()
         elif command == "atext":
           display_state = DisplayState.TEXT
@@ -123,7 +123,7 @@ def display_thread():
           start_time = time.monotonic()
         elif command == "menu":
           display_state = DisplayState.MENU
-          to_display = Text("\n".join(args), x=WIDTH // 2, y=HEIGHT // 2)
+          to_display = Text("\n".join(args), "mono", x=WIDTH // 2, y=HEIGHT // 2)
           start_time = time.monotonic()
         elif command == "status":
           display_state = DisplayState.STATUS
