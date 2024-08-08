@@ -5,7 +5,7 @@ from pathlib import Path
 
 from tinyturing.display import Display, WIDTH, HEIGHT
 from tinyturing.components import Anchor, ComponentParent, Component
-from tinyturing.components import Text, HorizontalProgressBar, VerticalProgressBar, Rectangle, LineGraph
+from tinyturing.components import Text, Image, HorizontalProgressBar, VerticalProgressBar, Rectangle, LineGraph
 
 # initialize
 display = Display()
@@ -44,12 +44,17 @@ class SleepScreen(Component):
     self.bmc_ip = Text(bmc_ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc2, Anchor.BOTTOM_RIGHT))
     if hasattr(self, "bmc_password"): self.bmc_password.parent = ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT)
 
+    self.logo = Image(Path(__file__).parent / "logo.png", (300, 115), y=HEIGHT, anchor=Anchor.BOTTOM_LEFT)
+
   def blit(self, display:Display):
     self.desc1.blit(display)
     self.ip.blit(display)
     self.desc2.blit(display)
     self.bmc_ip.blit(display)
     if hasattr(self, "bmc_password"): self.bmc_password.blit(display)
+    self.logo.blit(display)
+
+    self.logo.rotation += 1
 
 screen = SleepScreen()
 

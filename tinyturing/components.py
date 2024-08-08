@@ -132,10 +132,14 @@ class Image(SimpleComponent):
   """
   A component that represents an image.
   """
-  def __init__(self, path:str|Path, size:tuple[int, int], x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
+  def __init__(self, path:str|Path, size:tuple[int, int], rotation:float=0, x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
     super().__init__(x, y, anchor, parent)
-    self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(size)).transpose(1, 0, 2)
-  def _draw(self, display:Display): return self.image
+    self.image = PIL.Image.open(path).convert("RGBA").resize(size)
+    self.rotation = rotation
+  def _draw(self, display:Display):
+    image = self.image
+    if self.rotation != 0: image = image.rotate(self.rotation, resample=PIL.Image.BICUBIC, expand=True)
+    return np.array(image).transpose(1, 0, 2)
 
 class Rectangle(SimpleComponent):
   """
