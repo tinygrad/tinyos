@@ -27,6 +27,7 @@ class Display:
     self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
 
     self.font = np.load(Path(__file__).parent / "font.npy")
+    self.font_mono = np.load(Path(__file__).parent / "font_mono.npy")
     self.framebuffer = np.full((WIDTH, HEIGHT), 0xff, dtype=np.uint32)
     self.old_framebuffer = self.framebuffer.copy()
     self.update_buffer = np.zeros(self.framebuffer.size * self.framebuffer.itemsize, dtype=np.uint8)
@@ -60,12 +61,20 @@ class Display:
       self._connect()
       self.lcd.write(command)
 
-  def text(self, text): return _blit_text(text, self.font)
+  def text(self, text, style="mono"):
+    if style == "sans": return _blit_text(text, self.font)
+    elif style == "mono": return _blit_text(text, self.font_mono)
+    else: raise ValueError("Invalid style")
   def clear(self):
     self.old_framebuffer = self.framebuffer.copy()
     self.framebuffer.fill(0xff)
   def blit(self, source, dest=(0, 0)):
-    if source.ndim == 3: source = (source[:, :, 0].astype(np.uint32) << 24) | (source[:, :, 1].astype(np.uint32) << 16) | (source[:, :, 2].astype(np.uint32) << 8) | 0xff
+    if source.ndim == 3:
+      # check if alpha channel is present
+      if source.shape[2] == 4:
+        source = (source[:, :, 0].astype(np.uint32) << 24) | (source[:, :, 1].astype(np.uint32) << 16) | (source[:, :, 2].astype(np.uint32) << 8) | (source[:, :, 3].astype(np.uint32) & 0xff)
+      else:
+        source = (source[:, :, 0].astype(np.uint32) << 24) | (source[:, :, 1].astype(np.uint32) << 16) | (source[:, :, 2].astype(np.uint32) << 8) | 0xff
     # clip source to framebuffer
     if dest[0] >= self.framebuffer.shape[0] or dest[1] >= self.framebuffer.shape[1]: return
     if dest[0] + source.shape[0] > self.framebuffer.shape[0]: source = source[:self.framebuffer.shape[0] - dest[0]]
@@ -76,7 +85,8 @@ class Display:
     if dest[1] < 0:
       source = source[:, -dest[1]:]
       dest = (dest[0], 0)
-    self.framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = source
+    # blit with alpha mixing
+    _blit_alpha(source, dest, self.framebuffer)
 
   def flip(self, force=False):
     dirty = _track_damage(self.old_framebuffer, self.framebuffer)
@@ -126,8 +136,17 @@ def _blit_text(text, font):
   text_surface = np.zeros((text_width, text_height), dtype=np.uint32)
   for i, char in enumerate(text):
     char_bitmap = font[ord(char) - 32]
-    text_surface[i*32:(i+1)*32, :64] = char_bitmap.T * 0xffffffff
+    text_surface[i*32:(i+1)*32, :64] = 0xffffff00 | char_bitmap.T
   return text_surface
+
+@njit(cache=True)
+def _blit_alpha(source, dest, framebuffer):
+  # extract alpha channel
+  alpha = source & 0xff
+  # blend source with framebuffer using alpha channel
+  source = source & 0xffffff00
+  fbuf = framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] & 0xffffff00
+  framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = ((fbuf * ((0xff - alpha) / 0xff)).astype(np.uint32)) + (source * (alpha / 0xff)).astype(np.uint32)
 
 @njit(cache=True)
 def _track_damage(old:np.ndarray, new:np.ndarray): return np.where(old != new, 1, 0).T
