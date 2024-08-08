@@ -10,7 +10,7 @@ from queue import Queue
 
 from tinyturing.display import Display, WIDTH, HEIGHT
 from tinyturing.components import Anchor, Component, ComponentParent
-from tinyturing.components import Text, AnimatedText, Rectangle, LineGraph, VerticalProgressBar, HorizontalProgressBar
+from tinyturing.components import Text, Image, AnimatedText, Rectangle, LineGraph, VerticalProgressBar, HorizontalProgressBar
 from stats import get_gpu_utilizations, get_gpu_memory_utilizations, get_cpu_utilizations, get_gpu_power_draw, get_cpu_power_draw, get_disk_io_per_second
 
 class StatusScreen(Component):
@@ -82,12 +82,16 @@ class SleepScreen(Component):
     self.bmc_ip = Text(bmc_ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc2, Anchor.BOTTOM_RIGHT))
     if hasattr(self, "bmc_password"): self.bmc_password.parent = ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT)
 
+    self.logo = Image("/opt/tinybox/service/logo.png", (300, 115), y=HEIGHT, anchor=Anchor.BOTTOM_LEFT)
+
   def blit(self, display:Display):
     self.desc1.blit(display)
     self.ip.blit(display)
     self.desc2.blit(display)
     self.bmc_ip.blit(display)
     if hasattr(self, "bmc_password"): self.bmc_password.blit(display)
+    self.logo.blit(display)
+    self.logo.rotation += 1
 
 DisplayState = Enum("DisplayState", ["STARTUP", "TEXT", "MENU", "STATUS", "SLEEP"])
 control_queue = Queue()
