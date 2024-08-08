@@ -22,7 +22,7 @@ class StatusScreen(Component):
     self.vertical_separator = Rectangle(1, 280, x=WIDTH // 2, y=HEIGHT // 2)
     self.horizontal_separator = Rectangle(280, 1, x=WIDTH // 2 + WIDTH // 4, y=HEIGHT // 2)
 
-    self.cpu_bars = [VerticalProgressBar(2, 117, x=604 + 3 * i, y=89) for i in range(64)]
+    self.cpu_bars = [VerticalProgressBar(2, 117, x=604 + 3 * i, y=84) for i in range(64)]
 
     self.rolling_power_draw = 0
     self.power_draw_text = Text("0W", style="mono", x=425, y=57, anchor=Anchor.MIDDLE_LEFT)
