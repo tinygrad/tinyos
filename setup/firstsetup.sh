@@ -192,6 +192,8 @@ function main {
 
   # remove from .profile
   sed -i '/bash \/opt\/tinybox\/setup\/firstsetup.sh/d' "$HOME"/.profile
+  # remove trigger file
+  rm -f "$HOME"/.before_firstsetup
 
   prompt_reboot
 

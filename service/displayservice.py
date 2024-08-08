@@ -93,7 +93,37 @@ class SleepScreen(Component):
     self.logo.blit(display)
     self.logo.rotation += 1
 
-DisplayState = Enum("DisplayState", ["STARTUP", "TEXT", "MENU", "STATUS", "SLEEP"])
+class WelcomeScreen(Component):
+  def __init__(self):
+    self.qr = Image("/opt/tinybox/service/docs_qr.png", (300, 300), y=HEIGHT // 2, anchor=Anchor.MIDDLE_LEFT)
+    self.desc1 = Text("Scan for Docs", "sans", anchor=Anchor.TOP_LEFT, parent=ComponentParent(self.qr, Anchor.TOP_RIGHT))
+
+    # read bmc password from /root/.bmc_password
+    if os.path.exists("/root/.bmc_password"):
+      try:
+        with open("/root/.bmc_password", "r") as f:
+          bmc_password = f.read().strip().split("=")[1].strip()
+        self.bmc_password = Text(bmc_password, "mono", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.qr, Anchor.BOTTOM_RIGHT))
+        # try setting the bmc password
+        try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
+        except: logging.warning("Failed to set BMC password")
+      except: logging.warning("Failed to read BMC password")
+    else: logging.warning("BMC password file not found")
+
+    self.bmc_ip = Text("<redacted>", "mono", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.qr, Anchor.TOP_LEFT))
+    if hasattr(self, "bmc_password"):
+      self.bmc_ip.parent = ComponentParent(self.bmc_password, Anchor.TOP_LEFT)
+      self.desc2 = Text("BMC IP & Passwd", "sans", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.bmc_ip, Anchor.TOP_LEFT))
+    else: self.desc2 = Text("BMC IP", "sans", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.bmc_ip, Anchor.TOP_LEFT))
+
+  def blit(self, display:Display):
+    self.qr.blit(display)
+    self.desc1.blit(display)
+    self.bmc_password.blit(display)
+    self.bmc_ip.blit(display)
+    self.desc2.blit(display)
+
+DisplayState = Enum("DisplayState", ["STARTUP", "WELCOME", "TEXT", "MENU", "STATUS", "SLEEP"])
 control_queue = Queue()
 display_thread_alive = True
 def display_thread():
@@ -132,31 +162,46 @@ def display_thread():
         elif command == "sleep":
           if display_state != DisplayState.SLEEP:
             display_state = DisplayState.SLEEP
-            sleep_screen = SleepScreen()
+            to_display = SleepScreen()
       else:
         # 10 second timeout from startup to sleep
         if time.monotonic() - start_time > 10 and display_state == DisplayState.STARTUP:
-          logging.info("Startup timeout, switching to sleep state")
-          display_state = DisplayState.SLEEP
-          display_last_active = time.monotonic()
-          sleep_screen = SleepScreen()
+          logging.info("Startup timeout, switching states")
+          # see if we need to switch to the welcome state
+          if os.path.exists("/home/tiny/.before_firstsetup"):
+            display_state = DisplayState.WELCOME
+            display_last_active = time.monotonic()
+            to_display = WelcomeScreen()
+          else:
+            display_state = DisplayState.SLEEP
+            display_last_active = time.monotonic()
+            to_display = SleepScreen()
 
         # reset display state if inactive for 30 seconds
         if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
           logging.info("Display inactive for 30 seconds, switching back to sleep state")
           display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
-          sleep_screen = SleepScreen()
+          to_display = SleepScreen()
 
         # check if display should be in status state
         gpu_utilizations = get_gpu_utilizations()
         logging.debug(f"GPU Utilizations: {gpu_utilizations}")
-        if sum(gpu_utilizations) > 1 and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU and display_state != DisplayState.TEXT:
+        if sum(gpu_utilizations) > 1 and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU and display_state != DisplayState.TEXT and display_state != DisplayState.WELCOME:
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
 
+        # if we are in the welcome state, check if we should still be in this state
+        if display_state == DisplayState.WELCOME:
+          if not os.path.exists("/home/tiny/.before_firstsetup"):
+            display_state = DisplayState.SLEEP
+            display_last_active = time.monotonic()
+            to_display = SleepScreen()
+
         display.clear()
         if display_state == DisplayState.STARTUP:
+          to_display.blit(display)
+        elif display_state == DisplayState.WELCOME:
           to_display.blit(display)
         if display_state == DisplayState.TEXT:
           to_display.blit(display)
@@ -166,7 +211,7 @@ def display_thread():
           status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
           status_screen.blit(display)
         elif display_state == DisplayState.SLEEP:
-          sleep_screen.blit(display)
+          to_display.blit(display)
 
       # update display
       display.flip()
