@@ -119,7 +119,7 @@ class WelcomeScreen(Component):
   def blit(self, display:Display):
     self.qr.blit(display)
     self.desc1.blit(display)
-    self.bmc_password.blit(display)
+    if hasattr(self, "bmc_password"): self.bmc_password.blit(display)
     self.bmc_ip.blit(display)
     self.desc2.blit(display)
 
