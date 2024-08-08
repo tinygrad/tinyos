@@ -110,7 +110,10 @@ class WelcomeScreen(Component):
       except: logging.warning("Failed to read BMC password")
     else: logging.warning("BMC password file not found")
 
-    self.bmc_ip = Text("<redacted>", "mono", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.qr, Anchor.TOP_LEFT))
+    bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
+    bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
+
+    self.bmc_ip = Text(bmc_ip, "mono", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.qr, Anchor.BOTTOM_RIGHT))
     if hasattr(self, "bmc_password"):
       self.bmc_ip.parent = ComponentParent(self.bmc_password, Anchor.TOP_LEFT)
       self.desc2 = Text("BMC IP & Passwd", "sans", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.bmc_ip, Anchor.TOP_LEFT))
