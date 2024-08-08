@@ -14,7 +14,6 @@ git fetch -v --dry-run 2>&1 | grep "$current_branch" | grep -q "up to date" && c
 
 if [ $changed -eq 1 ]; then
   git pull
-  systemctl daemon-reload
   systemctl stop displayservice
   systemctl stop buttonservice
   systemctl stop tinychat
@@ -37,6 +36,7 @@ for stage_file in $stage_files; do
   fi
 done
 
+systemctl daemon-reload
 systemctl start displayservice
 systemctl start buttonservice
 systemctl start tinychat
