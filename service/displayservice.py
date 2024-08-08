@@ -12,7 +12,7 @@ import numpy as np
 from numba import njit
 import PIL.Image
 
-from display import Display, WIDTH, HEIGHT
+from tinyturing.display import Display, WIDTH, HEIGHT
 from stats import get_gpu_utilizations, get_gpu_memory_utilizations, get_cpu_utilizations, get_gpu_power_draw, get_cpu_power_draw, get_disk_io_per_second
 
 class Displayable(ABC):
