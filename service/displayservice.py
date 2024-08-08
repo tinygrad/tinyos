@@ -103,9 +103,6 @@ def display_thread():
     display.clear()
     display.flip(force=True)
 
-    # load assets
-    sleep_screen = SleepScreen()
-
     display_state = DisplayState.STARTUP
     display_last_active = time.monotonic()
     start_time = time.monotonic()
