@@ -82,7 +82,7 @@ class SleepScreen(Component):
     self.bmc_ip = Text(bmc_ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc2, Anchor.BOTTOM_RIGHT))
     if hasattr(self, "bmc_password"): self.bmc_password.parent = ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT)
 
-    self.logo = DVDImage("/opt/tinybox/service/logo.png", (300, 115), x=WIDTH // 2, y=HEIGHT // 2)
+    self.logo = DVDImage("/opt/tinybox/service/logo.png", (200, 77), x=WIDTH // 2, y=HEIGHT // 2)
 
   def blit(self, display:Display):
     self.desc1.blit(display)
