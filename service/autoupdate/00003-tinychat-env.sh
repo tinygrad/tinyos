@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 set -xeo pipefail
 
-pushd /opt/tinybox
-source build/venv/bin/activate
-
-pip install tiktoken blobfile bottle
-pushd /opt/tinybox/tinygrad
-pip install -e .
-popd
-
-deactivate
-popd
+echo "WQKV=1" >> /etc/tinychat.env
+echo "ALLOW_HALF8=1" >> /etc/tinychat.env
 
 systemctl restart tinychat
