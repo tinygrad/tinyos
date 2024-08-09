@@ -118,14 +118,16 @@ class AnimatedText(SimpleComponent):
   """
   A component that cycles through a list of texts.
   """
-  def __init__(self, texts:list[str], style:str, x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
+  def __init__(self, texts:list[str], style:str, bounce=False, x:int=0, y:int=0, anchor=Anchor.MIDDLE_CENTER, parent=None):
     super().__init__(x, y, anchor, parent)
     self.texts: list[str] = texts
     self.style: str = style
+    self.bounce, self.dir = bounce, 1
     self.index = -1 # this gets incremented on the first draw
 
   def _draw(self, display:Display):
-    self.index = (self.index + 1) % len(self.texts)
+    self.index = (self.index + self.dir) % len(self.texts)
+    if self.bounce and (self.index == 0 or self.index == len(self.texts) - 1): self.dir *= -1
     return display.text(self.texts[self.index], style=self.style)
 
 class Image(SimpleComponent):
