@@ -138,7 +138,7 @@ def display_thread():
     display_state = DisplayState.STARTUP
     display_last_active = time.monotonic()
     start_time = time.monotonic()
-    to_display: Component = AnimatedText([" ......", ". .....", ".. ....", "... ...", ".... ..", "..... .", "...... "], "sans", bounce=True, x=WIDTH // 2, y=HEIGHT // 2)
+    to_display: Component = AnimatedText([" .....", ". ....", ".. ...", "... ..", ".... .", "..... "], "sans", bounce=True, x=WIDTH // 2, y=HEIGHT // 2)
     status_screen = StatusScreen()
 
     while display_thread_alive:
