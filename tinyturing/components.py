@@ -151,7 +151,6 @@ class DVDImage(SimpleComponent):
     super().__init__(x, y, Anchor.TOP_LEFT, None)
     self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(size)).transpose(1, 0, 2)
     self.dx, self.dy = 1, 1
-    self.x, self.y = 0, 0
   def _draw(self, display:Display):
     self.x += self.dx
     self.y += self.dy
