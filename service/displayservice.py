@@ -76,7 +76,7 @@ class SleepScreen(Component):
     ip = ip.split(" ")[0] if ip else "N/A"
 
     self.desc1 = Text("Local IP", "sans", x=WIDTH, anchor=Anchor.TOP_RIGHT)
-    self.desc1_bg = Rectangle(self.desc1.width, self.desc1.height, color=0x000000aa, x=WIDTH, anchor=Anchor.TOP_RIGHT)
+    self.desc1_bg = Rectangle(len(self.desc1.text) * 32, 64, color=0x000000aa, x=WIDTH, anchor=Anchor.TOP_RIGHT)
     self.ip = Text(ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc1, Anchor.BOTTOM_RIGHT))
     self.ip_bg = Rectangle(self.ip.width, self.ip.height, color=0x000000aa, x=WIDTH, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.BOTTOM_RIGHT))
     if hasattr(self, "bmc_password"): self.desc2 = Text("BMC IP & Passwd", "sans", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.BOTTOM_RIGHT))
