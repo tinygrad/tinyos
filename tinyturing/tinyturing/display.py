@@ -26,6 +26,8 @@ class Display:
     self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
     self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
 
+    self.width, self.height = WIDTH, HEIGHT
+
     self.font = np.load(Path(__file__).parent / "font.npy")
     self.font_mono = np.load(Path(__file__).parent / "font_mono.npy")
     self.framebuffer = np.full((WIDTH, HEIGHT), 0xff, dtype=np.uint32)
