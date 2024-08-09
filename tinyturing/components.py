@@ -122,7 +122,7 @@ class AnimatedText(SimpleComponent):
     super().__init__(x, y, anchor, parent)
     self.texts: list[str] = texts
     self.style: str = style
-    self.bounce, self.dir = bounce, 1
+    self.bounce, self.dir = bounce, -1
     self.index = -1 # this gets incremented on the first draw
 
   def _draw(self, display:Display):
