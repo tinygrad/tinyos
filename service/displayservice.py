@@ -76,21 +76,33 @@ class SleepScreen(Component):
     ip = ip.split(" ")[0] if ip else "N/A"
 
     self.desc1 = Text("Local IP", "sans", x=WIDTH, anchor=Anchor.TOP_RIGHT)
+    self.desc1_bg = Rectangle(self.desc1.width, self.desc1.height, color=0x000000aa, x=WIDTH, anchor=Anchor.TOP_RIGHT)
     self.ip = Text(ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc1, Anchor.BOTTOM_RIGHT))
+    self.ip_bg = Rectangle(self.ip.width, self.ip.height, color=0x000000aa, x=WIDTH, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.BOTTOM_RIGHT))
     if hasattr(self, "bmc_password"): self.desc2 = Text("BMC IP & Passwd", "sans", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.BOTTOM_RIGHT))
     else: self.desc2 = Text("BMC IP", "sans", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.BOTTOM_RIGHT))
+    self.desc2_bg = Rectangle(self.desc2.width, self.desc2.height, color=0x000000aa, x=WIDTH, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.TOP_RIGHT))
     self.bmc_ip = Text(bmc_ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc2, Anchor.BOTTOM_RIGHT))
-    if hasattr(self, "bmc_password"): self.bmc_password.parent = ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT)
+    self.bmc_ip_bg = Rectangle(self.bmc_ip.width, self.bmc_ip.height, color=0x000000aa, x=WIDTH, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT))
+    if hasattr(self, "bmc_password"):
+      self.bmc_password.parent = ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT)
+      self.bmc_password_bg = Rectangle(self.bmc_password.width, self.bmc_password.height, color=0x000000aa, x=WIDTH, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT))
 
     self.logo = DVDImage("/opt/tinybox/service/logo.png", (200, 77), x=WIDTH // 2, y=HEIGHT // 2)
 
   def blit(self, display:Display):
-    self.desc1.blit(display)
-    self.ip.blit(display)
-    self.desc2.blit(display)
-    self.bmc_ip.blit(display)
-    if hasattr(self, "bmc_password"): self.bmc_password.blit(display)
     self.logo.blit(display)
+    self.desc1_bg.blit(display)
+    self.desc1.blit(display)
+    self.ip_bg.blit(display)
+    self.ip.blit(display)
+    self.desc2_bg.blit(display)
+    self.desc2.blit(display)
+    self.bmc_ip_bg.blit(display)
+    self.bmc_ip.blit(display)
+    if hasattr(self, "bmc_password"):
+      self.bmc_password_bg.blit(display)
+      self.bmc_password.blit(display)
 
 class WelcomeScreen(Component):
   def __init__(self):
