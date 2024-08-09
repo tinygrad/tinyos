@@ -97,7 +97,7 @@ class SleepScreen(Component):
       (200, 77),
       (200, 77),
       (200, 77),
-    ])
+    ], width=WIDTH, height=HEIGHT)
 
   def blit(self, display:Display):
     self.logo.blit(display)
