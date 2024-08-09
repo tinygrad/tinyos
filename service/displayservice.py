@@ -75,7 +75,7 @@ class SleepScreen(Component):
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
     ip = ip.split(" ")[0] if ip else "N/A"
 
-    bg_color = 0x00000090
+    bg_color = 0x000000aa
     self.desc1 = Text("Local IP", "sans", x=WIDTH, anchor=Anchor.TOP_RIGHT)
     self.desc1_bg = Rectangle(len(self.desc1.text) * 32, 64, color=bg_color, x=WIDTH, anchor=Anchor.TOP_RIGHT)
     self.ip = Text(ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc1, Anchor.BOTTOM_RIGHT))
