@@ -92,9 +92,7 @@ class SleepScreen(Component):
     self.logo = MultiCollidingDVDImage([
       "/opt/tinybox/service/logo.png",
       "/opt/tinybox/service/logo.png",
-      "/opt/tinybox/service/logo.png",
     ], [
-      (200, 77),
       (200, 77),
       (200, 77),
     ], width=WIDTH, height=HEIGHT)
