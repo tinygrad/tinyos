@@ -144,6 +144,11 @@ class WelcomeScreen(Component):
     self.bmc_ip.blit(display)
     self.desc2.blit(display)
 
+def uptime():
+  with open("/proc/uptime", "r") as f:
+    uptime = int(float(f.read().split()[0]))
+  return uptime
+
 DisplayState = Enum("DisplayState", ["STARTUP", "WELCOME", "TEXT", "MENU", "STATUS", "SLEEP"])
 control_queue = Queue()
 display_thread_alive = True
@@ -154,10 +159,15 @@ def display_thread():
     display.clear()
     display.flip(force=True)
 
-    display_state = DisplayState.STARTUP
+    # if we are have been booted up for a while there is no need to show the startup screen
+    if uptime() > 180:
+      display_state = DisplayState.SLEEP
+      to_display = SleepScreen()
+    else:
+      display_state = DisplayState.STARTUP
+      to_display = AnimatedText([" .....", ". ....", ".. ...", "... ..", ".... .", "..... "], "sans", bounce=True, x=WIDTH // 2, y=HEIGHT // 2)
     display_last_active = time.monotonic()
     start_time = time.monotonic()
-    to_display: Component = AnimatedText([" .....", ". ....", ".. ...", "... ..", ".... .", "..... "], "sans", bounce=True, x=WIDTH // 2, y=HEIGHT // 2)
     status_screen = StatusScreen()
 
     while display_thread_alive:
