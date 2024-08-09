@@ -155,7 +155,21 @@ def _blit_alpha(source, dest, framebuffer):
   # blend source with framebuffer using alpha channel
   source = source & 0xffffff00
   fbuf = framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] & 0xffffff00
-  framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = ((fbuf * ((0xff - alpha) / 0xff)).astype(np.uint32)) + (source * (alpha / 0xff)).astype(np.uint32)
+  # separate color channels
+  fbuf_red = (fbuf >> 24) & 0xff
+  fbuf_green = (fbuf >> 16) & 0xff
+  fbuf_blue = (fbuf >> 8) & 0xff
+  source_red = (source >> 24) & 0xff
+  source_green = (source >> 16) & 0xff
+  source_blue = (source >> 8) & 0xff
+  # blend each color channel
+  fbuf_blend_amount = (0xff - alpha) / 0xff
+  source_blend_amount = alpha / 0xff
+  red = (fbuf_red * fbuf_blend_amount + source_red * source_blend_amount).astype(np.uint8)
+  green = (fbuf_green * fbuf_blend_amount + source_green * source_blend_amount).astype(np.uint8)
+  blue = (fbuf_blue * fbuf_blend_amount + source_blue * source_blend_amount).astype(np.uint8)
+  # combine color channels
+  framebuffer[dest[0]:dest[0]+source.shape[0], dest[1]:dest[1]+source.shape[1]] = (red << 24) | (green << 16) | (blue << 8)
 
 @njit(cache=True)
 def _track_damage(old:np.ndarray, new:np.ndarray): return np.where(old != new, 1, 0).T
