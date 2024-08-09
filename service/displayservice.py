@@ -93,8 +93,8 @@ class SleepScreen(Component):
       "/opt/tinybox/service/logo.png",
       "/opt/tinybox/service/logo.png",
     ], [
-      (200, 77),
-      (200, 77),
+      (300, 115),
+      (300, 115),
     ], width=WIDTH, height=HEIGHT)
 
   def blit(self, display:Display):
