@@ -10,7 +10,7 @@ from queue import Queue
 
 from tinyturing.display import Display, WIDTH, HEIGHT
 from tinyturing.components import Anchor, Component, ComponentParent
-from tinyturing.components import Text, Image, DVDImage, AnimatedText, Rectangle, LineGraph, VerticalProgressBar, HorizontalProgressBar
+from tinyturing.components import Text, Image, MultiCollidingDVDImage, AnimatedText, Rectangle, LineGraph, VerticalProgressBar, HorizontalProgressBar
 from stats import get_gpu_utilizations, get_gpu_memory_utilizations, get_cpu_utilizations, get_gpu_power_draw, get_cpu_power_draw, get_disk_io_per_second
 
 class StatusScreen(Component):
@@ -89,7 +89,15 @@ class SleepScreen(Component):
       self.bmc_password.parent = ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT)
       self.bmc_password_bg = Rectangle(len(self.bmc_password.text) * 32, 64, color=bg_color, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT))
 
-    self.logo = DVDImage("/opt/tinybox/service/logo.png", (200, 77), x=WIDTH // 2, y=HEIGHT // 2)
+    self.logo = MultiCollidingDVDImage([
+      "/opt/tinybox/service/logo.png",
+      "/opt/tinybox/service/logo.png",
+      "/opt/tinybox/service/logo.png",
+    ], [
+      (200, 77),
+      (200, 77),
+      (200, 77),
+    ])
 
   def blit(self, display:Display):
     self.logo.blit(display)
