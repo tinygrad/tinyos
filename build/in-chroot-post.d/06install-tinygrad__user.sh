@@ -9,7 +9,7 @@ git clone https://github.com/tinygrad/tinygrad tinygrad
 pushd tinygrad
 
 # install tinygrad and deps
-pip install -e .
+pip install -e .[testing,linting,docs]
 pip install pillow numpy tqdm
 
 # symlink datasets and weights
