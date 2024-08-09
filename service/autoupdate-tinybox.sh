@@ -35,6 +35,9 @@ for stage_file in $stage_files; do
     # and if it succeeds, update the current stage
     if bash "$stage_file" ; then
       echo "$stage" > /etc/tinybox-update-stage
+    else
+      echo "Failed to run stage $stage"
+      break
     fi
   fi
 done
