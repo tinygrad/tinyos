@@ -32,7 +32,7 @@ floor_shape.friction = 0.5
 floor_body.position = 0, HEIGHT - 5
 space.add(floor_body, floor_shape)
 
-for i in range(50):
+for i in range(150):
   spawn_logo()
 
 while True:

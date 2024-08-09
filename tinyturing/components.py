@@ -141,6 +141,22 @@ class Image(SimpleComponent):
     if self.rotation != 0: image = image.rotate(self.rotation, resample=PIL.Image.BICUBIC, expand=True)
     return np.array(image).transpose(1, 0, 2)
 
+class DVDImage(SimpleComponent):
+  """
+  A component that represents a bouncing DVD logo.
+  """
+  def __init__(self, path:str|Path, size:tuple[int, int], x:int=0, y:int=0):
+    super().__init__(x, y, Anchor.MIDDLE_CENTER, None)
+    self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(size)).transpose(1, 0, 2)
+    self.dx, self.dy = 1, 1
+    self.x, self.y = 0, 0
+  def _draw(self, display:Display):
+    self.x += self.dx
+    self.y += self.dy
+    if self.x < 0 or self.x + self.image.shape[0] >= display.width: self.dx *= -1
+    if self.y < 0 or self.y + self.image.shape[1] >= display.height: self.dy *= -1
+    return self.image
+
 class Rectangle(SimpleComponent):
   """
   A component that represents a rectangle.
