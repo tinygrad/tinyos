@@ -3,6 +3,9 @@ set -x
 
 pushd /opt/tinybox || true
 
+# get out of detached HEAD
+git switch -
+
 # get the git branch
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 
