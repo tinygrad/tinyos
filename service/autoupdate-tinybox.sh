@@ -5,12 +5,20 @@ pushd /opt/tinybox || true
 
 # get the git branch
 current_branch=$(git rev-parse --abbrev-ref HEAD)
+# if the branch is HEAD, it's detached so set it to main
+if [ "$current_branch" == "HEAD" ]; then
+  current_branch="main"
+fi
 
-# reset hard to the current branch not upstream
-git reset --hard HEAD
+git checkout "$current_branch"
+
+# reset hard to origin/<branch>
+git reset --hard "origin/$current_branch"
 
 changed=1
 git fetch -v --dry-run 2>&1 | grep "$current_branch" | grep -q "up to date" && changed=0
+git status -sb | grep -q "behind" && changed=1
+git status -sb | grep -q "ahead" && changed=1
 
 if [ $changed -eq 1 ]; then
   git pull
@@ -18,6 +26,9 @@ if [ $changed -eq 1 ]; then
   systemctl stop buttonservice
   systemctl stop tinychat
 fi
+
+# reset hard to origin/<branch> in case pull failed to merge in changes
+git reset --hard "origin/$current_branch"
 
 # check current update stage and see if there are any stages to be run
 if [ -f /etc/tinybox-update-stage ]; then
