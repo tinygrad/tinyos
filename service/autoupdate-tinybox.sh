@@ -19,6 +19,9 @@ if [ $changed -eq 1 ]; then
   systemctl stop tinychat
 fi
 
+# reset hard to origin/<branch> in case pull failed to merge in changes
+git reset --hard "origin/$current_branch"
+
 # check current update stage and see if there are any stages to be run
 if [ -f /etc/tinybox-update-stage ]; then
   CURRENT_STAGE=$(cat /etc/tinybox-update-stage)
