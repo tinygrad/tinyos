@@ -17,6 +17,8 @@ git reset --hard "origin/$current_branch"
 
 changed=1
 git fetch -v --dry-run 2>&1 | grep "$current_branch" | grep -q "up to date" && changed=0
+git status -sb | grep -q "behind" && changed=1
+git status -sb | grep -q "ahead" && changed=1
 
 if [ $changed -eq 1 ]; then
   git pull
