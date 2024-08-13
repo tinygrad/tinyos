@@ -63,9 +63,6 @@ class SleepScreen(Component):
         with open("/root/.bmc_password", "r") as f:
           bmc_password = f.read().strip().split("=")[1].strip()
         self.bmc_password = Text(bmc_password, "mono", anchor=Anchor.TOP_RIGHT)
-        # try setting the bmc password
-        try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
-        except: logging.warning("Failed to set BMC password")
       except: logging.warning("Failed to read BMC password")
     else: logging.warning("BMC password file not found")
 
@@ -91,10 +88,8 @@ class SleepScreen(Component):
 
     self.logo = MultiCollidingDVDImage([
       "/opt/tinybox/service/logo.png",
-      "/opt/tinybox/service/logo.png",
     ], [
-      (200, 77),
-      (200, 77),
+      (400, 154),
     ], width=WIDTH, height=HEIGHT)
 
   def blit(self, display:Display):
