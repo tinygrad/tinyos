@@ -1965,7 +1965,7 @@ class Tensor:
     x, expand = self, list(self.shape)
     for i in range(-len(size), 0):
       scale = (self.shape[i] - int(align_corners)) / (size[i] - int(align_corners))
-      arr, reshape = Tensor.arange(size[i], dtype=dtypes.float32), [1] * self.ndim
+      arr, reshape = Tensor.arange(size[i], dtype=dtypes.float32, device=self.device), [1] * self.ndim
       index = (scale*arr if align_corners else (scale*(arr+0.5))-0.5).clip(0, self.shape[i]-1)
       reshape[i] = expand[i] = size[i]
       low, high, perc = [y.reshape(reshape).expand(expand) for y in (index.floor(), index.ceil(), index - index.floor())]
@@ -2173,7 +2173,7 @@ class Tensor:
     ```
     """
     return self*self
-  def clip(self, min_=None, max_=None):
+  def clamp(self, min_=None, max_=None):
     """
     Clips (clamps) the values in the tensor between `min_` and `max_` element-wise.
     If `min_` is `None`, there is no lower bound. If `max_` is None, there is no upper bound.
@@ -2185,6 +2185,11 @@ class Tensor:
     if min_ is None and max_ is None: raise RuntimeError("at least one of 'min_' or 'max_' must not be None")
     ret = self.maximum(min_) if min_ is not None else self
     return ret.minimum(max_) if max_ is not None else ret
+  def clip(self, min_=None, max_=None):
+    """
+    Alias for `Tensor.clamp`.
+    """
+    return self.clamp(min_, max_)
   def sign(self):
     """
     Returns the sign of the tensor element-wise.
@@ -3000,17 +3005,17 @@ class Tensor:
 
   def is_floating_point(self) -> bool:
     """
-    Returns `True` if the tensor contains floating point types, i.e. is one of `dtype.half`, `dtype.float`,
-    `dtype.double`, `dtype.default_float`, `dtype.float16`, `dtype.float32`, `dtype.float64`, `dtype.bfloat16`.
+    Returns `True` if the tensor contains floating point types, i.e. is one of `dtype.float64`, `dtype.float32`,
+    `dtype.float16`, `dtype.bfloat16`.
 
     ```python exec="true" source="above" session="tensor" result="python"
-    t = Tensor([8, 9], dtype=dtypes.float)
+    t = Tensor([8, 9], dtype=dtypes.float32)
     print(t.is_floating_point())
     ```
     """
     return dtypes.is_float(self.dtype)
 
-  def size(self, dim=None) -> Union[sint, Tuple[sint, ...]]:
+  def size(self, dim:Optional[int]=None) -> Union[sint, Tuple[sint, ...]]:
     """
     Return the size of the tensor. If `dim` is specified, return the length along dimension `dim`. Otherwise return the shape of the tensor.
 
