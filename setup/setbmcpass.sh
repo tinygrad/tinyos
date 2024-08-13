@@ -1,15 +1,31 @@
 #!/usr/bin/env bash
 set -x
 
-# if the bmc_password file exists, read the password from it
-if [ -f /root/.bmc_password ]; then
-  . /root/.bmc_password
-else
-  # generate a random password for the bmc
-  BMC_PASSWORD="$(tr -dc 'A-Za-z0-9' < /dev/random | head -c 12)"
+# generate bmc password
+system_info="$(lshw -json)"
+
+# grab serial numbers
+baseboard_serial=$(echo "$system_info" | jq -r '.. | objects | select(.id == "core") | .serial')
+memory_serials=$(echo "$system_info" | jq -r '.. | objects | select(.id == "memory") | .children[] | .serial | select(. != "Unknown")')
+nvme_serials=$(echo "$system_info" | jq -r '.. | objects | select(.id == "nvme") | .serial')
+network_serials=$(echo "$system_info" | jq -r '.. | objects | select(.class == "network" and (.vendor | contains("Intel")?)) | .serial')
+
+# join all the serials together with newlines
+serials=$(echo -e "$baseboard_serial\n$memory_serials\n$nvme_serials\n$network_serials")
+
+# hash the serials
+hash=$(echo "$serials" | sha256sum | cut -d' ' -f1)
+
+# take the first 12 characters of the hash
+BMC_PASSWORD=$(echo "$hash" | head -c 12)
+
+# set the bmc password if first arg is set
+if [[ -n "$1" ]]; then
   # write bmc password to file
   echo "BMC_PASSWORD=$BMC_PASSWORD" > /root/.bmc_password
+  # set the password
+  ipmitool user set password 2 "$BMC_PASSWORD"
+else
+  # just print the password
+  echo "$BMC_PASSWORD"
 fi
-
-# set the bmc password
-ipmitool user set password 2 "$BMC_PASSWORD"
