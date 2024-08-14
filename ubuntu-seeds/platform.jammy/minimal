@@ -1,0 +1,62 @@
+Task-Section: user
+Task-Relevance: 9
+Task-Description: Minimal base system
+Task-Extended-Description: This task installs the core of an Ubuntu-based system.
+Task-Test-new-install: install skip
+Task-Seeds: required
+
+Note that some packages that form the core of an Ubuntu-based system are in the required seed, from which this seed inherits. The minimal seed describes those packages at Priority: important.
+
+Recommends are followed when processing this seed even though debootstrap doesn't do that. This may occasionally produce confusing results; however, it should be correct at release time, since the results of processing the seed are synced to Priority: important overrides.
+
+= Hardware and Architecture Support =
+
+== Generic ==
+
+== ppc32, ppc64 ==
+
+ * powerpc-utils [powerpc ppc64el] # ColinWatson
+
+== Comfortable Unix System ==
+
+Programs and packages necessary for both the proper functionality of the system and that any user would expect to find on a modern Unix-like system.
+
+ * adduser
+ * apt
+ * apt-utils         # apt-extracttemplates is required for debconf preconfiguration
+ * console-setup     # https://blueprints.launchpad.net/ubuntu/+spec/sane-installer-keyboard
+ * debconf-i18n      # buildd chroots don't need this, but other systems generally do
+ * kbd
+ * eject             # very popular, useful, small
+ * less
+ * locales
+ * lsb-release
+ * kmod
+ * netbase
+ * python3           # explicitly seeded, despite lsb-release also pulling it it
+ * (rsyslog)
+ * sudo              # LaMontJones
+ * sysvinit-utils    # until "pidof" moves into procps, Debian #810018
+ * tzdata
+ * ubuntu-advantage-tools # needs to be on the system by default for ESM
+ * ubuntu-keyring     # for authenticated package downloads
+ * udev
+ * vim-tiny
+ * whiptail          # for debconf's Dialog frontend
+
+== Networking ==
+
+These provide various networking services, all should be configured in a client-only state with the server de-activated unless the user requires it.
+
+ * isc-dhcp-client   # LaMontJones
+ * iproute2
+ * netplan.io        # foundations-aa-migrating-to-neplan (replaces ifupdown)
+
+ * iputils-ping
+ * netcat-openbsd # FabioMassimoDiNitto
+
+= Meta =
+
+ * init               # ensure we have an init system (but minimal chroots)
+ * ubuntu-minimal     # Ubuntu-specific bits we want on every Ubuntu system
+

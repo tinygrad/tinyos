@@ -1,0 +1,12 @@
+ * Feature: no-follow-recommends
+
+This seed is used to implement the debootstrap buildd variant.
+
+ * build-essential
+ * apt
+ * dpkg-dev
+ * gcc
+ * g++
+ * libc6-dev [!alpha !ia64]
+ * libc6.1-dev [alpha ia64]
+ * make

@@ -1,0 +1,25 @@
+These packages may be installed dynamically by d-i based on installation
+parameters. They should generally be made available on CDs.
+
+== Filesystems ==
+
+ * xfsprogs
+ * btrfs-tools
+ * lvm2
+ * mdadm
+ * dmsetup
+ * cryptsetup
+
+== Hardware & Network Access ==
+
+ * mouseemu	# needed on Macs with single-button mice
+
+== Installer ==
+
+ * grub-efi [amd64]
+ * grub-efi-amd64-signed [amd64]
+ * grub-efi-arm64-signed [arm64]
+ * shim-signed [amd64 arm64]
+ * shim-canonical-unsigned [amd64 arm64]
+ * fwupd-signed
+ * opal-prd [ppc64el]
