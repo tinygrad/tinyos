@@ -32,6 +32,7 @@ green-dev:
 	make green
 
 image:
+	sed -i 's/<|CURRENT_DIR|>/$(shell pwd | sed 's/\//\\\//g')/g' tinyos.yaml
 	# build up till manual customization
 	sudo ubuntu-image classic --debug -w result -u perform_manual_customization tinyos.yaml
 	# we want to do manual customization but in a more unrestricted way

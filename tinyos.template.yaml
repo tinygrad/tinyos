@@ -16,7 +16,7 @@ rootfs:
   pocket: updates
   seed:
     urls:
-      - file://./
+      - file://<|CURRENT_DIR|>/ubuntu-seeds/
     branch: jammy
     vcs: false
     names:
