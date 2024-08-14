@@ -157,6 +157,11 @@ function add_keys {
 
 function prompt_update {
   gum confirm "Update packages?" && sudo apt update -y && sudo apt upgrade -y
+
+  # see if apt upgrade required a reboot
+  if [[ -f /var/run/reboot-required ]]; then
+    NEED_REBOOT=1
+  fi
 }
 
 function prompt_reboot {
