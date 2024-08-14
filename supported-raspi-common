@@ -1,0 +1,11 @@
+These are packages which are supported for Raspberry Pi platforms.
+
+== non-free packages ==
+
+Hardware support packages which are non-free, and so cannot be depended on by
+metapackages which are in main, but nethertheless need to be supported. They
+may be included into images by other means, e.g. by direct installation from
+livecd-rootfs.
+
+ * linux-firmware-raspi
+ * pi-bluetooth

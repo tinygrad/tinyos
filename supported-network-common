@@ -1,0 +1,5 @@
+# common supported network servers (not client tools)
+
+= Network =
+
+ * shorewall-shell

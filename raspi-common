@@ -1,0 +1,12 @@
+This seed provides the basic components that should be installed on an
+Ubuntu-family system (server or desktop) running on Raspberry Pi.
+
+= Hardware and Architecture Support =
+
+ * flash-kernel
+ * libraspberrypi0
+ * libraspberrypi-bin
+ * rpi-eeprom
+ * wpasupplicant
+ * ubuntu-raspi-settings
+
