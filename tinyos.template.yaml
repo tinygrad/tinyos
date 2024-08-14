@@ -16,8 +16,9 @@ rootfs:
   pocket: updates
   seed:
     urls:
-      - https://git.launchpad.net/~ubuntu-core-dev/ubuntu-seeds/+git/
+      - file://./ubuntu-seeds/
     branch: jammy
+    vcs: false
     names:
       - server
       - server-minimal
