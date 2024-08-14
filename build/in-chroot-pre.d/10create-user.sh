@@ -2,8 +2,8 @@
 set -xeo pipefail
 
 # first disable ssh password authentication
-sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
-echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
+mkdir -p /etc/ssh/sshd_config.d
+echo "PasswordAuthentication no" >> /etc/ssh/sshd_config.d/password-authentication.conf
 
 # set sudo no password for all users
 echo "%sudo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo
