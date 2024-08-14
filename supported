@@ -1,0 +1,231 @@
+This seed includes some things that are too big for a DVD, and of course also
+inherits from everything else.
+
+= Language support =
+
+ * /^language-pack-[^-]+$/
+ * /^language-pack-gnome-[^-]+$/
+ * /^language-pack-gnome-zh-han/
+ * /^language-pack-zh-han/
+
+The following packages also have application translations, but are not
+using gettext, but a custom format. language-selector will install
+them as appropriate.
+
+ * /^libreoffice-help-/
+ * /^libreoffice-l10n-/
+ * /^thunderbird-locale-/
+ * /^gnome-user-docs-/
+ * poppler-data
+
+The following input aids are also installed on demand by
+language-selector:
+
+ * libenchant-2-voikko
+ * libreoffice-voikko
+ * tmispell-voikko
+ * /^hyphen-..$/
+ * /^hyphen-en-..$/
+ * /^mythes-/
+ * /^hunspell-[^-]*$/
+ * /^hunspell-de-..-frami/
+ * /^hunspell-..-..$/
+
+myspell packages containing the hunspell dictionaries:
+
+ * Languages: eo et fa fo ga gv hy ku nr ns ss st tn ts ve xh zu
+ * myspell-${Languages}
+
+Other dictionaries, word lists, and thesauri:
+
+ * dict-foldoc
+ * dict-gcide
+ * dict-jargon
+ * dict-moby-thesaurus
+ * dict-vera
+ * dictd
+ * wamerican
+ * wbrazilian
+ * wbritish
+ * wbulgarian
+ * wcatalan
+ * wdanish
+ * wdutch
+ * wfaroese
+ * wfrench
+ * wgalician-minimos
+ * wirish
+ * witalian
+ * wmanx
+ * wngerman
+ * wnorwegian
+ * wogerman
+ * wpolish
+ * wportuguese
+ * wspanish
+ * wswedish
+ * wswiss
+ * wukrainian
+
+Fonts installed on demand by language-selector:
+
+ * fonts-arphic-ukai
+ * fonts-arphic-uming
+ * fonts-beng
+ * fonts-deva
+ * fonts-farsiweb
+ * fonts-gujr
+ * fonts-guru
+ * fonts-indic
+ * fonts-khmeros
+ * fonts-knda
+ * fonts-lao
+ * fonts-lklug-sinhala
+ * fonts-manchufont
+ * fonts-mlym
+ * fonts-nafees
+ * fonts-noto-cjk
+ * fonts-noto-cjk-extra
+ * fonts-noto-core
+ * fonts-noto-ui-core
+ * fonts-orya
+ * fonts-sil-abyssinica
+ * fonts-sil-ezra
+ * fonts-sil-nuosusil
+ * fonts-sil-padauk
+ * fonts-sil-scheherazade
+ * fonts-taml
+ * fonts-telu
+ * fonts-tibetan-machine
+ * fonts-thai-tlwg
+ * fonts-ukij-uyghur
+
+= Installed on demand =
+
+ * apparmor-utils    # AppArmor profile development
+ * apparmor-profiles
+ * libapache2-mod-apparmor
+ * libpam-apparmor
+ * python3-libapparmor
+ * auditd
+
+= Rescued from Extra =
+
+ * Extra-Include: *-dbg *-debug *-dev *-doc *-docs gir1.2-* *-examples
+
+... and some miscellaneous exclusions for things we don't want to drag in
+automatically (note that Extra-Exclude *only* prevents packages from being
+included due to matching Extra-Include patterns, and has no other effect):
+
+ * Extra-Exclude: gir1.2-webkit2-4.1 libwebkit2gtk-4.1-dev libwebkit2gtk-4.1-0 # remove after 22.04 LTS LP: #1964132
+ * Extra-Exclude: appstream-doc
+ * Extra-Exclude: lib*stdc++6-[78]*
+ * Extra-Exclude: libstdc++-[78]-doc
+ * Extra-Exclude: libstdc++6-doc libstdc++6-dev libstdc++6-dbg lib*stdc++6-4.[4-9]*
+ * Extra-Exclude: libgnat*-dev libgnat*-dbg gnat*-doc
+ * Extra-Exclude: gfortran-[0-9]*-doc gccgo-[0-9]*-doc gccgo-doc
+ * Extra-Exclude: libqgpsmm-dev gpsd-dbg
+ * Extra-Exclude: lib*go[0-9]*-dbg lib*go[0-9]*-dev
+ * Extra-Exclude: lib*objc[0-9]*-dbg
+ * Extra-Exclude: lib*mpx[0-9]*-dbg
+ * Extra-Exclude: lib*gphobos[0-9]*-dbg lib*gphobos-[0-9]*-dev libgphobos-dev
+ * Extra-Exclude: lib*gm2-[0-9]*-dbg lib*gm2-[0-9]*-dev gm2-[0-9]*-doc
+ * Extra-Exclude: gcc-[0-9]*-doc gfortran-[0-9]*-doc cpp-[0-9]*-doc
+ * Extra-Exclude: libgccjit-[0-9]*-dev libgccjit-[0-9]*-doc
+ * Extra-Exclude: gcc-[0-9]*-plugin-dev
+ * Extra-Exclude: lib*gfortran-[0-9]*-dev lib*gfortran5-dbg
+ * Extra-Exclude: lib*stdc++-[0-9]*-dev lib*stdc++6-[0-9]*-dbg
+ * Extra-Exclude: lib*gcc-[0-9]*-dev libhsail-rt-[0-9]*-dev lib*objc-[0-9]*-dev
+ * Extra-Exclude: lib*ubsan1-dbg
+ * Extra-Exclude: libstdc++-9-doc
+ * Extra-Exclude: *mingw-w64*
+ * Extra-Exclude: binutils-alpha-linux-gnu-dbg binutils-arm-linux-gnueabi-dbg binutils-hppa-linux-gnu-dbg binutils-hppa64-linux-gnu-dbg binutils-m68k-linux-gnu-dbg binutils-mips-linux-gnu-dbg binutils-mips64-linux-gnuabi64-dbg binutils-mips64-linux-gnuabin32-dbg binutils-mips64el-linux-gnuabi64-dbg binutils-mips64el-linux-gnuabin32-dbg binutils-mipsel-linux-gnu-dbg binutils-powerpc-linux-gnuspe-dbg binutils-powerpc64-linux-gnu-dbg binutils-sh4-linux-gnu-dbg binutils-sparc64-linux-gnu-dbg binutils-mipsisa32r6-linux-gnu-dbg binutils-mipsisa32r6el-linux-gnu-dbg binutils-mipsisa64r6-linux-gnuabi64-dbg binutils-mipsisa64r6-linux-gnuabin32-dbg binutils-mipsisa64r6el-linux-gnuabi64-dbg binutils-mipsisa64r6el-linux-gnuabin32-dbg binutils-ia64-linux-gnu-dbg binutils-riscv64-linux-gnu-dbg
+ * Extra-Exclude: lldb-* liblldb-* clang* libclang* libllvm-* libfuzzer-* liblld-* libomp-* lld-* libc++-* libc++abi-* llvm-*
+ * Extra-Exclude: libavformat-dev libpostproc-dev
+ * Extra-Exclude: libnetpbm9-dev
+ * Extra-Exclude: libboost-*-dev libboost*-all-dev libboost-doc libboost*-doc
+ * Extra-Exclude: libcdio-*-dev libiso9660-dev
+ * Extra-Exclude: nvidia-glx-legacy-dev # nvidia-glx-legacy is unsupportable
+ * Extra-Exclude: *-cil *-cil-dev # Mono stuff
+ * Extra-Exclude: golang-*-dev # Golang pkg sources are imported by build-deps/Built-Using only, don’t include them via package binary
+ * Extra-Exclude: libappindicator-dev libindicator3-dev libindicator-dev libdbusmenu-gtk-dev # gtk2 versions
+ * Extra-Exclude: libayatana-appindicator-dev libayatana-indicator-dev # gtk2 versions
+ * Extra-Exclude: gir1.2-ayatanaappindicator-0.1 gir1.2-dbusmenu-gtk-0.4 # gtk2 versions
+ * Extra-Exclude: libcanberra-gtk-dev libgutenprintui2-dev # pulls in gtk2
+ * Extra-Exclude: libgtk2.0-dev libglade2-dev libgail-dev gir1.2-gtk-2.0 gtk2.0-examples # pulls in gtk2
+ * Extra-Exclude: gtk-4-examples # pulls in fonts-cantarell
+ * Extra-Exclude: libhandy*-dev # pulls in glade LP: #1815483
+ * Extra-Exclude: eog-dev # pulls in libhandy then glade LP: #1961023
+ * Extra-Exclude: sendmail-doc # sendmail source is only in main for libmilter
+ * Extra-Exclude: grub-coreboot-dbg grub-emu-dbg
+ * Extra-Exclude: haproxy-doc # https://lists.ubuntu.com/archives/ubuntu-release/2014-July/002967.html
+ * Extra-Exclude: imagemagick-6-doc imagemagick-doc # LP: #1667150
+ * Extra-Exclude: libfftw3-mpi-dev
+ * Extra-Exclude: thunderbird-gnome-support-dbg # Unity support additions
+ * Extra-Exclude: libturbojpeg0-dev # legacy API not for main
+ * Extra-Exclude: libappstreamqt-dev libgpgmepp-dev libpoppler-qt5-dev libsnapd-qt-dev gstreamer1.0-plugins-good-dbg # don't pull in Qt
+ * Extra-Exclude: libblockdev-btrfs-dev libblockdev-kbd-dev libblockdev-mdraid-dev libblockdev-vdo-dev # pulls in libbytesize, no MIR yet
+ * Extra-Exclude: libu2f-host-dev libu2f-host-doc # we actually just want the udev rules for U2F devices
+ * Extra-Exclude: python-markdown-doc  # mkdocs, mkdocs-nature in universe
+ * Extra-Exclude: python-networkx-doc # too many universe deps
+ * Extra-Exclude: python-jinja2-doc # why does it depend on python-jinja2 ?!
+ * Extra-Exclude: python-flask-doc # why does it depend on python-flask ?!
+ * Extra-Exclude: python-cherrypy3-doc # why does it depend on python-cherrypy3 ?!
+ * Extra-Exclude: python-pyinotify-doc # why does it depend on python-pyinotify ?!
+ * Extra-Exclude: python-paste-doc
+ * Extra-Exclude: python-lxml-doc # why does it depend on python-lxml ?!
+ * Extra-Exclude: python-flask-restful-doc # why does it depend on python-flask-restful ?!
+ * Extra-Exclude: python-pygments-doc # why does it depend on python-pygments ?!
+ * Extra-Exclude: python-simplejson-doc # why does it depend on python-simplejson ?!
+ * Extra-Exclude: python-lockfile-doc # why does it depend on python-lockfile ?!
+ * Extra-Exclude: dpdk-dev libdpdk-dev # -dev has universe deps e.g. intel-ipsec-mb (Details at LP: #1814060)
+ * Extra-Exclude: dpdk-doc # has universe deps e.g. fonts-roboto and examples that are not fully supported (Details at LP: #1869147)
+ * Extra-Exclude: libneon27-dev libneon27-dbg # dev package for the unused OpenSSL variant, we use -gnutls variant in main
+ * Extra-Exclude: python-*-dbg python-*-dev
+ * Extra-Exclude: libde265-examples # would pull in qt4 and many other codec libraries
+ * Extra-Exclude: python-networkx-doc # previously removed, depends on javascript not in main
+ * Extra-Exclude: libevdev-doc # depends on javascript not in main
+ * Extra-Exclude: python-tooz-doc # depends on javascript not in main
+ * Extra-Exclude: libpmemblk-dev libpmemblk1-debug libpmemlog-dev libpmemobj-dev libpmempool-dev librpmem-dev libvmem-dev libvmmalloc-dev libpmemobj-doc libpmem1-debug libpmemlog1-debug libpmemobj1-debug libpmempool1-debug librpmem1-debug libvmem1-debug libvmmalloc1-debug # For now we only want the direct libpmem dependencies (e.g. from qemu)
+
+ * Extra-Exclude: doxygen-doc # doesn't demote, circular (?) doxygen <-> doxygen-doc dependency
+
+ * Extra-Exclude: sugar # only arch: all provider of notification-daemon on i386, do not promote
+ * !notification-daemon # should be provided by individual seeds, where needed with real packages, not a (random) virtual provides
+ * Extra-Exclude: python-taskflow-doc # previously removed, depends on javascript not in main
+ * Extra-Exclude: libvirt-dev # libvirt binaries have main (e.g. for qemu) and universe components (e.g. xen), due to that the -dev package depends on xen which shall be demoted to universe - let the -dev be demoted (build depends no more need to be in main) to get rid of xen
+ * Extra-Exclude: libsdl2-dev # -dev has further universe deps that are not wanted/needed for the intended use cases (Details at LP: #1256185)
+ * Extra-Exclude: libcbor-doc # depends on libjs-mathjax
+ * Extra-Exclude: python-ssl-doc # pulls in sphinx-rtd-theme-common and more (fonts, libjs-&node- things) from there
+ * Extra-Exclude: libsnmp-dev # Recommends libsnmp-perl, which is in universe.
+ * Extra-Exclude: liblpsolve55-dev libsuitesparse-dev libsuitesparse-doc # Recommends libgraphblas which is in universe, details on https://bugs.launchpad.net/bugs/1957050
+ * Extra-Exclude: python-vitrageclient-doc # requires libjs-bootstrap
+ * Extra-Exclude: rust-doc # prevents pulling in JS dependencies
+ * Extra-Exclude: fwupd-unsigned-dev
+ * !terminator !xterm # gnome-terminal is our terminal in main
+
+= Build infrastructure =
+
+ * pkgbinarymangler # needs to be in main to stay in the buildd chroots
+
+= Enterprise tools =
+
+ * adsys
+
+= Other =
+
+ * apt-config-icons*
+ * miscfiles
+ * sosreport # AdamStokes LP: #1206106
+ * nvidia-prime
+ * fglrx-pxpress
+ * ipxe
+ * w3m # The One True console web browser, needed to keep doc packages in main
+ * curtin # subiquity needs it
+ * network-manager-openvpn # used by Canonical employees to access our VPN
+
+ * openjdk-11-jdk
+ * openjdk-11-doc
+ * openjdk-11-source
+
+ * libc6-lse  # arm64 glibc variant

@@ -1,0 +1,64 @@
+This seed exists only to allow fine tuning the 3y support time
+
+= Dev tools =
+
+ * gnupg
+ * dirmngr
+
+= Documentation =
+ * gnupg-doc
+ * manpages-dev
+ * tar-doc
+
+= Additional multimedia =
+
+ * gstreamer1.0-tools
+
+= Extra desktop =
+
+ * libreoffice-nlpsolver
+ * libreoffice-officebean
+ * libreoffice-style-tango
+ * icc-profiles-free
+ * vim-gnome
+ * firefox
+
+== Restricted drivers ==
+
+ * fglrx-amdcccle-updates
+ * fglrx-updates-dev
+ * nvidia-current-updates
+ * nvidia-current-updates-dev
+ * nvidia-settings-updates
+ * /^libnvidia-cfg1-[0-9]+/
+ * /^libnvidia-common-[0-9]+/
+ * /^libnvidia-compute-[0-9]+/
+ * /^libnvidia-decode-[0-9]+/
+ * /^libnvidia-encode-[0-9]+/
+ * /^libnvidia-extra-[0-9]+/
+ * /^libnvidia-fbc1-[0-9]+/
+ * /^libnvidia-gl-[0-9]+/
+ * /^libnvidia-ifr1-[0-9]+/
+ * /^nvidia-[0-9]+/
+ * /^nvidia-driver-[0-9]+/
+ * /^nvidia-compute-utils-[0-9]+/
+ * /^nvidia-dkms-[0-9]+/
+ * /^nvidia-headless-[0-9]+/
+ * /^nvidia-headless-no-dkms-[0-9]+/
+ * /^nvidia-kernel-common-[0-9]+/
+ * /^nvidia-kernel-source-[0-9]+/
+ * /^nvidia-[0-9]+-updates/
+ * /^nvidia-[0-9]+-dev/
+ * /^nvidia-[0-9]+-updates-dev/
+ * /^nvidia-experimental-[0-9]+/
+ * /^nvidia-experimental-[0-9]+-dev/
+ * /^nvidia-settings-experimental-[0-9]+/
+ * /^nvidia-settings-[0-9]+-updates/
+ * /^nvidia-settings-[0-9]+/
+ * /^nvidia-utils-[0-9]+/
+ * /^xserver-xorg-video-nvidia-[0-9]+/
+
+== VM integration ==
+
+ * open-vm-tools-desktop
+

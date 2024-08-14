@@ -1,0 +1,12 @@
+Task-Section: server
+Task-Description: Print server
+Task-Extended-Description: This task sets up your system to be a print server.
+Task-Key: cups cups-bsd cups-client
+
+ * cups
+ * cups-bsd
+ * cups-client
+ * printer-driver-gutenprint
+ * foomatic-db-compressed-ppds
+ * printer-driver-hpijs
+ * openprinting-ppds
