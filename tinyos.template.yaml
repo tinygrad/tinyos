@@ -16,12 +16,13 @@ rootfs:
   pocket: updates
   seed:
     urls:
-      - git://git.launchpad.net/~ubuntu-core-dev/ubuntu-seeds/+git/
+      - https://git.launchpad.net/~ubuntu-core-dev/ubuntu-seeds/+git/ubuntu
     branch: jammy
     names:
       - server
       - server-minimal
       - minimal
+      - cloud-image
   sources-list-deb822: false
 customization:
   components:
