@@ -8,6 +8,9 @@ git clone https://github.com/tinygrad/tinygrad tinygrad
 
 pushd tinygrad
 
+# checkout to specific version
+git checkout v0.9.2
+
 # install tinygrad and deps
 pip install -e .[testing,linting,docs]
 pip install pillow numpy tqdm
