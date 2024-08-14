@@ -1,0 +1,42 @@
+Moved from desktop:
+
+ * python3-apt               # MRS, we need to be able to interact with APT
+ * python3-crypto            # MRS, very useful even though it's very specific
+ * python3-examples          # MRS, 
+ * python3-geoip2
+ * python3-imaging-sane
+ * python3-pycurl
+ * python3-mysqldb
+ * python3-newt
+ * python3-pam
+ * python3-pexpect
+ * python3-pylibacl
+ * python3-pyxattr
+ * python3-reportlab
+ * python3-xdg                   # SebastienBacher
+ * python3-lxml
+
+Extra GCC packages
+
+ * g++-multilib  # seed it directly until changing the defaults
+ * cpp-doc
+ * gcc-doc
+
+Ability to cleanly build packages
+
+ * schroot
+ * sbuild
+
+Cross Toolchains
+
+ * crossbuild-essential-arm64
+ * crossbuild-essential-armhf
+ * crossbuild-essential-ppc64el
+ * crossbuild-essential-s390x
+
+Additional supported languages
+
+ * golang
+ * rustc
+ * dotnet6  # MIR (LP: #2023531)
+ * dotnet8  # MIR (LP: #2060056)

@@ -1,0 +1,12 @@
+Task-Section: server
+Task-Description: Ubuntu Cloud Image (instance)
+Task-Extended-Description: Packages included in Ubuntu Cloud images.
+Task-Key: cloud-init
+
+= Ubuntu Server =
+ * ubuntu-server
+
+= Additional cloud-image only packages =
+ * cloud-init			# Standard Ubuntu cloud boot support (LP: #1576351)
+ * openssh-server		# Standard way to access a server (LP: #1576353)
+ * ssh-import-id		# Specifically not in ubuntu-server (LP: #1974483)

@@ -1,0 +1,13 @@
+Task-Section: server
+Task-Description: Samba file server
+Task-Extended-Description: This task sets up your system to be a Samba file server, which is 
+Task-Extended-Description: especially suitable in networks with both Windows and Linux systems.
+Task-Key: samba
+
+ * libpam-winbind
+ * libnss-winbind
+ * samba
+ * smbclient
+ * cifs-utils
+ * winbind
+

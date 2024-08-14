@@ -1,0 +1,68 @@
+Task-Section: server
+Task-Description: Basic Ubuntu server
+Task-Extended-Description: This task provides the Ubuntu server environment.
+Task-Relevance: 8
+Task-Key: screen
+
+This seed lists the packages we want to install by default in the new server install.
+
+= System administration tools =
+
+ * apport # LP: #424051
+ * byobu
+ * curl
+ * git # LP: 1394756
+ * patch
+ * pollinate			# Seed the PRNG
+ * screen
+ * software-properties-common # LP: #439566
+ * tmux				# Share/detach sessions
+ * vim
+ * wget				# Fetch data from the command line
+
+= Network =
+
+ * ethtool			# Essential network diagnostics
+
+= Maintenance =
+
+ * update-notifier-common
+ * (fwupd)          # in band vendor agnostic firmware updates (LP: #1749774)
+ * (needrestart)    # very useful tool to track any stale processes to restart without reboot
+ * (unattended-upgrades)
+
+= Block Device and Filesystem =
+
+ * lvm2				# Needed by MAAS images
+ * mdadm			# Used by many physical machines
+ * multipath-tools              # server-ship/server-live ship multipath-tools-boot, but we need multipath-tools everywhere else.
+ * (open-iscsi)			# Needed by MAAS images, but be removable LP: #1630946
+ * bcache-tools				# Used by MAAS images, when possible
+ * btrfs-progs				# Commonly used server filesystem
+ * xfsprogs				# Commonly used server filesystem
+
+= Debugging and Diagnostics =
+
+ * htop
+ * sosreport				# LP: #1311274, troubleshooting for Ubuntu Advantage support
+
+= Initramfs Modules =
+
+ * cloud-initramfs-copymods		# Needed by MAAS images
+ * cloud-initramfs-dyn-netconf		# Needed by MAAS images (LP: #1750851)
+ * overlayroot			# Needed by MAAS
+
+= Other =
+
+ * ubuntu-server		# metapackage for everything in this task
+ * cloud-guest-utils		# growpart (resize partitions)
+ * fonts-ubuntu-console		# Part of the Ubuntu server experience
+ * snap:lxd=5.0/stable/ubuntu-22.04 # Every Ubuntu server can host 100x containers
+ * (open-vm-tools)			# Needed for Ubuntu as VMware guests
+ * (lxd-agent-loader)		# Needed for Ubuntu as LXD VM guests
+ * (snapd)
+ * s390-tools [s390x]           # needed for z block devices, bootloader, encryption features, etc.
+ * gnupg
+ * dirmngr
+ * (landscape-common) # LP: #1756261, recommends to be removable for minimal (LP: #1763182)
+ * motd-news-config # LP: #1888575
