@@ -11,5 +11,3 @@ popd
 
 deactivate
 popd
-
-systemctl restart tinychat

@@ -8,5 +8,3 @@ pip install pymunk
 
 deactivate
 popd
-
-systemctl restart displayservice
