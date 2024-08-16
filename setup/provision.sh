@@ -61,6 +61,7 @@ mkdir -p /home/tiny/stress_test
 
 # run allreduce bandwidth test
 pushd /home/tiny/tinygrad || exit
+python3 test/external/external_benchmark_multitensor_allreduce.py # run once for warmup
 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
 popd || exit
 # ensure that it is above 12 GB/s
@@ -157,7 +158,7 @@ gpu_max_temps2=$(echo "${gpu_max_temps[@]:3:3}" | tr ' ' ' : ')
 echo "text,${cpu_max_temp},${gpu_max_temps1},${gpu_max_temps2}" | nc -U /run/tinybox-screen.sock
 
 # check if any of the temps are above the threshold
-if [ "$cpu_max_temp" -gt 90 ] || [ "${gpu_max_temps[0]}" -gt 100 ] || [ "${gpu_max_temps[1]}" -gt 100 ] || [ "${gpu_max_temps[2]}" -gt 100 ] || [ "${gpu_max_temps[3]}" -gt 100 ] || [ "${gpu_max_temps[4]}" -gt 100 ] || [ "${gpu_max_temps[5]}" -gt 100 ]; then
+if [ "$cpu_max_temp" -gt 90 ] || [ "${gpu_max_temps[0]}" -gt 95 ] || [ "${gpu_max_temps[1]}" -gt 95 ] || [ "${gpu_max_temps[2]}" -gt 95 ] || [ "${gpu_max_temps[3]}" -gt 95 ] || [ "${gpu_max_temps[4]}" -gt 95 ] || [ "${gpu_max_temps[5]}" -gt 95 ]; then
   echo "text,** ${cpu_max_temp} **,${gpu_max_temps1},${gpu_max_temps2}" | nc -U /run/tinybox-screen.sock
   exit 1
 fi
