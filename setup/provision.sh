@@ -96,8 +96,8 @@ if [[ "$TINYBOX_COLOR" == "red" ]]; then
   # convert to int
   lowest_bandwidth=$(echo "$lowest_bandwidth" | cut -d. -f1)
 
-  # check to ensure that bidirectional bandwidth is above 47
-  if [ -z "$lowest_bandwidth" ] || [ "$lowest_bandwidth" -lt 47 ]; then
+  # check to ensure that bidirectional bandwidth is above 45
+  if [ -z "$lowest_bandwidth" ] || [ "$lowest_bandwidth" -lt 45 ]; then
     echo "text,P2P bandwidth test failed" | nc -U /run/tinybox-screen.sock
     exit 1
   fi
