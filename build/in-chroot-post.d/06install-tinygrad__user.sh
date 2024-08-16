@@ -9,7 +9,7 @@ git clone https://github.com/tinygrad/tinygrad tinygrad
 pushd tinygrad
 
 # checkout to specific version
-git checkout v0.9.2
+git checkout 5f1554b5744ef5a0f4141a47a8e4d8196f96acb1
 
 # install tinygrad and deps
 pip install -e .[testing,linting,docs]
