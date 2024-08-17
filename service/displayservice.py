@@ -63,6 +63,8 @@ class SleepScreen(Component):
         with open("/root/.bmc_password", "r") as f:
           bmc_password = f.read().strip().split("=")[1].strip()
         self.bmc_password = Text(bmc_password, "mono", anchor=Anchor.TOP_RIGHT)
+        try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
+        except: logging.warning("Failed to set BMC password")
       except: logging.warning("Failed to read BMC password")
     else: logging.warning("BMC password file not found")
 
@@ -212,8 +214,10 @@ def display_thread():
 
         # check if display should be in status state
         gpu_utilizations = get_gpu_utilizations()
+        cpu_utilizations = get_cpu_utilizations()
         logging.debug(f"GPU Utilizations: {gpu_utilizations}")
-        if sum(gpu_utilizations) > 1 and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU and display_state != DisplayState.TEXT and display_state != DisplayState.WELCOME:
+        mean_cpu_utilization = sum(cpu_utilizations) / len(cpu_utilizations)
+        if (sum(gpu_utilizations) > 1 or mean_cpu_utilization > 50) and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU and display_state != DisplayState.TEXT and display_state != DisplayState.WELCOME:
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
 
@@ -234,7 +238,7 @@ def display_thread():
         elif display_state == DisplayState.MENU:
           to_display.blit(display)
         elif display_state == DisplayState.STATUS:
-          status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
+          status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), cpu_utilizations, get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
           status_screen.blit(display)
         elif display_state == DisplayState.SLEEP:
           to_display.blit(display)
