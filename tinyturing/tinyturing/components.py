@@ -165,9 +165,9 @@ class MultiCollidingDVDImage(Component):
   """
   A component that represents multiple bouncing DVD logos that can collide with each other.
   """
-  def __init__(self, paths:list[str|Path], sizes:list[tuple[int, int]], width:int, height:int):
+  def __init__(self, paths:list[str|Path], sizes:list[tuple[int, int]], width:int, height:int, x:int=0, y:int=0):
     super().__init__(0, 0, Anchor.TOP_LEFT, None)
-    self.width, self.height = width, height
+    self.width, self.height, self.x, self.y = width, height, x, y
     self.images = [np.array(PIL.Image.open(path).convert("RGBA").resize(size)).transpose(1, 0, 2) for path, size in zip(paths, sizes)]
     # cache unique pairs that we need to check for collision
     self.pairs = [(i, j) for i in range(len(self.images)) for j in range(i + 1, len(self.images))]
@@ -201,7 +201,7 @@ class MultiCollidingDVDImage(Component):
 
     # blit
     for i, image in enumerate(self.images):
-      display.blit(image, (self.xs[i], self.ys[i]))
+      display.blit(image, (self.xs[i] + self.x, self.ys[i] + self.y))
 
 class Rectangle(SimpleComponent):
   """
