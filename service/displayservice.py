@@ -62,51 +62,43 @@ class SleepScreen(Component):
       try:
         with open("/root/.bmc_password", "r") as f:
           bmc_password = f.read().strip().split("=")[1].strip()
-        self.bmc_password = Text(bmc_password, "mono", anchor=Anchor.TOP_RIGHT)
+        self.bmc_password = Text(bmc_password, "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
         try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
         except: logging.warning("Failed to set BMC password")
       except: logging.warning("Failed to read BMC password")
     else: logging.warning("BMC password file not found")
 
+    # bmc ip
     bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
     bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
 
+    if hasattr(self, "bmc_password"): self.bmc_ip = Text(f"BMC: {bmc_ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_password, Anchor.TOP_CENTER))
+    else: self.bmc_ip = Text(f"BMC: {bmc_ip}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
+
+    # ip
     ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
     ip = ip.split(" ")[0] if ip else "N/A"
 
-    bg_color = 0x00000090
-    self.desc1 = Text("Local IP", "sans", x=WIDTH, anchor=Anchor.TOP_RIGHT)
-    self.desc1_bg = Rectangle(len(self.desc1.text) * 32, 64, color=bg_color, x=WIDTH, anchor=Anchor.TOP_RIGHT)
-    self.ip = Text(ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc1, Anchor.BOTTOM_RIGHT))
-    self.ip_bg = Rectangle(len(self.ip.text) * 32, 64, color=bg_color, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc1, Anchor.BOTTOM_RIGHT))
-    if hasattr(self, "bmc_password"): self.desc2 = Text("BMC IP & Passwd", "sans", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.BOTTOM_RIGHT))
-    else: self.desc2 = Text("BMC IP", "sans", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.BOTTOM_RIGHT))
-    self.desc2_bg = Rectangle(len(self.desc2.text) * 32, 64, color=bg_color, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.ip, Anchor.BOTTOM_RIGHT))
-    self.bmc_ip = Text(bmc_ip, "mono", anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc2, Anchor.BOTTOM_RIGHT))
-    self.bmc_ip_bg = Rectangle(len(self.bmc_ip.text) * 32, 64, color=bg_color, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.desc2, Anchor.BOTTOM_RIGHT))
-    if hasattr(self, "bmc_password"):
-      self.bmc_password.parent = ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT)
-      self.bmc_password_bg = Rectangle(len(self.bmc_password.text) * 32, 64, color=bg_color, anchor=Anchor.TOP_RIGHT, parent=ComponentParent(self.bmc_ip, Anchor.BOTTOM_RIGHT))
+    self.ip = Text(f"IP: {ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_ip, Anchor.TOP_CENTER))
 
+    # seperator line
+    self.line = Rectangle(WIDTH - WIDTH // 5, 1, y=-8, anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.ip, Anchor.TOP_CENTER))
+
+    # bouncing logo
+    offset = -2 if hasattr(self, "bmc_password") else 62
     self.logo = MultiCollidingDVDImage([
       "/opt/tinybox/service/logo.png",
     ], [
       (400, 154),
-    ], width=WIDTH, height=HEIGHT)
+    ], width=WIDTH, height=HEIGHT - (196 - offset), y=offset)
 
   def blit(self, display:Display):
     self.logo.blit(display)
-    self.desc1_bg.blit(display)
-    self.desc1.blit(display)
-    self.ip_bg.blit(display)
-    self.ip.blit(display)
-    self.desc2_bg.blit(display)
-    self.desc2.blit(display)
-    self.bmc_ip_bg.blit(display)
-    self.bmc_ip.blit(display)
     if hasattr(self, "bmc_password"):
-      self.bmc_password_bg.blit(display)
       self.bmc_password.blit(display)
+    self.bmc_ip.blit(display)
+    self.ip.blit(display)
+    self.line.blit(display)
 
 class WelcomeScreen(Component):
   def __init__(self):
