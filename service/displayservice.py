@@ -62,7 +62,7 @@ class SleepScreen(Component):
       try:
         with open("/root/.bmc_password", "r") as f:
           bmc_password = f.read().strip().split("=")[1].strip()
-        self.bmc_password = Text(bmc_password, "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
+        self.bmc_password = Text(f"BMC PW: {bmc_password}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
         try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
         except: logging.warning("Failed to set BMC password")
       except: logging.warning("Failed to read BMC password")
