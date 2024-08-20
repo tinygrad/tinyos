@@ -62,6 +62,7 @@ mkdir -p /home/tiny/stress_test
 # run allreduce bandwidth test
 pushd /home/tiny/tinygrad || exit
 python3 test/external/external_benchmark_multitensor_allreduce.py # run once for warmup
+python3 test/external/external_benchmark_multitensor_allreduce.py # run twice for warmup
 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
 popd || exit
 # ensure that it is above 12 GB/s
@@ -74,6 +75,8 @@ fi
 # on red additionally run rocm-bandwidth-test
 if [[ "$TINYBOX_COLOR" == "red" ]]; then
   # run p2p bandwidth test
+  /opt/rocm/bin/rocm-bandwidth-test # run once for warmup
+  /opt/rocm/bin/rocm-bandwidth-test # run twice for warmup
   /opt/rocm/bin/rocm-bandwidth-test | tee /home/tiny/stress_test/p2p.log
   bi_bw=$(tail -n 20 /home/tiny/stress_test/p2p.log)
 
