@@ -179,9 +179,15 @@ def display_thread():
             display_state = DisplayState.STATUS
             display_last_active = time.monotonic()
         elif command == "sleep":
-          if display_state != DisplayState.SLEEP:
-            display_state = DisplayState.SLEEP
-            to_display = SleepScreen()
+          # see if we need to switch to the welcome state
+          if os.path.exists("/home/tiny/.before_firstsetup"):
+            if display_state != DisplayState.WELCOME:
+              display_state = DisplayState.WELCOME
+              to_display = WelcomeScreen()
+          else:
+            if display_state != DisplayState.SLEEP:
+              display_state = DisplayState.SLEEP
+              to_display = SleepScreen()
       else:
         # 10 second timeout from startup to sleep
         if time.monotonic() - start_time > 10 and display_state == DisplayState.STARTUP:
