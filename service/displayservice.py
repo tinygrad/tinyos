@@ -148,8 +148,13 @@ def display_thread():
 
     # if we are have been booted up for a while there is no need to show the startup screen
     if uptime() > 180:
-      display_state = DisplayState.SLEEP
-      to_display = SleepScreen()
+      # see if we need to switch to the welcome state
+      if os.path.exists("/home/tiny/.before_firstsetup"):
+        display_state = DisplayState.WELCOME
+        to_display = WelcomeScreen()
+      else:
+        display_state = DisplayState.SLEEP
+        to_display = SleepScreen()
     else:
       display_state = DisplayState.STARTUP
       to_display = AnimatedText([" .....", ". ....", ".. ...", "... ..", ".... .", "..... "], "sans", bounce=True, x=WIDTH // 2, y=HEIGHT // 2)
