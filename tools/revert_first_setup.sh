@@ -6,4 +6,6 @@ echo "bash /opt/tinybox/setup/firstsetup.sh" >> /home/tiny/.profile
 
 touch /home/tiny/.before_firstsetup
 
+rm -f /home/tiny/.bash_history
+
 sudo systemctl restart displayservice
