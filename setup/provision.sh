@@ -4,6 +4,9 @@ set -x
 source /etc/tinybox-release
 set -e
 
+# start systemd-journal-gatewayd for debugging
+sudo systemctl start systemd-journal-gatewayd
+
 sleep 2
 
 # check if either enp65s0f0np0, ens33np0, or ens33f0np0 exists
