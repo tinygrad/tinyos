@@ -109,6 +109,7 @@ customization:
     - name: ripgrep
     - name: rsync
     - name: time
+    - name: lsof
     # for services
     - name: netcat-openbsd
     - name: python-is-python3
