@@ -9,6 +9,8 @@ touch /home/tiny/.before_firstsetup
 rm -f /home/tiny/.bash_history
 history -c
 
+rm -f /home/tiny/.ssh/authorized_keys
+
 sudo systemctl restart displayservice
 
 exit
