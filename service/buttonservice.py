@@ -42,7 +42,7 @@ timeout_task = None
 async def power_button_pressed(count: int):
   global in_menu, menu_selection, timeout_task
 
-  await asyncio.sleep(0.5)
+  await asyncio.sleep(0.6)
   logging.info(f"pressed {count} times")
 
   # reset menu timeout
