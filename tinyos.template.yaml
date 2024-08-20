@@ -101,6 +101,7 @@ customization:
     - name: lm-sensors
     - name: locales
     - name: lshw
+    - name: lsof
     - name: man-db
     - name: nfs-common
     - name: parallel
@@ -108,8 +109,8 @@ customization:
     - name: rdma-core
     - name: ripgrep
     - name: rsync
+    - name: systemd-journal-remote
     - name: time
-    - name: lsof
     # for services
     - name: netcat-openbsd
     - name: python-is-python3
