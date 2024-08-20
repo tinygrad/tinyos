@@ -63,8 +63,6 @@ class SleepScreen(Component):
         with open("/root/.bmc_password", "r") as f:
           bmc_password = f.read().strip().split("=")[1].strip()
         self.bmc_password = Text(f"BMC PW: {bmc_password}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
-        try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
-        except: logging.warning("Failed to set BMC password")
       except: logging.warning("Failed to read BMC password")
     else: logging.warning("BMC password file not found")
 
@@ -82,7 +80,7 @@ class SleepScreen(Component):
     self.ip = Text(f"IP: {ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_ip, Anchor.TOP_CENTER))
 
     # seperator line
-    self.line = Rectangle(WIDTH - WIDTH // 5, 1, y=-8, anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.ip, Anchor.TOP_CENTER))
+    self.line = Rectangle(WIDTH - WIDTH // 5, 2, y=-8, anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.ip, Anchor.TOP_CENTER))
 
     # bouncing logo
     offset = -2 if hasattr(self, "bmc_password") else 62
@@ -177,8 +175,9 @@ def display_thread():
           to_display = Text("\n".join(args), "mono", x=WIDTH // 2, y=HEIGHT // 2)
           start_time = time.monotonic()
         elif command == "status":
-          display_state = DisplayState.STATUS
-          display_last_active = time.monotonic()
+          if display_state != DisplayState.WELCOME:
+            display_state = DisplayState.STATUS
+            display_last_active = time.monotonic()
         elif command == "sleep":
           if display_state != DisplayState.SLEEP:
             display_state = DisplayState.SLEEP
