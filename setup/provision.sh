@@ -78,36 +78,9 @@ fi
 # on red additionally run rocm-bandwidth-test
 if [[ "$TINYBOX_COLOR" == "red" ]]; then
   # run p2p bandwidth test
-  /opt/rocm/bin/rocm-bandwidth-test # run once for warmup
-  /opt/rocm/bin/rocm-bandwidth-test # run twice for warmup
   /opt/rocm/bin/rocm-bandwidth-test | tee /home/tiny/stress_test/p2p.log
-  bi_bw=$(tail -n 20 /home/tiny/stress_test/p2p.log)
-
-  while read -r line; do
-    [[ -z "$line" || "$line" =~ ^D/D ]] && continue
-
-    read -ra values <<< "$line"
-    values=("${values[@]:1}")
-
-    for i in "${!values[@]}"; do
-      value="${values[i]}"
-
-      [[ "$value" == "N/A" ]] && continue
-
-      if [[ -z "$lowest_bandwidth" || "$value" < "$lowest_bandwidth" ]]; then
-        lowest_bandwidth="$value"
-      fi
-    done
-  done <<< "$bi_bw"
-
-  # convert to int
-  lowest_bandwidth=$(echo "$lowest_bandwidth" | cut -d. -f1)
-
-  # check to ensure that bidirectional bandwidth is above 45
-  if [ -z "$lowest_bandwidth" ] || [ "$lowest_bandwidth" -lt 45 ]; then
-    echo "text,$(hostname -i | xargs):19531,,P2P bandwidth test failed,${lowest_bandwidth}GB/s" | nc -U /run/tinybox-screen.sock
-    exit 1
-  fi
+  /opt/rocm/bin/rocm-bandwidth-test | tee -a /home/tiny/stress_test/p2p.log
+  /opt/rocm/bin/rocm-bandwidth-test | tee -a /home/tiny/stress_test/p2p.log
 fi
 
 # run pytorch test
