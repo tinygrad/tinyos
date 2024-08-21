@@ -64,6 +64,7 @@ mkdir -p /home/tiny/stress_test
 
 # run allreduce bandwidth test
 pushd /home/tiny/tinygrad || exit
+echo "status" | nc -U /run/tinybox-screen.sock
 python3 test/external/external_benchmark_multitensor_allreduce.py # run once for warmup
 python3 test/external/external_benchmark_multitensor_allreduce.py # run twice for warmup
 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
@@ -78,6 +79,7 @@ fi
 # on red additionally run rocm-bandwidth-test
 if [[ "$TINYBOX_COLOR" == "red" ]]; then
   # run p2p bandwidth test
+  echo "status" | nc -U /run/tinybox-screen.sock
   /opt/rocm/bin/rocm-bandwidth-test | tee /home/tiny/stress_test/p2p.log
   /opt/rocm/bin/rocm-bandwidth-test | tee -a /home/tiny/stress_test/p2p.log
   /opt/rocm/bin/rocm-bandwidth-test | tee -a /home/tiny/stress_test/p2p.log
@@ -85,6 +87,7 @@ fi
 
 # run pytorch test
 pushd /home/tiny/tinygrad || exit
+echo "status" | nc -U /run/tinybox-screen.sock
 python3 extra/gemm/torch_gemm.py | tee /home/tiny/stress_test/pytorch.log
 popd || exit
 
@@ -149,11 +152,13 @@ curl http://127.0.0.1/ctrl/start
 echo "status" | nc -U /run/tinybox-screen.sock
 sleep 30
 
+echo "status" | nc -U /run/tinybox-screen.sock
 mods "hi" | tee /home/tiny/stress_test/tinychat.log
 if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
   echo "text,$(hostname -i | xargs):19531,,tinychat check failed,retrying..." | nc -U /run/tinybox-screen.sock
   journalctl --unit=tinychat
 
+  echo "status" | nc -U /run/tinybox-screen.sock
   mods "hi" | tee /home/tiny/stress_test/tinychat.log
   if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
     echo "text,$(hostname -i | xargs):19531,,tinychat check failed" | nc -U /run/tinybox-screen.sock

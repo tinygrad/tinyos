@@ -22,5 +22,6 @@ while true; do
   gpu_temps=$(echo "$gpu_temps" | tr '\n' ',' | sed 's/,$//')
 
   echo "$(date),${cpu_temp},${gpu_temps}" >> "$LOGFILE"
-  sleep 1
+  sleep 10
+  echo "status" | nc -U /run/tinybox-screen.sock
 done

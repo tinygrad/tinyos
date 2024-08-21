@@ -25,6 +25,7 @@ export SEED=$RANDOM
 export EPOCHS=39
 
 # init
+echo "status" | nc -U /run/tinybox-screen.sock
 BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py
 
 # start temp monitor
@@ -32,6 +33,7 @@ bash /opt/tinybox/setup/monitortemps.sh &
 
 # run
 START_TIME=$(date +%s)
+echo "status" | nc -U /run/tinybox-screen.sock
 PARALLEL=0 RUNMLPERF=1 EVAL_START_EPOCH=3 EVAL_FREQ=4 python3 examples/mlperf/model_train.py
 END_TIME=$(date +%s)
 
