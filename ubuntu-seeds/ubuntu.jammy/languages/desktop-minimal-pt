@@ -1,0 +1,7 @@
+# Default languages for most applications we ship by default
+ * Language: pt
+ * language-pack-${Language}
+ * language-pack-gnome-${Language}
+
+# GNOME Help
+ * gnome-user-docs-${Language}

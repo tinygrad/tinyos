@@ -1,0 +1,31 @@
+= System Administration Tools =
+
+Select the dummy MTA we want on i386
+
+ * lsb-invalid-mta [i386]
+
+Hardware related tools:
+
+ * numactl   # LP: #1700826
+
+Network related:
+
+ * iptraf-ng
+ * dnstracer
+ * wakeonlan
+ * iputils-arping
+
+Log parsing and status gathering:
+
+ * checksecurity
+ * aide
+ * smartmontools
+ * logwatch
+ * lsscsi
+ * rsyslog-gnutls   # LP: #388605 - encrypt data sent by rsyslog for compliance
+ * sysstat
+
+Systems management:
+
+ * freeipmi-tools
+ * openipmi

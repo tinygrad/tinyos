@@ -21,7 +21,7 @@ sudo sysctl net.ipv4.tcp_congestion_control=bbr
 
 # mount NFS
 if ! sudo mount -o rdma,port=20049,vers=4.2 "${ip}1":/raid /mnt; then
-  echo "text,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
+  echo "text,$(hostname -i | xargs):19531,,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
   exit 1
 fi
 
@@ -36,7 +36,7 @@ rclone copy -P --auto-confirm --links --check-first --checkers 32 --multi-thread
       percentage=$(echo "$line" | grep -oP '\d+%,' | grep -oP '\d+')
       # extract ETA
       eta=$(echo "$line" | grep -oP 'ETA (\d+h\d+m\d+s)|(\d+m\d+s)|(\d+s)')
-      echo "text,Populating RAID,${speed},${percentage}% - ${eta}" | nc -U /run/tinybox-screen.sock
+      echo "text,$(hostname -i | xargs):19531,,Populating RAID,${speed},${percentage}% - ${eta}" | nc -U /run/tinybox-screen.sock
       ;;
   esac
 done

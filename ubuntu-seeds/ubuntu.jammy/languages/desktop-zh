@@ -1,0 +1,9 @@
+# Default apps having separates translations
+## Libreoffice l10n and help
+ * Languages: zh-cn zh-tw
+ * libreoffice-l10n-${Languages}
+ * libreoffice-help-${Languages}
+
+## Thunderbird
+ * Languages: zh-cn zh-hans zh-tw
+ * thunderbird-locale-${Languages}

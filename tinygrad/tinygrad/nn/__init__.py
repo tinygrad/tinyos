@@ -1,12 +1,12 @@
 import math
-from typing import Optional, Union, Tuple, cast
+from typing import Optional, Union, Tuple
 from tinygrad.tensor import Tensor
 from tinygrad.helpers import prod
 from tinygrad.nn import optim, state, datasets  # noqa: F401
 
-class BatchNorm2d:
+class BatchNorm:
   """
-  Applies Batch Normalization over a 4D input (a mini-batch of 2D inputs with additional channel dimension).
+  Applies Batch Normalization over a 2D or 3D input.
 
   - Described: https://paperswithcode.com/method/batch-normalization
   - Paper: https://arxiv.org/abs/1502.03167v3
@@ -20,7 +20,7 @@ class BatchNorm2d:
   ```
 
   ```python exec="true" source="above" session="tensor" result="python"
-  norm = nn.BatchNorm2d(3)
+  norm = nn.BatchNorm(3)
   t = Tensor.rand(2, 3, 4, 4)
   print(t.mean().item(), t.std().item())
   ```
@@ -35,32 +35,30 @@ class BatchNorm2d:
     if affine: self.weight, self.bias = Tensor.ones(sz), Tensor.zeros(sz)
     else: self.weight, self.bias = None, None
 
-    self.running_mean, self.running_var = Tensor.zeros(sz, requires_grad=False), Tensor.ones(sz, requires_grad=False)
     self.num_batches_tracked = Tensor.zeros(1, requires_grad=False)
+    if track_running_stats: self.running_mean, self.running_var = Tensor.zeros(sz, requires_grad=False), Tensor.ones(sz, requires_grad=False)
+
+  def calc_stats(self, x:Tensor) -> Tuple[Tensor, Tensor]:
+    shape_mask = [1, -1, *([1]*(x.ndim-2))]
+    if self.track_running_stats and not Tensor.training: return self.running_mean, self.running_var.reshape(shape=shape_mask).expand(x.shape)
+    # This requires two full memory accesses to x
+    # https://github.com/pytorch/pytorch/blob/c618dc13d2aa23625cb0d7ada694137532a4fa33/aten/src/ATen/native/cuda/Normalization.cuh
+    # There's "online" algorithms that fix this, like https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_Online_algorithm
+    batch_mean = x.mean(axis=(reduce_axes:=tuple(x for x in range(x.ndim) if x != 1)))
+    y = (x - batch_mean.detach().reshape(shape=shape_mask))  # d(var)/d(mean) = 0
+    batch_var = (y*y).mean(axis=reduce_axes)
+    return batch_mean, batch_var
 
   def __call__(self, x:Tensor):
-    if Tensor.training:
-      # This requires two full memory accesses to x
-      # https://github.com/pytorch/pytorch/blob/c618dc13d2aa23625cb0d7ada694137532a4fa33/aten/src/ATen/native/cuda/Normalization.cuh
-      # There's "online" algorithms that fix this, like https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_Online_algorithm
-      batch_mean = x.mean(axis=(0,2,3))
-      y = (x - batch_mean.detach().reshape(shape=[1, -1, 1, 1]))  # d(var)/d(mean) = 0
-      batch_var = (y*y).mean(axis=(0,2,3))
-      batch_invstd = batch_var.add(self.eps).pow(-0.5)
+    batch_mean, batch_var = self.calc_stats(x)
+    # NOTE: wow, this is done all throughout training in most PyTorch models
+    if self.track_running_stats and Tensor.training:
+      self.running_mean.assign((1-self.momentum) * self.running_mean + self.momentum * batch_mean.detach())
+      self.running_var.assign((1-self.momentum) * self.running_var + self.momentum * prod(x.shape)/(prod(x.shape)-x.shape[1]) * batch_var.detach())
+      self.num_batches_tracked += 1
+    return x.batchnorm(self.weight, self.bias, batch_mean, batch_var.add(self.eps).rsqrt())
+BatchNorm2d = BatchNorm3d = BatchNorm
 
-      # NOTE: wow, this is done all throughout training in most PyTorch models
-      if self.track_running_stats:
-        self.running_mean.assign((1-self.momentum) * self.running_mean + self.momentum * batch_mean.detach())
-        self.running_var.assign((1-self.momentum) * self.running_var + self.momentum * prod(y.shape)/(prod(y.shape)-y.shape[1]) * batch_var.detach())
-        self.num_batches_tracked += 1
-    else:
-      batch_mean = self.running_mean
-      # NOTE: this can be precomputed for static inference. we expand it here so it fuses
-      batch_invstd = self.running_var.reshape(1, -1, 1, 1).expand(x.shape).add(self.eps).rsqrt()
-
-    return x.batchnorm(self.weight, self.bias, batch_mean, batch_invstd)
-
-# TODO: these Conv lines are terrible
 def Conv1d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True):
   """
   Applies a 1D convolution over an input signal composed of several input planes.
@@ -98,15 +96,12 @@ class Conv2d:
   def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True):
     self.kernel_size = (kernel_size, kernel_size) if isinstance(kernel_size, int) else tuple(kernel_size)
     self.stride, self.padding, self.dilation, self.groups = stride, padding, dilation, groups
-    self.weight = self.initialize_weight(out_channels, in_channels, groups)
-    bound = 1 / math.sqrt(cast(int, prod(self.weight.shape[1:])))  # weight shape is always ints but mypy cannot tell
-    self.bias = Tensor.uniform(out_channels, low=-bound, high=bound) if bias else None
+    scale = 1 / math.sqrt(in_channels * prod(self.kernel_size))
+    self.weight = Tensor.uniform(out_channels, in_channels//groups, *self.kernel_size, low=-scale, high=scale)
+    self.bias = Tensor.uniform(out_channels, low=-scale, high=scale) if bias else None
 
   def __call__(self, x:Tensor):
     return x.conv2d(self.weight, self.bias, padding=self.padding, stride=self.stride, dilation=self.dilation, groups=self.groups)
-
-  def initialize_weight(self, out_channels, in_channels, groups):
-    return Tensor.kaiming_uniform(out_channels, in_channels//groups, *self.kernel_size, a=math.sqrt(5))
 
 def ConvTranspose1d(in_channels, out_channels, kernel_size, stride=1, padding=0, output_padding=0, dilation=1, groups=1, bias=True):
   """
@@ -144,14 +139,13 @@ class ConvTranspose2d(Conv2d):
   """
   def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, output_padding=0, dilation=1, groups=1, bias=True):
     super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias)
+    scale = 1 / math.sqrt(in_channels * prod(self.kernel_size))
+    self.weight = Tensor.uniform(in_channels, out_channels//groups, *self.kernel_size, low=-scale, high=scale)
     self.output_padding = output_padding
 
   def __call__(self, x:Tensor):
     return x.conv_transpose2d(self.weight, self.bias, padding=self.padding, output_padding=self.output_padding, stride=self.stride,
                               dilation=self.dilation, groups=self.groups)
-
-  def initialize_weight(self, out_channels, in_channels, groups):
-    return Tensor.kaiming_uniform(in_channels, out_channels//groups, *self.kernel_size, a=math.sqrt(5))
 
 class Linear:
   """
@@ -170,9 +164,8 @@ class Linear:
   ```
   """
   def __init__(self, in_features, out_features, bias=True):
-    # TODO: is this init good? torch inits to uniform(-1/sqrt(in_features), 1/sqrt(in_features))
-    self.weight = Tensor.kaiming_uniform(out_features, in_features, a=math.sqrt(5))
     bound = 1 / math.sqrt(in_features)
+    self.weight = Tensor.uniform(out_features, in_features, low=-bound, high=bound)
     self.bias = Tensor.uniform(out_features, low=-bound, high=bound) if bias else None
 
   def __call__(self, x:Tensor):
@@ -282,6 +275,28 @@ class LayerNorm2d(LayerNorm):
   """
   def __call__(self, x): return super().__call__(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
 
+class RMSNorm:
+  """
+  Applies Root Mean Square Normalization to input.
+
+  - Described: https://paperswithcode.com/method/rmsnorm
+  - Paper: https://arxiv.org/abs/1910.07467
+
+  ```python exec="true" source="above" session="tensor" result="python"
+  norm = nn.RMSNorm(4)
+  t = Tensor.arange(12, dtype=dtypes.float).reshape(3, 4)
+  print(t.numpy())
+  ```
+  ```python exec="true" source="above" session="tensor" result="python"
+  print(norm(t).numpy())
+  ```
+  """
+  def __init__(self, dim, eps=1e-6): self.eps, self.weight = eps, Tensor.ones(dim)
+
+  def _norm(self, x:Tensor): return x * (x.square().mean(-1, keepdim=True) + self.eps).rsqrt()
+
+  def __call__(self, x:Tensor) -> Tensor: return self._norm(x.float()).cast(x.dtype) * self.weight
+
 class Embedding:
   """
   A simple lookup table that stores embeddings of a fixed dictionary and size.
@@ -301,4 +316,28 @@ class Embedding:
     arange_shp, weight_shp, big_shp = (1, 1, self.vocab_sz, 1), (1, 1, self.vocab_sz, self.embed_sz), idx.shape+(self.vocab_sz, self.embed_sz,)
     if not hasattr(self, 'arange'): self.arange = Tensor.arange(self.vocab_sz, requires_grad=False, device=self.weight.device).reshape(arange_shp)
     arange, idx, vals = self.arange.expand(big_shp), idx.reshape(idx.shape+(1, 1,)).expand(big_shp), self.weight.reshape(weight_shp).expand(big_shp)
-    return (arange == idx).mul(vals).sum(2)
+    return (arange == idx).mul(vals).sum(2, acc_dtype=vals.dtype)
+
+class LSTMCell:
+  """
+  A long short-term memory (LSTM) cell.
+
+  Args:
+    input_size: The number of expected features in the input `x`
+    hidden_size: The number of features in the hidden state `h`
+    bias: If ``False``, then the layer does not use bias weights `b_ih` and `b_hh`
+  """
+  def __init__(self, input_size:int, hidden_size:int, bias:bool=True):
+    stdv = 1.0 / math.sqrt(hidden_size)
+    self.weight_ih = Tensor.uniform(hidden_size*4, input_size, low=-stdv, high=stdv)
+    self.weight_hh = Tensor.uniform(hidden_size*4, hidden_size, low=-stdv, high=stdv)
+    self.bias_ih, self.bias_hh = (Tensor.zeros(hidden_size*4), Tensor.zeros(hidden_size*4)) if bias else (None, None)
+
+  def __call__(self, x:Tensor, hc:Optional[Tuple[Tensor, Tensor]]=None) -> Tuple[Tensor, Tensor]:
+    if hc is None: hc = (Tensor.zeros(x.size(0), self.weight_hh.size(1), dtype=x.dtype, device=x.device),)*2
+    gates = x.linear(self.weight_ih.T, self.bias_ih) + hc[0].linear(self.weight_hh.T, self.bias_hh)
+    i, f, g, o = gates.chunk(4, dim=1)
+    i, f, g, o = i.sigmoid(), f.sigmoid(), g.tanh(), o.sigmoid()
+    new_c = f * hc[1] + i * g
+    new_h = o * new_c.tanh()
+    return (new_h.contiguous(), new_c.contiguous())

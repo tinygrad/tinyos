@@ -1,0 +1,29 @@
+= System Administration Tools =
+
+ * attr                 # will move to base if we go to selinux
+ * quota
+ * backuppc             # RobertCollins
+ * debian-goodies
+ * whois                # FabioMassimoDiNitto
+ * cu                   # super-basic serial access
+ * john                 # detects weak passwords, might be needed in desktop
+ * libpam-cracklib      # enables weak password checking during password change, should it be in desktop?
+ * mknbi                # for creating etherboot images for LTSP
+
+ * fbset
+ * libcap-bin
+ * libpam-opie
+ * opie-client
+ * opie-server
+ * sasl2-bin
+ * libsasl2-modules-sql
+ * autofs
+ * awstats
+ * acct
+ * authbind # still in use in launchpad, https://lists.ubuntu.com/archives/ubuntu-devel/2019-February/040591.html
+ * siege
+ * bonnie++
+ * sqlite3		# CLI utility, libs in main. nijaba
+ * policyrcd-script-zg2 # helps with chroot administration
+ * pastebinit
+ * mlocate

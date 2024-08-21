@@ -22,9 +22,6 @@ git status -sb | grep -q "ahead" && changed=1
 
 if [ $changed -eq 1 ]; then
   git pull
-  systemctl stop displayservice
-  systemctl stop buttonservice
-  systemctl stop tinychat
 fi
 
 # reset hard to origin/<branch> in case pull failed to merge in changes
@@ -54,6 +51,11 @@ for stage_file in $stage_files; do
 done
 
 systemctl daemon-reload
+if [ $changed -eq 1 ]; then
+  systemctl stop displayservice
+  systemctl stop buttonservice
+  systemctl stop tinychat
+fi
 systemctl start displayservice
 systemctl start buttonservice
 systemctl start tinychat

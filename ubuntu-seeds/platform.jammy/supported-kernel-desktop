@@ -1,0 +1,10 @@
+== Kernel ==
+
+== Restricted Drivers ==
+ * fglrx
+ * fglrx-dev
+ * fglrx-amdcccle
+ * nvidia-current
+ * nvidia-current-dev
+ * nvidia-settings
+

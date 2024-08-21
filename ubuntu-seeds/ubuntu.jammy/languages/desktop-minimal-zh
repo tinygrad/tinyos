@@ -1,0 +1,20 @@
+# Default languages for most applications we ship by default
+ * Language: zh-hans
+ * language-pack-${Language}
+ * language-pack-gnome-${Language}
+
+# GNOME Help
+ * gnome-user-docs-zh-hans
+
+== Input methods ==
+ * ibus-chewing
+ * ibus-m17n
+ * ibus-libpinyin
+ * ibus-table-cangjie
+ * ibus-table-quick-classic
+ * ibus-table-wubi
+
+== Fonts (zh-hans) ==
+ * fonts-noto-cjk
+ * fonts-arphic-uming
+ * fonts-arphic-ukai

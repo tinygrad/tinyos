@@ -1,0 +1,56 @@
+Task-Per-Derivative: 1
+Task-Section: user
+Task-Description: Ubuntu live CD
+Task-Extended-Description: This task provides the extra packages installed on the Ubuntu live CD. It is neither useful nor recommended to install this task in other environments.
+Task-Relevance: 2
+Task-Key: ubiquity-frontend-gtk
+Task-Test-new-install: skip show
+Task-Seeds: live-common desktop-default-languages
+
+
+== Input methods ==
+
+Input methods for non-default languages included in live
+
+ * gtk-im-libthai
+ * ibus-hangul
+ * ibus-mozc
+ * ibus-unikey
+
+== Ubiquity components ==
+
+These packages make up the Ubiquity live installer.
+
+ * ubiquity-frontend-gtk
+ * ubiquity-ubuntu-artwork
+ * ubiquity-slideshow-ubuntu
+
+== Zfs on root support ==
+
+ * zfsutils-linux
+ * zfs-initramfs
+ * zsys
+
+== AD integration ==
+
+ # authentication
+ * sssd
+ * realmd
+
+ # tool to join domain (will be purged afterward)
+ * adcli
+
+== Secureboot setup ==
+
+ * shim-signed [amd64]
+ * grub-pc [amd64]
+
+== Misc ==
+
+ * gparted
+ * cifs-utils # Needed by casper for CIFS root=
+
+== Kernel ==
+
+This must be kept in sync with ship-live
+ * linux-generic-hwe-22.04

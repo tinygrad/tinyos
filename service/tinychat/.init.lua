@@ -54,16 +54,6 @@ local function startBackend()
         table.insert(env, key .. "=" .. value)
       end
 
-      -- shard 2 on amd, shard 4 on nv
-      -- check if NV=1 is in the env
-      local shard = "2"
-      for _, v in ipairs(env) do
-        if v == "NV=1" then
-          shard = "4"
-          break
-        end
-      end
-
       unix.execve(python_prog, {
         python_prog,
         "/opt/tinybox/tinygrad/examples/llama3.py",
@@ -72,7 +62,8 @@ local function startBackend()
         "--size",
         "8B",
         "--shard",
-        shard,
+        "4",
+        "--debug",
       }, env)
     else
       MEM:store(BACKEND_PID, pid)

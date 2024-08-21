@@ -14,6 +14,5 @@ ln -s /opt/tinybox/setup/provision.service /etc/systemd/system/
 ln -s /opt/tinybox/service/buttonservice.service /etc/systemd/system/
 ln -s /opt/tinybox/service/displayservice.service /etc/systemd/system/
 ln -s /opt/tinybox/service/poweroff.service /etc/systemd/system/
-ln -s /opt/tinybox/service/sleeping.service /etc/systemd/system/
 ln -s /opt/tinybox/service/reboot.service /etc/systemd/system/
 ln -s /opt/tinybox/service/tinychat.service /etc/systemd/system/

@@ -1,0 +1,90 @@
+= Development =
+
+== Development Tools ==
+
+ * bison
+ * bison-doc
+ * debconf-english   # for minimal buildd chroots, without i18n cruft
+ * flex
+ * patchutils
+ * gdb
+ * gdb-doc
+ * autoconf
+ * autoconf-doc
+ * automake
+ * autotools-dev
+ * libtool
+ * pkg-config
+ * exuberant-ctags   # ColinWatson
+ * linux32		# without it, biarch buildds can go wonky
+ * autopkgtest
+ * apport-retrace
+ * apport-cli
+ * libc6-prof [amd64 i386 powerpc sparc]
+ * libc6.1-prof [ia64]
+ * gfortran-multilib
+ * libstdc++-11-pic
+ * texinfo-doc-nonfree  # GFDL'd documentation for texinfo
+ * make-doc
+ * cmake
+ * device-tree-compiler
+ * default-jdk
+
+== Revision Control ==
+
+ * git
+
+== Package Maintainance ==
+
+ * debhelper         # ColinWatson
+ * devscripts
+ * dh-make
+ * dupload           # ColinWatson
+ * lintian
+ * apt-listchanges
+ * dput
+ * pkgstriptranslations # for removing gettext data on the buildds
+ * pkg-create-dbgsym # automatic creation of debug symbols
+ * hello
+ * hello-debhelper
+ * dselect            # old-school package management
+ * dh-autoreconf
+ * dh-exec
+ * dh-di
+ * dh-golang
+
+== Seed Management ==
+
+ * germinate         # quis custodiet ipsos custodes?
+
+= Shells =
+
+ * zsh
+
+= Libraries =
+
+ * libdate-manip-perl
+ * libnet-ldap-perl
+ * libfile-rsyncp-perl
+ * libnss-db
+ * tdsodbc
+ * libdbd-sqlite3
+ * libdbd-mysql
+ * libdbd-pgsql
+ * libdbd-freetds
+ * python3-launchpadlib
+
+= Misc =
+
+ * util-linux-locales  # contents provided in langpacks, just needs to be held in main
+ * ubuntu-dbgsym-keyring # keyring for the ddebs
+
+= Germinate workarounds =
+
+# Packages should be recorded in their reverse-built-dependencies using
+# 'Built-Using' due to code copied into target objects at build time.
+= Built-using workarounds =
+
+ * gnu-efi
+ * libatomic-ops-dev
+ * libiberty-dev

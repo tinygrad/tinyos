@@ -22,9 +22,14 @@
                 pillow
                 numpy
                 numba
+                opencv4
+                pymunk
+                bdffont
+                pillow
               ]);
           in [
             pythonWithPackages
+            usb-reset
           ];
         };
       }

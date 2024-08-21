@@ -1,0 +1,84 @@
+Task-Per-Derivative: 1
+Task-Section: user
+Task-Description: Ubuntu WSL
+Task-Extended-Description: This task provides the Ubuntu WSL environment.
+Task-Key: ubuntu-wsl
+
+= Description =
+
+Packages needed or useful in Windows Subsystem for Linux (WSL) installations.
+
+The WSL environment is somewhere between a chroot and a container.
+The Ubuntu installation runs processes in a root file system separate from the
+Windows root file system, but it can interact with the Windows programs sharing
+the network interfaces including localhost and via Unix sockets.
+
+The WSL environment does not need tools for setting up boot and does not run
+systemd at the moment.
+
+= WSL =
+
+== WSL specific integration ==
+
+ * wsl-setup                          # Default systemd settings for WSL
+
+== Graphical support ==
+
+ * dbus-x11     # dbus-launch for gedit, etc.
+ * (fonts-ubuntu)   # Needed for rendering decoration
+
+=== Graphical snap support (LP: #1989352) ===
+
+ * libgl1
+ * libegl1
+ * libgtk-3-0
+
+= Developer tools =
+
+ * byobu
+ * git
+ * patch
+ * vim
+
+= Ubuntu system user experience =
+
+ * apport
+ * (bash-completion)
+ * (command-not-found)
+ * info
+ * libpam-systemd         # Proper logind sessions, LP: #1561658
+ * man-db
+ * (manpages)
+ * media-types           # Establishes framework for dealing with MIME
+ * (motd-news-config)
+ * (landscape-client)
+ * (show-motd)
+ * (snapd)
+
+= System administration tools =
+
+ * (apparmor)                 # Load AppArmor policies
+ * binutils
+ * curl
+ * dirmngr                    # Required for GnuPG network operations
+ * ed
+ * file
+ * gnupg                      # Needed for lb_chroot_archives when adding ppas
+ * lsof
+ * (nano)                     # We need a text editor less scary than vi
+ * (openssh-client)
+ * psmisc                     # Utilities for /proc such as killall, pstree, fuser
+ * rsync
+ * time
+ * wget                       # Fetch data from the command line
+
+= Upgrade and configuration =
+
+ * (cloud-init)
+ * software-properties-common         # LP: #439566
+ * (update-manager-core)              # Needed for text mode release upgrades
+ * (unattended-upgrades)
+
+= Meta =
+
+ * ubuntu-wsl     # Ubuntu-specific bits we want on every Ubuntu WSL system

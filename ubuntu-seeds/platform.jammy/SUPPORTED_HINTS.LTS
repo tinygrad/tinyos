@@ -1,0 +1,74 @@
+# this file can be used to fine tune the support times and is used
+# by launchpad via cron.germinate and maintenance-check.py
+#
+# It supports the following format:
+#   src:srcpkgname support-time
+#   binary-pkg-name support-time
+#   binary-pkg-name/arch support-time
+#
+# Examples:
+# src:xorg unsupported
+# zsh/armel 3y
+# hal 18m
+#
+# we don't use src: currently as it will also upgrade support
+# for some packages (like libogg-dev from 18m to 3y)
+#
+#src:xorg 3y
+x11-common 3y
+#
+#
+# virt-host pulls in sound bits which are not considered LTS.  If only
+# virt-host is using these things, they should remain demoted.
+#
+#src:libsdl1.2 3y
+libsdl1.2debian 3y
+#src:pulseaudio 3y
+libpulse0 3y
+#src:libsndfile 3y
+libsndfile1 3y
+#src:libogg 3y
+libogg0 3y
+#src:libvorbis 3y
+libvorbis0a 3y
+libvorbisenc2 3y
+#src:hal 3y
+libhal-storage1 3y
+libhal1 3y
+hal 3y
+#src:hal-info 3y
+hal-info 3y
+#src:alsa-lib 3y
+libasound2 3y
+#src:flac 3y
+libflac8 3y
+#
+#
+# checkbox pulls in gstreamer which should not be considered server-supported.
+# LP: #568712
+#
+#src:gstreamer0.10 3y
+libgstreamer0.10-0 3y
+#src:gst0.10-python 3y
+python-gst0.10 3y
+#src:gst-plugins-base0.10 3y
+libgstreamer-plugins-base0.10-0 3y
+#
+# upraded support for selected server packages that are not
+# part of any seed, there should be a supported-server-extra
+# seed in the future and/or put into the appropriate existing
+# seeds
+#
+linux-backports-modules-alsa-2.6.32-21-server 5y
+linux-backports-modules-alsa-lucid-server 5y
+linux-backports-modules-headers-lucid-server 5y
+linux-backports-modules-wireless-2.6.32-21-server 5y
+linux-backports-modules-wireless-lucid-server 5y
+linux-headers-2.6.32-21-preempt 5y
+linux-headers-2.6.32-21-server 5y
+linux-headers-lbm-2.6.32-21-server 5y
+linux-image-2.6.32-21-server 5y
+linux-image-server 5y
+lynx 5y
+netpbm 5y
+pdksh 5y

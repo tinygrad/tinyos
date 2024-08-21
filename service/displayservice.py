@@ -1,205 +1,114 @@
 import sys
 sys.path.insert(0, "/opt/tinybox/tinyturing/")
+sys.path.insert(0, "/opt/tinybox/service/displayservice/")
 
-from display import Display, WIDTH, HEIGHT
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal, os, random, logging, math, subprocess, glob
+import threading, time, signal, os, logging, math, subprocess
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] <%(filename)s:%(lineno)d::%(funcName)s> - %(message)s")
 from enum import Enum
-from abc import ABC, abstractmethod
 from queue import Queue
-import numpy as np
-from numba import njit
-import PIL.Image
-import psutil
 
-class Displayable(ABC):
-  @abstractmethod
-  def display(self, display: Display) -> None: pass
+from tinyturing.display import Display, WIDTH, HEIGHT
+from tinyturing.components import Anchor, Component, ComponentParent
+from tinyturing.components import Text, Image, MultiCollidingDVDImage, AnimatedText, Rectangle, LineGraph, VerticalProgressBar, HorizontalProgressBar
+from stats import get_gpu_utilizations, get_gpu_memory_utilizations, get_cpu_utilizations, get_gpu_power_draw, get_cpu_power_draw, get_disk_io_per_second
 
-class Text(Displayable):
-  def __init__(self, text: str): self.text = text
-  def display(self, display: Display):
-    # split text into lines
-    lines = self.text.split("\n")
-    starting_offset = 225 - (70 * (len(lines) - 1)) // 2
-    for i, line in enumerate(lines):
-      text = display.text(line)
-      display.blit(text, (400 - text.shape[0] // 2, starting_offset + (120 - text.shape[1] // 2) + i * 70))
-
-class AText(Displayable):
-  def __init__(self, text_states: list[str]):
-    self.text_states, self.current_state = [], 0
-    for text_state in text_states: self.text_states.extend([text_state] * 2)
-  def display(self, display: Display):
-    text = display.text(self.text_states[self.current_state])
-    display.blit(text, (400 - text.shape[0] // 2, 225 + (120 - text.shape[1] // 2)))
-    self.current_state = (self.current_state + 1) % len(self.text_states)
-
-class Menu(Displayable):
-  def __init__(self, text: str): self.text = text
-  def display(self, display: Display):
-    # split text into lines
-    lines = self.text.split("\n")
-    starting_offset = 175 - (70 * (len(lines) - 1)) // 2
-    for i, line in enumerate(lines):
-      text = display.text(line)
-      display.blit(text, (400 - text.shape[0] // 2, starting_offset + (text.shape[1] // 2) + i * 70))
-
-class PositionableText(Displayable):
-  def __init__(self, text: str, xy: tuple[int, int], align: str = "center"):
-    self.text, self.x, self.y, self.align = text, xy[0], xy[1], align
-  def display(self, display: Display):
-    text = display.text(self.text)
-    if self.align == "center": display.blit(text, (self.x - text.shape[0] // 2, self.y - text.shape[1] // 2))
-    elif self.align == "left": display.blit(text, (self.x, self.y - text.shape[1] // 2))
-    elif self.align == "right": display.blit(text, (self.x - text.shape[0], self.y - text.shape[1] // 2))
-
-class VerticalProgressBar(Displayable):
-  def __init__(self, value: float, max_value: float, width: int, height: int, x: int, y: int = 240):
-    self.value, self.max_value, self.width, self.height, self.x, self.y = value, max_value, width, height, x, y
-  def display(self, display: Display):
-    # draw bar
-    bar_height = self.height * self.value // self.max_value
-    bar = np.full((self.width, bar_height, 3), 255)
-    display.blit(bar, (self.x - self.width // 2, self.y - bar_height // 2))
-
-class HorizontalProgressBar(Displayable):
-  def __init__(self, value: float, max_value: float, width: int, height: int, xy: tuple[int, int]):
-    self.value, self.max_value, self.width, self.height, self.x, self.y = value, max_value, width, height, xy[0], xy[1]
-    self.background = np.full((width, height, 3), 50)
-  def display(self, display: Display):
-    # draw background
-    display.blit(self.background, (self.x, self.y - self.height // 2))
-    # draw bar
-    bar_width = self.width * self.value // self.max_value
-    bar = np.full((bar_width, self.height, 3), 255)
-    display.blit(bar, (self.x, self.y - self.height // 2))
-
-class VerticalLine(Displayable):
-  def __init__(self, x: int, height: int, color: tuple[int, int, int]):
-    self.x, self.height, self.color = x, height, color
-  def display(self, display: Display):
-    line = np.full((1, self.height, 3), self.color)
-    display.blit(line, (self.x, 240 - self.height // 2))
-
-class HorizontalLine(Displayable):
-  def __init__(self, x: int, y: int, width: int, color: tuple[int, int, int]):
-    self.x, self.y, self.width, self.color = x, y, width, color
-  def display(self, display: Display):
-    line = np.full((self.width, 1, 3), self.color)
-    display.blit(line, (self.x - self.width // 2, self.y))
-
-class Image(Displayable):
-  def __init__(self, path: str, xy: tuple[int, int], scale: tuple[int, int]):
-    self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
-    self.x, self.y = xy
-  def display(self, display: Display): display.blit(self.image, (self.x, self.y))
-
-class DVDImage(Displayable):
-  def __init__(self, path: str, scale: tuple[int, int], speed: float = 1, lower_bound: int = 273):
-    self.image = np.array(PIL.Image.open(path).convert("RGBA").resize(scale)).transpose(1, 0, 2)
-    self.x_speed, self.y_speed = speed, speed
-    self.lower_bound = lower_bound
-    self.reset()
-  def display(self, display: Display):
-    if self.x + self.image.shape[0] + self.x_speed > 800 or self.x + self.x_speed < 0: self.x_speed *= -1
-    if self.y + self.image.shape[1] + self.y_speed > self.lower_bound or self.y + self.y_speed < 0: self.y_speed *= -1
-    self.x += self.x_speed
-    self.y += self.y_speed
-    display.blit(self.image, (self.x, self.y))
-  def reset(self): self.x, self.y = random.randint(abs(self.x_speed), 800 - self.image.shape[0] - abs(self.x_speed)), random.randint(abs(self.y_speed), self.lower_bound - self.image.shape[1] - abs(self.y_speed))
-
-@njit
-def line(x1: int, y1: int, x2: int, y2: int) -> list[tuple[int, int]]:
-  points = []
-  dx, dy = abs(x2 - x1), abs(y2 - y1)
-  sx, sy = 1 if x1 < x2 else -1, 1 if y1 < y2 else -1
-  err = dx - dy
-  while True:
-    points.append((x1, y1))
-    if x1 == x2 and y1 == y2: break
-    e2 = 2 * err
-    if e2 > -dy:
-      err -= dy
-      x1 += sx
-    if e2 < dx:
-      err += dx
-      y1 += sy
-  return points
-
-class LineGraph(Displayable):
-  def __init__(self, width: int, height: int, x: int, y: int, points_to_keep: int=20):
-    self.width, self.height, self.x, self.y, self.points_to_keep = width, height, x, y, points_to_keep
-    self.data = []
-  def add_data(self, data: float):
-    self.data.append(data)
-    if len(self.data) > self.points_to_keep: self.data.pop(0)
-  def display(self, display: Display):
-    if len(self.data) < 2: return
-    min_data, max_data = min(self.data), max(self.data)
-    data_range = max_data - min_data
-    if data_range == 0: data_range = 1
-    surface = np.full((self.width, self.height, 3), 0)
-    for i in range(len(self.data) - 1):
-      x1, y1 = int(self.width * i / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i] - min_data) / data_range)
-      x2, y2 = int(self.width * (i + 1) / (self.points_to_keep - 1)), self.height - int(self.height * (self.data[i + 1] - min_data) / data_range)
-      # draw line
-      for point in line(x1, y1, x2, y2):
-        # clamp point to graph bounds
-        point = (max(0, min(self.width - 1, point[0])), max(0, min(self.height - 1, point[1])))
-        surface[point[0], point[1]] = [255, 255, 255]
-    display.blit(surface, (self.x - self.width // 2, self.y - self.height // 2))
-
-class StatusScreen(Displayable):
+class StatusScreen(Component):
   def __init__(self):
-    self.vertical_line = VerticalLine(400, 280, (255, 255, 255))
-    self.horizontal_line = HorizontalLine(600, 240, 280, (255, 255, 255))
+    self.gpu_bars = [VerticalProgressBar(50, 430, x=30 + 64 * i, y=HEIGHT // 2) for i in range(6)]
+    self.gpu_mem_bars = [HorizontalProgressBar(160, 5, x=425, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(6)]
+    self.gpu_mem_bar_backgrounds = [Rectangle(160, 5, color=0x323232ff, x=425, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(6)]
 
-    self.gpu_bars = [VerticalProgressBar(0, 100, 50, 430, 30 + 64 * i) for i in range(6)]
-    self.gpu_mem_bars = [HorizontalProgressBar(0, 100, 160, 5, (425, 100 + 7 * i)) for i in range(6)]
-    self.cpu_bars = [VerticalProgressBar(0, 100, 2, 117, 604 + 3 * i, 89) for i in range(64)]
+    self.vertical_separator = Rectangle(1, 280, x=WIDTH // 2, y=HEIGHT // 2)
+    self.horizontal_separator = Rectangle(280, 1, x=WIDTH // 2 + WIDTH // 4, y=HEIGHT // 2)
+
+    self.cpu_bars = [VerticalProgressBar(2, 117, x=604 + 3 * i, y=84) for i in range(64)]
 
     self.rolling_power_draw = 0
-    self.power_draw_text = PositionableText("", (425, 57), "left")
+    self.power_draw_text = Text("0W", style="mono", x=425, y=57, anchor=Anchor.MIDDLE_LEFT)
     self.rolling_disk_io = 0
-    self.disk_io_text = PositionableText("", (WIDTH - 5, 190), "right")
+    self.disk_io_text = Text("0MB/s", style="mono", x=WIDTH - 5, y=190, anchor=Anchor.MIDDLE_RIGHT)
 
-    self.line_graph = LineGraph(370, 190, 610, 360)
-  def update(self, gpu_utilizations: list[float], gpu_memory_utilizations: list[float], cpu_utilizations: list[float], gpu_power_draws: list[int], cpu_power_draw: int, disk_read_write: tuple[int, int]):
-    for i, bar in enumerate(self.gpu_bars): bar.value = int(gpu_utilizations[i])
-    for i, bar in enumerate(self.gpu_mem_bars): bar.value = int(gpu_memory_utilizations[i])
+    self.line_graph = LineGraph(370, 190, x=610, y=360)
 
-    for i, bar in enumerate(self.cpu_bars): bar.value = int(cpu_utilizations[i])
+  def update(self, gpu_utilizations: list[float], gpu_memory_utilizations: list[float], cpu_utilizations: list[float], gpu_power_draws: list[float], cpu_power_draw: float, disk_io: tuple[int, int]):
+    for i, bar in enumerate(self.gpu_bars): bar.value = gpu_utilizations[i]
+    for i, bar in enumerate(self.gpu_mem_bars): bar.value = gpu_memory_utilizations[i]
+    for i, bar in enumerate(self.cpu_bars): bar.value = cpu_utilizations[i]
 
-    self.rolling_power_draw = math.floor(0.9 * self.rolling_power_draw + 0.1 * sum(gpu_power_draws, cpu_power_draw))
+    self.rolling_power_draw = math.floor(0.8 * self.rolling_power_draw + 0.2 * sum(gpu_power_draws, cpu_power_draw))
     self.power_draw_text.text = f"{self.rolling_power_draw}W"
 
-    self.rolling_disk_io = math.floor(0.9 * self.rolling_disk_io + 0.1 * sum(disk_read_write))
+    self.rolling_disk_io = math.floor(0.8 * self.rolling_disk_io + 0.2 * sum(disk_io))
     self.disk_io_text.text = f"{self.rolling_disk_io}MB/s"
 
     self.line_graph.add_data(self.rolling_power_draw)
-  def display(self, display: Display):
-    self.vertical_line.display(display)
-    self.horizontal_line.display(display)
 
-    for bar in self.gpu_bars: bar.display(display)
-    for bar in self.gpu_mem_bars: bar.display(display)
-    for bar in self.cpu_bars: bar.display(display)
+  def blit(self, display:Display):
+    for bar in self.gpu_bars: bar.blit(display)
+    for bar in self.gpu_mem_bar_backgrounds: bar.blit(display)
+    for bar in self.gpu_mem_bars: bar.blit(display)
+    self.vertical_separator.blit(display)
+    self.horizontal_separator.blit(display)
+    for bar in self.cpu_bars: bar.blit(display)
+    self.power_draw_text.blit(display)
+    self.disk_io_text.blit(display)
+    self.line_graph.blit(display)
 
-    self.power_draw_text.display(display)
-    self.disk_io_text.display(display)
-
-    self.line_graph.display(display)
-
-class SleepScreen(Displayable):
+class SleepScreen(Component):
   def __init__(self):
     # read bmc password from /root/.bmc_password
     if os.path.exists("/root/.bmc_password"):
       try:
         with open("/root/.bmc_password", "r") as f:
           bmc_password = f.read().strip().split("=")[1].strip()
-        self.bmc_password_text = PositionableText(f"BMC PW: {bmc_password}", (WIDTH // 2, HEIGHT - 172), "center")
+        self.bmc_password = Text(f"BMC PW: {bmc_password}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
+      except: logging.warning("Failed to read BMC password")
+    else: logging.warning("BMC password file not found")
+
+    # bmc ip
+    bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
+    bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
+
+    if hasattr(self, "bmc_password"): self.bmc_ip = Text(f"BMC: {bmc_ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_password, Anchor.TOP_CENTER))
+    else: self.bmc_ip = Text(f"BMC: {bmc_ip}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
+
+    # ip
+    ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
+    ip = ip.split(" ")[0] if ip else "N/A"
+
+    self.ip = Text(f"IP: {ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_ip, Anchor.TOP_CENTER))
+
+    # seperator line
+    self.line = Rectangle(WIDTH - WIDTH // 5, 2, y=-8, anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.ip, Anchor.TOP_CENTER))
+
+    # bouncing logo
+    offset = -2 if hasattr(self, "bmc_password") else 62
+    self.logo = MultiCollidingDVDImage([
+      "/opt/tinybox/service/logo.png",
+    ], [
+      (400, 154),
+    ], width=WIDTH, height=HEIGHT - (196 - offset), y=offset)
+
+  def blit(self, display:Display):
+    self.logo.blit(display)
+    if hasattr(self, "bmc_password"):
+      self.bmc_password.blit(display)
+    self.bmc_ip.blit(display)
+    self.ip.blit(display)
+    self.line.blit(display)
+
+class WelcomeScreen(Component):
+  def __init__(self):
+    self.qr = Image("/opt/tinybox/service/docs_qr.png", (300, 300), y=HEIGHT // 2, anchor=Anchor.MIDDLE_LEFT)
+    self.desc1 = Text("Scan for Docs", "sans", anchor=Anchor.TOP_LEFT, parent=ComponentParent(self.qr, Anchor.TOP_RIGHT))
+
+    # read bmc password from /root/.bmc_password
+    if os.path.exists("/root/.bmc_password"):
+      try:
+        with open("/root/.bmc_password", "r") as f:
+          bmc_password = f.read().strip().split("=")[1].strip()
+        self.bmc_password = Text(bmc_password, "mono", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.qr, Anchor.BOTTOM_RIGHT))
         # try setting the bmc password
         try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
         except: logging.warning("Failed to set BMC password")
@@ -208,139 +117,26 @@ class SleepScreen(Displayable):
 
     bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
     bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
-    self.bmc_ip_text = PositionableText(f"BMC: {bmc_ip}", (WIDTH // 2, HEIGHT - 102), "center")
 
-    ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
-    ip = ip.split(" ")[0] if ip else "N/A"
-    self.ip_text = PositionableText(f"IP: {ip}", (WIDTH // 2, HEIGHT - 32), "center")
+    self.bmc_ip = Text(bmc_ip, "mono", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.qr, Anchor.BOTTOM_RIGHT))
+    if hasattr(self, "bmc_password"):
+      self.bmc_ip.parent = ComponentParent(self.bmc_password, Anchor.TOP_LEFT)
+      self.desc2 = Text("BMC IP & Passwd", "sans", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.bmc_ip, Anchor.TOP_LEFT))
+    else: self.desc2 = Text("BMC IP", "sans", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.bmc_ip, Anchor.TOP_LEFT))
 
-    if hasattr(self, "bmc_password_text"):
-      self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 207, WIDTH - WIDTH // 5, (255, 255, 255))
-      self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154), lower_bound=HEIGHT - 207)
-    else:
-      self.horizontal_line = HorizontalLine(WIDTH // 2, HEIGHT - 137, WIDTH - WIDTH // 5, (255, 255, 255))
-      self.logo = DVDImage("/opt/tinybox/service/logo.png", (400, 154), lower_bound=HEIGHT - 137)
+  def blit(self, display:Display):
+    self.qr.blit(display)
+    self.desc1.blit(display)
+    if hasattr(self, "bmc_password"): self.bmc_password.blit(display)
+    self.bmc_ip.blit(display)
+    self.desc2.blit(display)
 
-  def display(self, display: Display):
-    self.logo.display(display)
-    self.horizontal_line.display(display)
-    self.ip_text.display(display)
-    self.bmc_ip_text.display(display)
-    if hasattr(self, "bmc_password_text"): self.bmc_password_text.display(display)
+def uptime():
+  with open("/proc/uptime", "r") as f:
+    uptime = int(float(f.read().split()[0]))
+  return uptime
 
-# determine GPU type
-try:
-  import pynvml as N
-  logging.info("pynvml found, assuming NVIDIA GPU")
-  try:
-    N.nvmlInit()
-    GPU_HANDLES = [N.nvmlDeviceGetHandleByIndex(i) for i in range(6)]
-  except:
-    logging.warning("Failed to find all 6 gpus")
-    GPU_HANDLES = []
-  def get_gpu_utilizations() -> list[float]:
-    gpu_utilizations = []
-    try:
-      for handle in GPU_HANDLES:
-        utilization = N.nvmlDeviceGetUtilizationRates(handle)
-        gpu_utilizations.append(utilization.gpu)
-    except:
-      logging.warning("Failed to read GPU utilization")
-      return []
-    return gpu_utilizations
-  total_vrams = [N.nvmlDeviceGetMemoryInfo(handle).total for handle in GPU_HANDLES]
-  def get_gpu_memory_utilizations() -> list[float]:
-    gpu_memory_utilizations = []
-    try:
-      for handle in GPU_HANDLES:
-        memory = N.nvmlDeviceGetMemoryInfo(handle)
-        gpu_memory_utilizations.append(memory.used / memory.total * 100)
-    except:
-      logging.warning("Failed to read GPU memory utilization")
-      return []
-    return gpu_memory_utilizations
-  def get_gpu_power_draw() -> list[int]:
-    gpu_power_draws = []
-    try:
-      for handle in GPU_HANDLES:
-        power = N.nvmlDeviceGetPowerUsage(handle)
-        gpu_power_draws.append(power // 1000)
-    except:
-      logging.warning("Failed to read GPU power draw")
-      return []
-    return gpu_power_draws
-except ImportError:
-  logging.info("pynvml not found, assuming AMD GPU")
-  def get_gpu_utilizations() -> list[float]:
-    gpu_utilizations = []
-    try:
-      for i in range(1, 7):
-        with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
-          gpu_utilizations.append(int(f.read().strip()))
-    except:
-      logging.warning("Failed to read GPU utilization")
-      return []
-    return gpu_utilizations
-  def get_gpu_memory_utilizations() -> list[float]:
-    gpu_memory_utilizations = []
-    try:
-      for i in range(1, 7):
-        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_used", "r") as f:
-          used = int(f.read().strip())
-        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_total", "r") as f:
-          total = int(f.read().strip())
-        gpu_memory_utilizations.append(used / total * 100)
-    except:
-      logging.warning("Failed to read GPU memory utilization")
-      return []
-    return gpu_memory_utilizations
-  hwmon_paths = glob.glob("/sys/class/drm/card*/device/hwmon/hwmon*")
-  def get_gpu_power_draw() -> list[int]:
-    gpu_power_draws = []
-    try:
-      for path in hwmon_paths:
-        with open(f"{path}/power1_average", "r") as f:
-          gpu_power_draws.append(int(f.read().strip()) // 1000000)
-    except:
-      logging.warning("Failed to read GPU power draw")
-      return []
-    return gpu_power_draws
-
-def get_cpu_utilizations() -> list[float]:
-  try:
-    return psutil.cpu_percent(percpu=True)
-  except:
-    logging.warning("Failed to read CPU utilization")
-    return []
-
-last_energy, last_energy_time = 0, time.monotonic()
-def get_cpu_power_draw() -> int:
-  global last_energy, last_energy_time
-  try:
-    with open("/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj", "r") as f:
-      current_energy = int(f.read().strip())
-    current_time = time.monotonic()
-    power_draw = (current_energy - last_energy) / (current_time - last_energy_time) / 1e6
-    if power_draw < 0:
-      # energy counter rolled over
-      power_draw = current_energy / (current_time - last_energy_time) / 1e6
-    last_energy, last_energy_time = current_energy, current_time
-    return int(power_draw)
-  except:
-    logging.warning("Failed to read CPU power draw")
-    return 0
-
-last_disk_read, last_disk_write, last_disk_time = 0, 0, time.monotonic()
-def get_disk_io_per_second() -> tuple[int, int]:
-  global last_disk_read, last_disk_write, last_disk_time
-  counter = psutil.disk_io_counters(perdisk=True)["md0"]
-  current_time = time.monotonic()
-  disk_read = (counter.read_bytes - last_disk_read) / (current_time - last_disk_time)
-  disk_write = (counter.write_bytes - last_disk_write) / (current_time - last_disk_time)
-  last_disk_read, last_disk_write, last_disk_time = counter.read_bytes, counter.write_bytes, current_time
-  return int(disk_read / 1e6), int(disk_write / 1e6)
-
-DisplayState = Enum("DisplayState", ["STARTUP", "TEXT", "MENU", "STATUS", "SLEEP"])
+DisplayState = Enum("DisplayState", ["STARTUP", "WELCOME", "TEXT", "MENU", "STATUS", "SLEEP"])
 control_queue = Queue()
 display_thread_alive = True
 def display_thread():
@@ -350,14 +146,20 @@ def display_thread():
     display.clear()
     display.flip(force=True)
 
-    # load assets
-    logo = Image("/opt/tinybox/service/logo.png", (200, 56), (400, 154))
-    sleep_screen = SleepScreen()
-
-    display_state = DisplayState.STARTUP
+    # if we are have been booted up for a while there is no need to show the startup screen
+    if uptime() > 180:
+      # see if we need to switch to the welcome state
+      if os.path.exists("/home/tiny/.before_firstsetup"):
+        display_state = DisplayState.WELCOME
+        to_display = WelcomeScreen()
+      else:
+        display_state = DisplayState.SLEEP
+        to_display = SleepScreen()
+    else:
+      display_state = DisplayState.STARTUP
+      to_display = AnimatedText([" .....", ". ....", ".. ...", "... ..", ".... .", "..... "], "sans", bounce=True, x=WIDTH // 2, y=HEIGHT // 2)
     display_last_active = time.monotonic()
     start_time = time.monotonic()
-    to_display: Displayable = AText([" ....", ". ...", ".. ..", "... .", ".... ", "... .", ".. ..", ". ..."])
     status_screen = StatusScreen()
 
     while display_thread_alive:
@@ -367,55 +169,81 @@ def display_thread():
         logging.debug(f"Received command {command} with args {args}")
         if command == "text":
           display_state = DisplayState.TEXT
-          to_display = args
+          to_display = Text("\n".join(args), "mono", x=WIDTH // 2, y=HEIGHT // 2)
+          start_time = time.monotonic()
+        elif command == "atext":
+          display_state = DisplayState.TEXT
+          to_display = AnimatedText(args, "mono", x=WIDTH // 2, y=HEIGHT // 2)
           start_time = time.monotonic()
         elif command == "menu":
           display_state = DisplayState.MENU
-          to_display = args
+          to_display = Text("\n".join(args), "mono", x=WIDTH // 2, y=HEIGHT // 2)
           start_time = time.monotonic()
         elif command == "status":
-          display_state = DisplayState.STATUS
-          display_last_active = time.monotonic()
+          if display_state != DisplayState.WELCOME:
+            display_state = DisplayState.STATUS
+            display_last_active = time.monotonic()
         elif command == "sleep":
-          if display_state != DisplayState.SLEEP:
-            display_state = DisplayState.SLEEP
-            sleep_screen = SleepScreen()
+          # see if we need to switch to the welcome state
+          if os.path.exists("/home/tiny/.before_firstsetup"):
+            if display_state != DisplayState.WELCOME:
+              display_state = DisplayState.WELCOME
+              to_display = WelcomeScreen()
+          else:
+            if display_state != DisplayState.SLEEP:
+              display_state = DisplayState.SLEEP
+              to_display = SleepScreen()
       else:
         # 10 second timeout from startup to sleep
         if time.monotonic() - start_time > 10 and display_state == DisplayState.STARTUP:
-          logging.info("Startup timeout, switching to sleep state")
-          display_state = DisplayState.SLEEP
-          display_last_active = time.monotonic()
-          sleep_screen = SleepScreen()
+          logging.info("Startup timeout, switching states")
+          # see if we need to switch to the welcome state
+          if os.path.exists("/home/tiny/.before_firstsetup"):
+            display_state = DisplayState.WELCOME
+            display_last_active = time.monotonic()
+            to_display = WelcomeScreen()
+          else:
+            display_state = DisplayState.SLEEP
+            display_last_active = time.monotonic()
+            to_display = SleepScreen()
 
         # reset display state if inactive for 30 seconds
         if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
           logging.info("Display inactive for 30 seconds, switching back to sleep state")
           display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
-          sleep_screen = SleepScreen()
+          to_display = SleepScreen()
 
         # check if display should be in status state
         gpu_utilizations = get_gpu_utilizations()
+        cpu_utilizations = get_cpu_utilizations()
         logging.debug(f"GPU Utilizations: {gpu_utilizations}")
-        if sum(gpu_utilizations) > 1 and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU and display_state != DisplayState.TEXT:
+        mean_cpu_utilization = sum(cpu_utilizations) / len(cpu_utilizations)
+        if (sum(gpu_utilizations) > 1 or mean_cpu_utilization > 50) and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU and display_state != DisplayState.TEXT and display_state != DisplayState.WELCOME:
           display_state = DisplayState.STATUS
           display_last_active = time.monotonic()
 
+        # if we are in the welcome state, check if we should still be in this state
+        if display_state == DisplayState.WELCOME:
+          if not os.path.exists("/home/tiny/.before_firstsetup"):
+            display_state = DisplayState.SLEEP
+            display_last_active = time.monotonic()
+            to_display = SleepScreen()
+
         display.clear()
         if display_state == DisplayState.STARTUP:
-          logo.display(display)
-          to_display.display(display)
+          to_display.blit(display)
+        elif display_state == DisplayState.WELCOME:
+          to_display.blit(display)
         if display_state == DisplayState.TEXT:
-          logo.display(display)
-          to_display.display(display)
+          to_display.blit(display)
         elif display_state == DisplayState.MENU:
-          to_display.display(display)
+          to_display.blit(display)
         elif display_state == DisplayState.STATUS:
-          status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), get_cpu_utilizations(), get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
-          status_screen.display(display)
+          status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), cpu_utilizations, get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
+          status_screen.blit(display)
         elif display_state == DisplayState.SLEEP:
-          sleep_screen.display(display)
+          to_display.blit(display)
 
       # update display
       display.flip()
@@ -435,16 +263,7 @@ class ControlHandler(StreamRequestHandler):
     data = self.rfile.readline().strip(b"\r\n").decode()
     command, *args = data.split(",")
     logging.info(f"Received command {command} with args {args}")
-    if command == "text":
-      control_queue.put(("text", Text("\n".join(args))))
-    elif command == "atext":
-      control_queue.put(("text", AText(args)))
-    elif command == "menu":
-      control_queue.put(("menu", Menu("\n".join(args))))
-    elif command == "status":
-      control_queue.put(("status", None))
-    elif command == "sleep":
-      control_queue.put(("sleep", None))
+    control_queue.put((command, args))
 
 if __name__ == "__main__":
   # start display thread

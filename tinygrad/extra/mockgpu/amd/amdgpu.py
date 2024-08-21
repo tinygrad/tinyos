@@ -1,6 +1,6 @@
 import ctypes, time
 from extra.mockgpu.gpu import VirtGPU
-from tinygrad.helpers import to_mv, init_c_struct_t
+from tinygrad.helpers import to_mv, init_c_struct_t, mv_address
 import tinygrad.runtime.autogen.amd_gpu as amd_gpu
 
 SDMA_MAX_COPY_SIZE = 0x400000
@@ -11,7 +11,7 @@ SUB = PACKET3_SET_SH_REG_START - BASE_ADDR
 
 regCOMPUTE_PGM_LO = 0x1bac - SUB
 regCOMPUTE_USER_DATA_0 = 0x1be0 - SUB
-regCOMPUTE_START_X = 0x1ba4 - SUB
+regCOMPUTE_NUM_THREAD_X = 0x1ba7 - SUB
 
 CACHE_FLUSH_AND_INV_TS_EVENT = 0x14
 
@@ -19,11 +19,18 @@ WAIT_REG_MEM_FUNCTION_ALWAYS = 0
 WAIT_REG_MEM_FUNCTION_EQ = 3 # ==
 WAIT_REG_MEM_FUNCTION_GEQ = 5 # >=
 
-try:
-  remu = ctypes.CDLL("/usr/local/lib/libremu.so")
-  remu.run_asm.restype = ctypes.c_uint32
-  remu.run_asm.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
-except Exception: pass
+REMU_PATHS = ["libremu.so", "/usr/local/lib/libremu.so"]
+def _try_dlopen_remu():
+  for path in REMU_PATHS:
+    try:
+      remu = ctypes.CDLL(path)
+      remu.run_asm.restype = ctypes.c_int32
+      remu.run_asm.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
+    except OSError: pass
+    else: return remu
+  print("Could not find libremu.so")
+  return None
+remu = _try_dlopen_remu()
 
 def create_sdma_packets():
   # TODO: clean up this, if we want to keep it
@@ -55,7 +62,7 @@ class AMDQueue():
     self.wptr = to_mv(wptr, 8).cast("Q")
 
 class PM4Executor(AMDQueue):
-  def __init__(self, gpu, base, size, rptr, wptr): 
+  def __init__(self, gpu, base, size, rptr, wptr):
     self.gpu = gpu
     super().__init__(base, size, rptr, wptr)
 
@@ -72,11 +79,12 @@ class PM4Executor(AMDQueue):
       op = (header >> 8) & 0xFF
       n = (header >> 16) & 0x3FFF
       assert packet_type == 3, "Can parse only packet3"
-      if op == amd_gpu.PACKET3_SET_SH_REG: self._exec_set_sh_reg(n) 
+      if op == amd_gpu.PACKET3_SET_SH_REG: self._exec_set_sh_reg(n)
       elif op == amd_gpu.PACKET3_ACQUIRE_MEM: self._exec_acquire_mem(n)
       elif op == amd_gpu.PACKET3_RELEASE_MEM: self._exec_release_mem(n)
       elif op == amd_gpu.PACKET3_WAIT_REG_MEM: cont = self._exec_wait_reg_mem(n)
       elif op == amd_gpu.PACKET3_DISPATCH_DIRECT: self._exec_dispatch_direct(n)
+      elif op == amd_gpu.PACKET3_INDIRECT_BUFFER: self._exec_indirect_buffer(n)
       elif op == amd_gpu.PACKET3_EVENT_WRITE: self._exec_event_write(n)
       else: raise RuntimeError(f"PM4: Unknown opcode: {op}")
       if not cont: return
@@ -103,7 +111,7 @@ class PM4Executor(AMDQueue):
     if mem_data_sel == 1 or mem_data_sel == 2: ptr.cast('Q')[0] = val
     elif mem_data_sel == 3:
       if mem_event_type == CACHE_FLUSH_AND_INV_TS_EVENT: ptr.cast('Q')[0] = int(time.perf_counter() * 1e8)
-      else: raise RuntimeError(f"Unknown {mem_data_sel=} {mem_event_type=}") 
+      else: raise RuntimeError(f"Unknown {mem_data_sel=} {mem_event_type=}")
     else: raise RuntimeError(f"Unknown {mem_data_sel=}")
 
   def _exec_wait_reg_mem(self, n):
@@ -145,21 +153,34 @@ class PM4Executor(AMDQueue):
 
     prg_addr = (self.gpu.regs[regCOMPUTE_PGM_LO] + (self.gpu.regs[regCOMPUTE_PGM_LO + 1] << 32)) << 8
     args_addr = self.gpu.regs[regCOMPUTE_USER_DATA_0] + (self.gpu.regs[regCOMPUTE_USER_DATA_0 + 1] << 32)
-    lc = [self.gpu.regs[i] for i in range(regCOMPUTE_START_X+3, regCOMPUTE_START_X+6)]
+    lc = [self.gpu.regs[i] for i in range(regCOMPUTE_NUM_THREAD_X, regCOMPUTE_NUM_THREAD_X+3)]
 
     prg_sz = 0
     for st,sz in self.gpu.mapped_ranges:
       if st <= prg_addr <= st+sz: prg_sz = sz - (prg_addr - st)
 
     assert prg_sz > 0, "Invalid prg ptr (not found in mapped ranges)"
-    remu.run_asm(prg_addr, prg_sz, *gl, *lc, args_addr)
+    err = remu.run_asm(prg_addr, prg_sz, *gl, *lc, args_addr)
+    if err != 0: raise RuntimeError("remu does not support the new instruction introduced in this kernel")
+
+  def _exec_indirect_buffer(self, n):
+    addr_lo = self._next_dword()
+    addr_hi = self._next_dword()
+    buf_sz = self._next_dword() & (0x7fffff)
+
+    rptr = memoryview(bytearray(8)).cast('Q')
+    wptr = memoryview(bytearray(8)).cast('Q')
+    rptr[0] = 0
+    wptr[0] = buf_sz
+    PM4Executor(self.gpu, (addr_hi << 32) | addr_lo, buf_sz * 4, mv_address(rptr), mv_address(wptr)).execute()
+    assert rptr[0] == wptr[0], "not everything executed in amdgpu"
 
   def _exec_event_write(self, n):
     assert n == 0
     _ = self._next_dword() # do not emulate events for now
 
 class SDMAExecutor(AMDQueue):
-  def __init__(self, gpu, base, size, rptr, wptr): 
+  def __init__(self, gpu, base, size, rptr, wptr):
     self.gpu, self.base = gpu, base
     super().__init__(base, size, rptr, wptr)
 
@@ -174,6 +195,7 @@ class SDMAExecutor(AMDQueue):
       elif op == amd_gpu.SDMA_OP_POLL_REGMEM: cont = self._execute_poll_regmem()
       elif op == amd_gpu.SDMA_OP_GCR: self._execute_gcr()
       elif op == amd_gpu.SDMA_OP_COPY: self._execute_copy()
+      elif op == amd_gpu.SDMA_OP_TIMESTAMP: self._execute_timestamp()
       else: raise RuntimeError(f"Unknown SDMA op {op}")
       if not cont: return
 
@@ -202,6 +224,14 @@ class SDMAExecutor(AMDQueue):
 
     self.rptr[0] += ctypes.sizeof(struct)
     return True
+
+  def _execute_timestamp(self):
+    struct = sdma_pkts.timestamp.from_address(self.base + self.rptr[0] % self.size)
+
+    mem = to_mv(struct.addr, 8).cast('Q')
+    mem[0] = int(time.perf_counter() * 1e8)
+
+    self.rptr[0] += ctypes.sizeof(struct)
 
   def _execute_gcr(self):
     struct = sdma_pkts.gcr.from_address(self.base + self.rptr[0] % self.size)

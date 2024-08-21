@@ -2,7 +2,8 @@
 import numpy as np
 import unittest
 from tinygrad import Tensor, Device, dtypes
-from tinygrad.lazy import LazyBuffer, ReduceOps, LoadOps
+from tinygrad.ops import UOps
+from tinygrad.lazy import LazyBuffer, MetaOps
 from tinygrad.engine.schedule import create_schedule
 
 class TestLazyBuffer(unittest.TestCase):
@@ -74,7 +75,7 @@ class TestReduceOp(unittest.TestCase):
     a = a.sum()
     sched = create_schedule([a.lazydata])
     assert len(sched) == 1
-    assert sched[0].ast[0].src[0].op is ReduceOps.SUM
+    self.assertIs(sched[0].ast.src[0].src[2].op, UOps.REDUCE_AXIS)
 
   def test_split_reduce_kernel_dim0(self):
     a = Tensor.rand(256, 255).realize()
@@ -82,7 +83,7 @@ class TestReduceOp(unittest.TestCase):
     sched = create_schedule([a.lazydata])
     assert len(sched) == 2
     for s in sched:
-      assert s.ast[0].src[0].op is ReduceOps.SUM
+      self.assertIs(s.ast.src[0].src[2].op, UOps.REDUCE_AXIS)
 
   def test_split_reduce_kernel_dim1(self):
     a = Tensor.rand(255, 256).realize()
@@ -90,28 +91,28 @@ class TestReduceOp(unittest.TestCase):
     sched = create_schedule([a.lazydata])
     assert len(sched) == 2
     for s in sched:
-      assert s.ast[0].src[0].op is ReduceOps.SUM
+      self.assertIs(s.ast.src[0].src[2].op, UOps.REDUCE_AXIS)
 
 class TestView(unittest.TestCase):
   def test_all_masked_out(self):
-    # start with non CONST LoadOps
+    # start with non CONST MetaOps
     a = Tensor.rand(10, 10)
-    assert a.lazydata.base.op is not LoadOps.CONST
+    assert a.lazydata.base.op is not MetaOps.CONST
 
     # all masked out, degrades to const 0
     b = a.pad(((0, 10), None))[10:]
     assert b.shape == (10, 10)
-    assert b.lazydata.base.op is LoadOps.CONST and b.lazydata.base.arg == 0
+    assert b.lazydata.base.op is MetaOps.CONST and b.lazydata.base.arg == 0
 
     # mask out dim = 1 works too
     b = a.pad((None, (0, 10)))[:, 10:]
     assert b.shape == (10, 10)
-    assert b.lazydata.base.op is LoadOps.CONST and b.lazydata.base.arg == 0
+    assert b.lazydata.base.op is MetaOps.CONST and b.lazydata.base.arg == 0
 
     # partial masked out does not degrade into CONST
     b = a.pad(((0, 5), None))[5:]
     assert b.shape == (10, 10)
-    assert b.lazydata.base.op is not LoadOps.CONST
+    assert b.lazydata.base.op is not MetaOps.CONST
 
 if __name__ == "__main__":
   unittest.main()

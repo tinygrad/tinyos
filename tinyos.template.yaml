@@ -16,12 +16,14 @@ rootfs:
   pocket: updates
   seed:
     urls:
-      - git://git.launchpad.net/~ubuntu-core-dev/ubuntu-seeds/+git/
+      - file://<|CURRENT_DIR|>/ubuntu-seeds/
     branch: jammy
+    vcs: false
     names:
       - server
       - server-minimal
       - minimal
+      - cloud-image
   sources-list-deb822: false
 customization:
   components:
@@ -63,11 +65,10 @@ customization:
         - [ cloud-init-per, once, enabletinychat, systemctl, enable, tinychat.service ]
         - [ cloud-init-per, once, enablepoweroff, systemctl, enable, poweroff.service ]
         - [ cloud-init-per, once, enablereboot, systemctl, enable, reboot.service ]
-        - [ cloud-init-per, once, enablesleeping, systemctl, enable, sleeping.service ]
         - [ cloud-init-per, once, hostname, hostnamectl, hostname, tinybox ]
         - [ cloud-init-per, once, ntp, timedatectl, set-ntp, "true" ]
         - [ cloud-init-per, once, updateinitramfs, update-initramfs, -u ]
-        - [ cloud-init-per, once, setbmcpass, bash, /opt/tinybox/setup/setbmcpass.sh ]
+        - [ cloud-init-per, once, setbmcpass, bash, /opt/tinybox/setup/setbmcpass.sh, "1" ]
         - [ cloud-init-per, once, raidsetup, bash, /opt/tinybox/setup/raidsetup.sh ]
         - [ cloud-init-per, once, fixdisk, bash, /opt/tinybox/setup/fixdisk.sh ]
         - [ cloud-init-per, once, reboot, bash, /opt/tinybox/service/reboot.sh ]
@@ -100,6 +101,7 @@ customization:
     - name: lm-sensors
     - name: locales
     - name: lshw
+    - name: lsof
     - name: man-db
     - name: nfs-common
     - name: parallel
@@ -107,6 +109,7 @@ customization:
     - name: rdma-core
     - name: ripgrep
     - name: rsync
+    - name: systemd-journal-remote
     - name: time
     # for services
     - name: netcat-openbsd

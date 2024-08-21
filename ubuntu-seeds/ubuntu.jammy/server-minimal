@@ -1,0 +1,56 @@
+Task-Description: Minimal Ubuntu server
+
+ * feature: no-follow-recommends
+
+This seed is approximately the smallest set of packages that could be
+called "an Ubuntu server".
+
+== Packages needed for the system to operate ==
+
+ * apparmor
+ * apport
+ * apt
+ * cloud-init
+ * dbus
+ * flash-kernel [riscv64]  # DTB upgrades when booting via grub
+ * (needrestart)
+ * netbase
+ * pollinate
+ * s390-tools [s390x]
+ * snapd
+ * sudo
+ * systemd
+ * systemd-sysv
+ * udev
+ * (unattended-upgrades)
+ * ubuntu-release-upgrader-core
+
+== Block device / filesystem tools ==
+
+Some of these could be installed only when needed. But for now we just
+always include all of them.
+
+ * bcache-tools
+ * btrfs-progs
+ * cryptsetup
+ * e2fstools
+ * lvm2
+ * mdadm
+ * multipath-tools
+ * ntfs-3g
+ * open-iscsi
+ * xfsprogs
+
+== Other ==
+
+ubuntu-drivers is installed in the server-minimal seed because the
+environment that the installer runs in does not have apt configured
+the same way as the installed system (or, more pedantically, the
+filesystem tree that will be copied to the installed system), so it
+essentially runs "chroot /target ubuntu-drivers install --gpgpu" or
+similar. It's also not useless to have installed in the target system:
+the user can add hardware later and install drivers then.
+
+ * ubuntu-drivers-common
+
+ * ubuntu-server-minimal

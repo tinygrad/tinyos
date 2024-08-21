@@ -13,7 +13,7 @@ source build/venv/bin/activate
 pip install --upgrade pip
 
 # install deps for display and button services
-pip install numpy numba pillow pyserial psutil evdev redfish
+pip install numpy numba pillow pyserial psutil evdev redfish pymunk
 
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
   pip install nvidia-ml-py

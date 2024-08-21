@@ -1,0 +1,50 @@
+The ship-live seed will be added to the live CD as an ordinary package
+archive. Here belongs anything that somebody might need to install after
+installing the contents of the live CD in order to get online and fetch more
+packages.
+
+== Hardware & Network Access ==
+
+ * sl-modem-daemon	# needed for some Winmodems (see OutoftheboxWinmodem)
+ * intel-microcode      # needed to update Intel cpu microcode LP #1386257
+ * amd64-microcode      # needed to update AMD cpu microcode LP #1386257 
+
+ * libatm1	# suggested by ppp for PPP-over-ATM
+ * setserial	# needed by folks with nonstandard serial ports
+ * b43-fwcutter
+ * bcmwl-kernel-source #since we no longer have LRM
+
+This must be kept in sync with live
+ * /^linux-modules-nvidia-535-generic-hwe-22.04$/
+ * /^nvidia-driver-[0-9]+$/  # Needed for networkless installation of graphics drivers
+ * nvidia-prime
+ * /^linux-modules-iwlwifi-generic-hwe-22.04$/
+ * /^linux-modules-ipu6-generic-hwe-22.04$/
+ * /^linux-modules-ivsc-generic-hwe-22.04$/
+
+== Installer ==
+
+ * grub-efi-arm64 [arm64]
+ * oem-config-gtk
+ * oem-config-slideshow-ubuntu
+ * lupin-support [amd64 i386] # installer-for-windows
+ * uboot-mkimage [armel] # needed on dove for uboot
+
+== OEM support ==
+
+These packages are dynamically installed by the Ubuntu installer when we're
+installing on compatible hardware. They will pull in additional hardware
+support packages. They default to oem linux flavour, seed it too.
+
+ * /^oem-.+-meta$/
+ * linux-oem-22.04
+ * /^linux-modules-nvidia-535-oem-22.04$/
+ * /^linux-modules-iwlwifi-oem-22.04$/
+ * /^linux-modules-ipu6-oem-22.04$/
+ * /^linux-modules-ivsc-oem-22.04$/
+
+== Blacklist ==
+
+libavcodec cannot be shipped on CDs (c.f. Ubuntu technical board resolution 2007-01-02).
+
+ * !libavcodec*

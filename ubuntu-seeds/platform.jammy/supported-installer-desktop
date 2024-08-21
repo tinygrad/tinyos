@@ -1,0 +1,11 @@
+= Installer =
+
+ * casper # needed by live CD build system
+ * lupin-casper [amd64 i386] # ditto, installer-for-windows
+ * livecd-rootfs # live CD build script
+ * live-build # new live CD build scripts
+ * cd-boot-images-amd64 # the live CD bootloaders
+ * cd-boot-images-arm64 # the live CD bootloaders
+ * cd-boot-images-ppc64el # the live CD bootloaders
+ * cd-boot-images-riscv64 # the live CD bootloaders
+ * cdebconf # useful for testing, but not used by default yet

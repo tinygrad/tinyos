@@ -1,6 +1,6 @@
 [Unit]
 Description=Second Boot
-After=network.target network-online.target
+After=network.target
 
 [Service]
 Type=oneshot

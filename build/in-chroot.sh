@@ -15,6 +15,13 @@ done
 rm -rf /opt/tinybox
 git clone https://github.com/tinygrad/tinyos /opt/tinybox
 
+source /etc/tinybox-release
+if [[ -n "$TINYBOX_DEV" ]]; then
+  pushd /opt/tinybox
+  git checkout dev
+  popd
+fi
+
 # merge /opt/tinybox/userspace into /
 rsync -ah --info=progress2 /opt/tinybox/userspace/ /
 chown -R tiny:tiny /home/tiny/

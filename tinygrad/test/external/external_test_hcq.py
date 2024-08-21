@@ -51,7 +51,7 @@ class TestHCQ(unittest.TestCase):
     TestHCQ.d0.synchronize() # wait for copyins to complete
 
   def test_run_1000_times_one_submit(self):
-    temp_signal, temp_value = TestHCQ.d0._get_signal(value=0), 0
+    temp_signal, temp_value = TestHCQ.d0._alloc_signal(value=0), 0
     q = TestHCQ.compute_queue()
     for _ in range(1000):
       q.exec(TestHCQ.runner.clprg, TestHCQ.d0.kernargs_ptr, TestHCQ.runner.p.global_size, TestHCQ.runner.p.local_size)
@@ -66,10 +66,11 @@ class TestHCQ(unittest.TestCase):
     q.submit(TestHCQ.d0)
     TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.a.lazydata.buffer.as_buffer().cast("f")[0]) == 2000.0, f"got val {val}"
+    val = TestHCQ.a.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 2000.0, f"got val {val}"
 
   def test_run_1000_times(self):
-    temp_signal = TestHCQ.d0._get_signal(value=0)
+    temp_signal = TestHCQ.d0._alloc_signal(value=0)
     q = TestHCQ.compute_queue()
     q.exec(TestHCQ.runner.clprg, TestHCQ.d0.kernargs_ptr, TestHCQ.runner.p.global_size, TestHCQ.runner.p.local_size)
     q.signal(temp_signal, 2).wait(temp_signal, 2)
@@ -81,10 +82,11 @@ class TestHCQ(unittest.TestCase):
       TestHCQ.compute_queue().signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value).submit(TestHCQ.d0)
       TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
       TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.a.lazydata.buffer.as_buffer().cast("f")[0]) == 2000.0, f"got val {val}"
+    val = TestHCQ.a.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 2000.0, f"got val {val}"
 
   def test_run_to_3(self):
-    temp_signal = TestHCQ.d0._get_signal(value=0)
+    temp_signal = TestHCQ.d0._alloc_signal(value=0)
     q = TestHCQ.compute_queue()
     q.exec(TestHCQ.runner.clprg, TestHCQ.d0.kernargs_ptr, TestHCQ.runner.p.global_size, TestHCQ.runner.p.local_size)
     q.signal(temp_signal, 1).wait(temp_signal, 1)
@@ -94,7 +96,8 @@ class TestHCQ(unittest.TestCase):
     q.signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value).submit(TestHCQ.d0)
     TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]) == 3.0, f"got val {val}"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 3.0, f"got val {val}"
 
   def test_update_exec(self):
     q = TestHCQ.compute_queue()
@@ -104,12 +107,14 @@ class TestHCQ(unittest.TestCase):
     q.signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value).submit(TestHCQ.d0)
     TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]) == 1.0, f"got val {val}"
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]) == 0.0, f"got val {val}, should not be updated"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 1.0, f"got val {val}"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]
+    assert val == 0.0, f"got val {val}, should not be updated"
 
   @unittest.skipUnless(Device.DEFAULT == "NV", "Only NV supports bind")
   def test_bind_run(self):
-    temp_signal = TestHCQ.d0._get_signal(value=0)
+    temp_signal = TestHCQ.d0._alloc_signal(value=0)
     q = TestHCQ.compute_queue()
     q.exec(TestHCQ.runner.clprg, TestHCQ.d0.kernargs_ptr, TestHCQ.runner.p.global_size, TestHCQ.runner.p.local_size)
     q.signal(temp_signal, 2).wait(temp_signal, 2)
@@ -122,7 +127,8 @@ class TestHCQ(unittest.TestCase):
       TestHCQ.compute_queue().signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value).submit(TestHCQ.d0)
       TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
       TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.a.lazydata.buffer.as_buffer().cast("f")[0]) == 2000.0, f"got val {val}"
+    val = TestHCQ.a.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 2000.0, f"got val {val}"
 
   @unittest.skipUnless(Device.DEFAULT == "NV", "Only NV supports bind")
   def test_update_exec_binded(self):
@@ -136,12 +142,14 @@ class TestHCQ(unittest.TestCase):
     q.submit(TestHCQ.d0)
     TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]) == 1.0, f"got val {val}"
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]) == 0.0, f"got val {val}, should not be updated"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 1.0, f"got val {val}"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]
+    assert val == 0.0, f"got val {val}, should not be updated"
 
   @unittest.skipIf(CI, "Can't handle async update on CPU")
   def test_wait_signal(self):
-    temp_signal = TestHCQ.d0._get_signal(value=0)
+    temp_signal = TestHCQ.d0._alloc_signal(value=0)
     TestHCQ.compute_queue().wait(temp_signal, value=1).signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value).submit(TestHCQ.d0)
     with self.assertRaises(RuntimeError):
       TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value, timeout=50)
@@ -152,7 +160,7 @@ class TestHCQ(unittest.TestCase):
 
   @unittest.skipIf(CI, "Can't handle async update on CPU")
   def test_wait_copy_signal(self):
-    temp_signal = TestHCQ.d0._get_signal(value=0)
+    temp_signal = TestHCQ.d0._alloc_signal(value=0)
     TestHCQ.copy_queue().wait(temp_signal, value=1).signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value).submit(TestHCQ.d0)
     with self.assertRaises(RuntimeError):
       TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value, timeout=50)
@@ -167,7 +175,8 @@ class TestHCQ(unittest.TestCase):
     q.signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value).submit(TestHCQ.d0)
     TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]) == 1.0, f"got val {val}"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 1.0, f"got val {val}"
 
   def test_submit_empty_queues(self):
     TestHCQ.compute_queue().submit(TestHCQ.d0)
@@ -198,7 +207,8 @@ class TestHCQ(unittest.TestCase):
     q.submit(TestHCQ.d0)
     TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]) == 1.0, f"got val {val}"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 1.0, f"got val {val}"
 
   def test_copy_1000_times(self):
     q = TestHCQ.copy_queue()
@@ -212,7 +222,8 @@ class TestHCQ(unittest.TestCase):
     # confirm the signal didn't exceed the put value
     with self.assertRaises(RuntimeError):
       TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value + 1, timeout=50)
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]) == 0.0, f"got val {val}"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]
+    assert val == 0.0, f"got val {val}"
 
   def test_copy(self):
     q = TestHCQ.copy_queue()
@@ -221,7 +232,8 @@ class TestHCQ(unittest.TestCase):
     q.submit(TestHCQ.d0)
     TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]) == 1.0, f"got val {val}"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]
+    assert val == 1.0, f"got val {val}"
 
   @unittest.skipUnless(Device.DEFAULT == "NV", "Only NV supports bind")
   def test_bind_copy(self):
@@ -237,7 +249,8 @@ class TestHCQ(unittest.TestCase):
     # confirm the signal didn't exceed the put value
     with self.assertRaises(RuntimeError):
       TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value + 1, timeout=50)
-    assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]) == 0.0, f"got val {val}"
+    val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[1]
+    assert val == 0.0, f"got val {val}"
 
   def test_copy_bandwidth(self):
     # THEORY: the bandwidth is low here because it's only using one SDMA queue. I suspect it's more stable like this at least.
@@ -267,7 +280,7 @@ class TestHCQ(unittest.TestCase):
     q = TestHCQ.compute_queue()
     qc = TestHCQ.copy_queue()
     q.exec(TestHCQ.runner.clprg, TestHCQ.d0.kernargs_ptr, TestHCQ.runner.p.global_size, TestHCQ.runner.p.local_size)  # b = [1, 2]
-    q.signal(sig:=TestHCQ.d0._get_signal(value=0), value=1)
+    q.signal(sig:=TestHCQ.d0._alloc_signal(value=0), value=1)
     qc.wait(sig, value=1)
     qc.copy(TestHCQ.a.lazydata.buffer._buf.va_addr, TestHCQ.b.lazydata.buffer._buf.va_addr, 8)
     qc.signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
@@ -276,13 +289,14 @@ class TestHCQ(unittest.TestCase):
     q.submit(TestHCQ.d0)
     TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     TestHCQ.d0.timeline_value += 1
-    assert (val:=TestHCQ.a.lazydata.buffer.as_buffer().cast("f")[0]) == 1.0, f"got val {val}"
+    val = TestHCQ.a.lazydata.buffer.as_buffer().cast("f")[0]
+    assert val == 1.0, f"got val {val}"
 
   def test_cross_device_signal(self):
     d1 = Device[f"{Device.DEFAULT}:1"]
     q1 = TestHCQ.compute_queue()
     q2 = TestHCQ.compute_queue()
-    q1.signal(sig:=TestHCQ.d0._get_signal(value=0), value=0xfff)
+    q1.signal(sig:=TestHCQ.d0._alloc_signal(value=0), value=0xfff)
     q2.wait(sig, value=0xfff)
     q2.signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
     q2.submit(TestHCQ.d0)
@@ -306,7 +320,8 @@ class TestHCQ(unittest.TestCase):
       q.signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value).submit(TestHCQ.d0)
       TestHCQ.d0._wait_signal(TestHCQ.d0.timeline_signal, TestHCQ.d0.timeline_value)
       TestHCQ.d0.timeline_value += 1
-      assert (val:=TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]) == 1.0, f"got val {val}"
+      val = TestHCQ.b.lazydata.buffer.as_buffer().cast("f")[0]
+      assert val == 1.0, f"got val {val}"
 
 if __name__ == "__main__":
   unittest.main()

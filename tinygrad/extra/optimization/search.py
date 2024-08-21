@@ -4,7 +4,7 @@ from extra.optimization.helpers import ast_str_to_lin
 from tinygrad import dtypes
 from tinygrad.helpers import BEAM, getenv
 from tinygrad.device import Device, Compiled
-from tinygrad.codegen.linearizer import Linearizer
+from tinygrad.codegen.kernel import Kernel
 from tinygrad.engine.search import time_linearizer, beam_search, bufs_from_lin
 
 
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     ast_strs = [args.ast]
   elif args.file is not None:
     with open(args.file, 'r') as file:
-     ast_strs = file.readlines()
+      ast_strs = file.readlines()
 
   for i, ast_str in enumerate(ast_strs):
     print(f"optimizing {i}/{len(ast_strs)}\nast={ast_str}")

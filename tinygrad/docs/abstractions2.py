@@ -37,9 +37,9 @@ print("******** second, the Device ***********")
 DEVICE = "CLANG"   # NOTE: you can change this!
 
 import struct
-from tinygrad.dtype import dtypes
+from tinygrad.dtype import PtrDType, dtypes
 from tinygrad.device import Buffer, Device
-from tinygrad.ops import LazyOp, BufferOps, MemBuffer, BinaryOps
+from tinygrad.ops import BinaryOps, MetaOps, UOp, UOps
 from tinygrad.shape.shapetracker import ShapeTracker
 
 # allocate some buffers + load in values
@@ -49,18 +49,21 @@ b = Buffer(DEVICE, 1, dtypes.int32).allocate().copyin(memoryview(bytearray(struc
 # NOTE: a._buf is the same as the return from MallocAllocator.alloc
 
 # describe the computation
-ld_1 = LazyOp(BufferOps.LOAD, (), MemBuffer(1, dtypes.int32, ShapeTracker.from_shape((1,))))
-ld_2 = LazyOp(BufferOps.LOAD, (), MemBuffer(2, dtypes.int32, ShapeTracker.from_shape((1,))))
-alu = LazyOp(BinaryOps.ADD, (ld_1, ld_2))
-st_0 = LazyOp(BufferOps.STORE, (alu,), MemBuffer(0, dtypes.int32, ShapeTracker.from_shape((1,))))
+buf_1 = UOp(UOps.DEFINE_GLOBAL, PtrDType(dtypes.int32), (), 1)
+buf_2 = UOp(UOps.DEFINE_GLOBAL, PtrDType(dtypes.int32), (), 2)
+ld_1 = UOp(UOps.LOAD, dtypes.int32, (buf_1, ShapeTracker.from_shape((1,)).to_uop()))
+ld_2 = UOp(UOps.LOAD, dtypes.int32, (buf_2, ShapeTracker.from_shape((1,)).to_uop()))
+alu = ld_1 + ld_2
+output_buf = UOp(UOps.DEFINE_GLOBAL, PtrDType(dtypes.int32), (), 0)
+st_0 = UOp(UOps.STORE, None, (output_buf, ShapeTracker.from_shape((1,)).to_uop(), alu))
+s = UOp(UOps.SINK, None, (st_0,))
 
 # convert the computation to a "linearized" format (print the format)
-from tinygrad.engine.realize import get_linearizer, CompiledRunner
-lin = get_linearizer(Device[DEVICE].renderer, (st_0,)).linearize()
-for u in lin.uops: print(u)
+from tinygrad.engine.realize import get_kernel, CompiledRunner
+kernel = get_kernel(Device[DEVICE].renderer, s).linearize()
 
 # compile a program (and print the source)
-fxn = CompiledRunner(lin.to_program())
+fxn = CompiledRunner(kernel.to_program())
 print(fxn.p.src)
 # NOTE: fxn.clprg is the ClangProgram
 
@@ -73,13 +76,13 @@ assert out.as_buffer().cast('I')[0] == 5
 
 print("******** third, the LazyBuffer ***********")
 
-from tinygrad.lazy import LazyBuffer, LoadOps
+from tinygrad.lazy import LazyBuffer
 from tinygrad.engine.realize import run_schedule
 from tinygrad.engine.schedule import create_schedule
 
 # allocate some values + load in values
-a = LazyBuffer.loadop(LoadOps.EMPTY, (1,), dtypes.int32, DEVICE)
-b = LazyBuffer.loadop(LoadOps.EMPTY, (1,), dtypes.int32, DEVICE)
+a = LazyBuffer.metaop(MetaOps.EMPTY, (1,), dtypes.int32, DEVICE)
+b = LazyBuffer.metaop(MetaOps.EMPTY, (1,), dtypes.int32, DEVICE)
 a.buffer.allocate().copyin(memoryview(bytearray(struct.pack("I", 2))))
 b.buffer.allocate().copyin(memoryview(bytearray(struct.pack("I", 3))))
 del a.srcs
@@ -90,11 +93,10 @@ out = a.e(BinaryOps.ADD, b)
 
 # schedule the computation as a list of kernels
 sched = create_schedule([out])
-for si in sched: print(si.ast[0].op)  # NOTE: the first two convert it to CLANG
+for si in sched: print(si.ast.op)  # NOTE: the first two convert it to CLANG
 
-# DEBUGGING: print the compute ast as a tree
-from tinygrad.engine.graph import print_tree
-print_tree(sched[-1].ast[0])
+# DEBUGGING: print the compute ast
+print(sched[-1].ast)
 # NOTE: sched[-1].ast is the same as st_0 above
 
 # run that schedule
