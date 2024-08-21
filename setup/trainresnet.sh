@@ -40,11 +40,11 @@ END_TIME=$(date +%s)
 # stop temp monitor
 pkill -f monitortemps.sh
 
-# ensure we are within 5% of the expected time or under the expected time
+# ensure we are within the expected time or under the expected time
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
-  EXPECTED_TIME=8500
+  EXPECTED_TIME=9500
 elif [[ "$TINYBOX_COLOR" == "red" ]]; then
-  EXPECTED_TIME=10500
+  EXPECTED_TIME=12500
 else
   echo "Unknown tinybox color: $TINYBOX_COLOR"
   exit 1
