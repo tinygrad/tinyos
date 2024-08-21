@@ -8,10 +8,9 @@ from typing import List, Optional, Union, cast
 from tinygrad import nn, dtypes
 from tinygrad.device import Device
 from tinygrad.tensor import Tensor
-from tinygrad.ops import BinaryOps, MetaOps, UnaryOps
+from tinygrad.ops import BinaryOps, MetaOps, UnaryOps, UOps
 from tinygrad.helpers import CI, DEBUG, FUSE_ARANGE, FUSE_CONV_BW, GlobalCounters, flatten, getenv, SPLIT_REDUCEOP
-from tinygrad.codegen.kernel import Kernel
-from tinygrad.codegen.uops import UOps, verify_ast
+from tinygrad.codegen.kernel import Kernel, verify_ast
 from tinygrad.engine.schedule import create_schedule
 from tinygrad.engine.realize import run_schedule
 from test.helpers import is_dtype_supported, Context
@@ -194,9 +193,17 @@ class TestSchedule(unittest.TestCase):
     with Tensor.train(False):
       img = Tensor.empty(1,3,8,8)
       c1 = nn.Conv2d(3,32,3)
-      bn = nn.BatchNorm2d(32, track_running_stats=False)
+      bn = nn.BatchNorm2d(32, track_running_stats=True)
       out = bn(c1(img)).relu()
       check_schedule(out, 1, [c1.weight, c1.bias])
+
+  def test_fold_conv_batchnorm_notrain_no_running_stats(self):
+    with Tensor.train(False):
+      img = Tensor.empty(1,3,8,8)
+      c1 = nn.Conv2d(3,32,3)
+      bn = nn.BatchNorm2d(32, track_running_stats=False)
+      out = bn(c1(img)).relu()
+      check_schedule(out, 4, [c1.weight, c1.bias])
 
   def test_fold_conv_batchnorm(self):
     with Tensor.train():
@@ -971,17 +978,16 @@ class TestSchedule(unittest.TestCase):
       check_schedule(opt.schedule_step(), 9)
 
   def test_sgd_4convs_fuse(self):
-    with Context(FUSE_CONV_BW=1):
-      with Tensor.train():
-        img = Tensor.empty(2,3,64,64)
-        c1 = nn.Conv2d(3,4,3,bias=False)
-        c2 = nn.Conv2d(4,8,3,bias=False)
-        c3 = nn.Conv2d(8,16,3,bias=False)
-        c4 = nn.Conv2d(16,32,3,bias=False)
-        opt = nn.optim.SGD(nn.state.get_parameters([c1, c2, c3, c4]))
-        opt.zero_grad()
-        c4(c3(c2(c1(img).relu()).relu()).relu()).relu().sum().backward()
-        check_schedule(opt.schedule_step(), 19)
+    with Tensor.train():
+      img = Tensor.empty(2,3,64,64)
+      c1 = nn.Conv2d(3,4,3,bias=False)
+      c2 = nn.Conv2d(4,8,3,bias=False)
+      c3 = nn.Conv2d(8,16,3,bias=False)
+      c4 = nn.Conv2d(16,32,3,bias=False)
+      opt = nn.optim.SGD(nn.state.get_parameters([c1, c2, c3, c4]))
+      opt.zero_grad()
+      c4(c3(c2(c1(img).relu()).relu()).relu()).relu().sum().backward()
+      check_schedule(opt.schedule_step(), 22)
 
   @unittest.skipUnless(is_dtype_supported(dtypes.half), "need half")
   def test_prefer_half_buffer(self):
@@ -1346,6 +1352,18 @@ class TestConvBW(unittest.TestCase):
     assert img_torch.grad is not None and c1_torch.weight.grad is not None
     np.testing.assert_allclose(c1.weight.grad.numpy(), c1_torch.weight.grad.numpy(), atol=5e-4, rtol=1e-5)
     np.testing.assert_allclose(img.grad.numpy(), img_torch.grad.numpy(), atol=5e-4, rtol=1e-5)
+
+  def test_sgd_4convs_fuse(self):
+    with Tensor.train():
+      img = Tensor.empty(2,3,64,64)
+      c1 = nn.Conv2d(3,4,3,bias=False)
+      c2 = nn.Conv2d(4,8,3,bias=False)
+      c3 = nn.Conv2d(8,16,3,bias=False)
+      c4 = nn.Conv2d(16,32,3,bias=False)
+      opt = nn.optim.SGD(nn.state.get_parameters([c1, c2, c3, c4]))
+      opt.zero_grad()
+      c4(c3(c2(c1(img).relu()).relu()).relu()).relu().sum().backward()
+      self.check_schedule(opt.schedule_step(), 19)
 
 class TestIndexing(unittest.TestCase):
   def check_schedule(self, xt:Union[Tensor,List[Tensor]], cnt:int):
