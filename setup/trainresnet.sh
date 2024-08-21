@@ -50,10 +50,10 @@ fi
 
 time_taken=$((END_TIME - START_TIME))
 if [ $time_taken -gt $((EXPECTED_TIME * 105 / 100)) ]; then
-  echo "text,$(hostname -I | xargs):19531,,ResNet Train Failed,Expected time exceeded,${time_taken}s" | nc -U /run/tinybox-screen.sock
+  echo "text,$(hostname -i | xargs):19531,,ResNet Train Failed,Expected time exceeded,${time_taken}s" | nc -U /run/tinybox-screen.sock
   exit 1
 else
-  echo "text,$(hostname -I | xargs):19531,,ResNet Train Passed,${time_taken}s" | nc -U /run/tinybox-screen.sock
+  echo "text,$(hostname -i | xargs):19531,,ResNet Train Passed,${time_taken}s" | nc -U /run/tinybox-screen.sock
   sleep 1
 fi
 
