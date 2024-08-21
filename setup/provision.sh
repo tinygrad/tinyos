@@ -9,6 +9,9 @@ sudo systemctl start systemd-journal-gatewayd
 
 sleep 2
 
+# ensure tinychat is up before we bring up the 100 gig interface
+sudo systemctl start tinychat
+
 # check if either enp65s0f0np0, ens33np0, or ens33f0np0 exists
 ip_ad=$(ip ad)
 if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -qP "ens\w+np\d" && ! echo "$ip_ad" | grep -qP "ens\dnp\d"; then
@@ -94,8 +97,6 @@ popd || exit
 echo "text,$(hostname -i | xargs):19531,,Starting ResNet Train" | nc -U /run/tinybox-screen.sock
 sleep 1
 echo "status" | nc -U /run/tinybox-screen.sock
-
-sudo systemctl stop tinychat
 
 if [ ! -d "/home/tiny/stress_test/ckpts" ] || [ -f "/tmp/force_resnet_train" ]; then
   if ! bash /opt/tinybox/setup/trainresnet.sh; then
