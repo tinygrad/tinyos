@@ -148,7 +148,10 @@ fi
 # check that tinychat is up and working
 sudo systemctl start tinychat
 sleep 10
-curl http://127.0.0.1/ctrl/start
+if ! curl http://127.0.0.1/ctrl/start; then
+  echo "text,$(hostname -i | xargs):19531,,Failed to start tinychat" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
 echo "status" | nc -U /run/tinybox-screen.sock
 sleep 30
 
