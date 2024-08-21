@@ -188,6 +188,9 @@ if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
   fi
 fi
 
+# turn fans to auto
+sudo fan-control auto
+
 # log everything from provisioning
 if ! sudo mount -o rdma,port=20049,vers=4.2 "${ip}1":/opt/dmi /mnt; then
   echo "text,$(hostname -I | xargs):19531,,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
