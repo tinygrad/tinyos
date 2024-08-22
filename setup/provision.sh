@@ -162,6 +162,14 @@ if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
   echo "text,$(hostname -i | xargs):19531,,tinychat check failed,retrying..." | nc -U /run/tinybox-screen.sock
   journalctl --unit=tinychat
 
+  sleep 10
+  if ! curl http://127.0.0.1/ctrl/start; then
+    echo "text,$(hostname -i | xargs):19531,,Failed to start tinychat" | nc -U /run/tinybox-screen.sock
+    exit 1
+  fi
+  echo "status" | nc -U /run/tinybox-screen.sock
+  sleep 30
+
   echo "status" | nc -U /run/tinybox-screen.sock
   mods "hi" | tee /home/tiny/stress_test/tinychat.log
   if ! grep -q "Hello" /home/tiny/stress_test/tinychat.log; then
