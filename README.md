@@ -2,7 +2,7 @@
 
 the os image builder for the tinybox.
 
-uses [`ubuntu-image`](https://github.com/canonical/ubuntu-image)
+uses [`ubuntu-image`](https://github.com/canonical/ubuntu-image) so should run on any recent ubuntu-based system with snap support.
 
 run `make green` to build the image for tinybox green or run `make red` to build the image for tinybox red.
 
