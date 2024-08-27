@@ -37,7 +37,7 @@ elif [[ "$TINYBOX_COLOR" == "blue" ]]; then
   apt update -y
   apt install "linux-headers-$(uname -r)" "linux-modules-extra-$(uname -r)" -y
   apt install flex bison -y
-  apt install intel-fw-gpu intel-i915-dkms xpu-smi -y
+  apt install intel-fw-gpu xpu-smi -y # out-of-tree: intel-i915-dkms
   apt install intel-opencl-icd intel-level-zero-gpu level-zero intel-media-va-driver-non-free -y
   apt install libmfx1 libmfxgen1 libvpl2 libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 -y
   apt install mesa-va-drivers mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all -y
