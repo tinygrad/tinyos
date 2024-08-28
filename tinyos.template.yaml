@@ -111,6 +111,7 @@ customization:
     - name: rsync
     - name: systemd-journal-remote
     - name: time
+    - name: xxhash
     # for services
     - name: netcat-openbsd
     - name: python-is-python3
