@@ -45,7 +45,7 @@ elif [[ "$TINYBOX_COLOR" == "blue" ]]; then
   apt install libigc-dev intel-igc-cm libigdfcl-dev libigfxcmrt-dev level-zero-dev -y
 
   # install oneAPI
-  apt install intel-basekit
+  apt install intel-basekit -y
 else
   echo "Unknown tinybox color: $TINYBOX_COLOR"
   exit 1
