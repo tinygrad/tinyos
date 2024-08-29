@@ -213,7 +213,7 @@ fi
 sudo fan-control auto
 
 # log everything from provisioning
-if ! sudo mount -o rdma,port=20049,vers=4.2 "${ip}1":/opt/dmi /mnt; then
+if ! sudo mount -o rdma,port=20049 "${ip}1":/opt/dmi /mnt; then
   echo "text,$(hostname -i | xargs):19531,,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
   exit 1
 fi
