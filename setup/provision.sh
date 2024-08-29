@@ -68,7 +68,13 @@ mkdir -p /home/tiny/stress_test
 # run allreduce bandwidth test
 pushd /home/tiny/tinygrad || exit
 echo "status" | nc -U /run/tinybox-screen.sock
-python3 test/external/external_benchmark_multitensor_allreduce.py # run once for warmup
+
+# first run will detect gpu failure
+if ! python3 test/external/external_benchmark_multitensor_allreduce.py; then
+  echo "text,$(hostname -i | xargs):19531,,Allreduce test failed,check logs for,possible gpu failure" | nc -U /run/tinybox-screen.sock
+  exit 1
+fi
+
 python3 test/external/external_benchmark_multitensor_allreduce.py # run twice for warmup
 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
 popd || exit
