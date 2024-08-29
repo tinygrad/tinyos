@@ -14,7 +14,7 @@ sudo systemctl start tinychat
 
 # check if either enp65s0f0np0, ens33np0, or ens33f0np0 exists
 ip_ad=$(ip ad)
-if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -qP "ens\w+np\d" && ! echo "$ip_ad" | grep -qP "ens\dnp\d"; then
+if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -qP "ens\w+np\d" && ! echo "$ip_ad" | grep -qP "ens\dnp\d" && ! echo "$ip_ad" | grep -qP "enp\d\ds\dnp\d"; then
   echo "not provisioning, no NICs found"
   exit 0
 fi
