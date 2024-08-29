@@ -49,8 +49,33 @@ for interface in $interfaces; do
   fi
 done
 if [ -z "$ip" ]; then
-  echo "text,$(hostname -i | xargs):19531,,Failed to setup NIC" | nc -U /run/tinybox-screen.sock
-  exit 1
+  interfaces=$(ip ad | grep -oP 'enp\d\ds\dnp\d' | sort | uniq)
+  for interface in $interfaces; do
+    sudo ip ad add 10.0.0.2/24 dev "$interface"
+    sudo ip link set "$interface" up
+    if ping -c 1 10.0.0.1; then
+      echo "text,$(hostname -i | xargs):19531,,Using $interface,10.0.0.2" | nc -U /run/tinybox-screen.sock
+      ip="10.0.0."
+      iface="$interface"
+      break
+    else
+      sudo ip ad del 10.0.0.2/24 dev "$interface"
+    fi
+    sudo ip ad add 10.0.1.2/24 dev "$interface"
+    sudo ip link set "$interface" up
+    if ping -c 1 10.0.1.1; then
+      echo "text,$(hostname -i | xargs):19531,,Using $interface,10.0.1.2" | nc -U /run/tinybox-screen.sock
+      ip="10.0.1."
+      iface="$interface"
+      break
+    else
+      sudo ip ad del 10.0.1.2/24 dev "$interface"
+    fi
+  done
+  if [ -z "$ip" ]; then
+    echo "text,$(hostname -i | xargs):19531,,Failed to setup NIC" | nc -U /run/tinybox-screen.sock
+    exit 1
+  fi
 fi
 sudo ip link set "$iface" mtu 9000
 set -e
