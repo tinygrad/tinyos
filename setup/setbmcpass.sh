@@ -19,12 +19,10 @@ hash=$(echo "$serials" | sha256sum | cut -d' ' -f1)
 # take the first 12 characters of the hash
 BMC_PASSWORD=$(echo "$hash" | head -c 12)
 
-# set the bmc password if first arg is set
+# write the bmc password if first arg is set
 if [[ -n "$1" ]]; then
   # write bmc password to file
   echo "BMC_PASSWORD=$BMC_PASSWORD" > /root/.bmc_password
-  # set the password
-  ipmitool user set password 2 "$BMC_PASSWORD"
 else
   # just print the password
   echo "$BMC_PASSWORD"
