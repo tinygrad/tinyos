@@ -14,7 +14,7 @@ sudo systemctl start tinychat
 
 # check if either enp65s0f0np0, ens33np0, or ens33f0np0 exists
 ip_ad=$(ip ad)
-if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -qP "ens\w+np\d" && ! echo "$ip_ad" | grep -qP "ens\dnp\d"; then
+if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -qP "ens\w+np\d" && ! echo "$ip_ad" | grep -qP "ens\dnp\d" && ! echo "$ip_ad" | grep -qP "enp\d\ds\dnp\d"; then
   echo "not provisioning, no NICs found"
   exit 0
 fi
@@ -49,8 +49,33 @@ for interface in $interfaces; do
   fi
 done
 if [ -z "$ip" ]; then
-  echo "text,$(hostname -i | xargs):19531,,Failed to setup NIC" | nc -U /run/tinybox-screen.sock
-  exit 1
+  interfaces=$(ip ad | grep -oP 'enp\d\ds\dnp\d' | sort | uniq)
+  for interface in $interfaces; do
+    sudo ip ad add 10.0.0.2/24 dev "$interface"
+    sudo ip link set "$interface" up
+    if ping -c 1 10.0.0.1; then
+      echo "text,$(hostname -i | xargs):19531,,Using $interface,10.0.0.2" | nc -U /run/tinybox-screen.sock
+      ip="10.0.0."
+      iface="$interface"
+      break
+    else
+      sudo ip ad del 10.0.0.2/24 dev "$interface"
+    fi
+    sudo ip ad add 10.0.1.2/24 dev "$interface"
+    sudo ip link set "$interface" up
+    if ping -c 1 10.0.1.1; then
+      echo "text,$(hostname -i | xargs):19531,,Using $interface,10.0.1.2" | nc -U /run/tinybox-screen.sock
+      ip="10.0.1."
+      iface="$interface"
+      break
+    else
+      sudo ip ad del 10.0.1.2/24 dev "$interface"
+    fi
+  done
+  if [ -z "$ip" ]; then
+    echo "text,$(hostname -i | xargs):19531,,Failed to setup NIC" | nc -U /run/tinybox-screen.sock
+    exit 1
+  fi
 fi
 sudo ip link set "$iface" mtu 9000
 set -e
@@ -188,7 +213,7 @@ fi
 sudo fan-control auto
 
 # log everything from provisioning
-if ! sudo mount -o rdma,port=20049,vers=4.2 "${ip}1":/opt/dmi /mnt; then
+if ! sudo mount -o rdma,port=20049 "${ip}1":/opt/dmi /mnt; then
   echo "text,$(hostname -i | xargs):19531,,Failed to mount NFS" | nc -U /run/tinybox-screen.sock
   exit 1
 fi
