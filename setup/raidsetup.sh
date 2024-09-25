@@ -12,3 +12,6 @@ if [ -z "$(ls -A /dev/md/)" ]; then
 else
   echo "RAID array found, skipping creation..."
 fi
+
+# add raid array to fstab
+echo "/dev/md/0 /raid auto defaults,noatime,nofail 0 2" >> /etc/fstab

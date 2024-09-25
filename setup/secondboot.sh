@@ -11,12 +11,14 @@ fi
 # disable this service
 systemctl disable secondboot.service
 
-# generate bmc password
-bash /opt/tinybox/setup/setbmcpass.sh "1"
+if [ -z "$TINYBOX_PRO" ]; then
+  # generate bmc password
+  bash /opt/tinybox/setup/setbmcpass.sh "1"
 
-# start provisioning
-systemctl start provision.service
+  # start provisioning
+  systemctl start provision.service
 
-# set the bmc password
-source /root/.bmc_password
-ipmitool user set password 2 "$BMC_PASSWORD"
+  # set the bmc password
+  source /root/.bmc_password
+  ipmitool user set password 2 "$BMC_PASSWORD"
+fi

@@ -47,30 +47,10 @@ customization:
       #cloud-config
       preserve_hostname: true
       bootcmd:
-        - [ cloud-init-per, once, enabledisplayservice, systemctl, enable, displayservice.service ]
-        - [ cloud-init-per, always, startdisplayservice, systemctl, start, displayservice.service ]
-        - [ cloud-init-per, once, enablebuttonservice, systemctl, enable, buttonservice.service ]
-        - [ cloud-init-per, always, startbuttonservice, systemctl, start, buttonservice.service ]
-      mounts:
-        - [ /dev/md/0, /raid, auto, "defaults,noatime,nofail", "0", "2" ]
+        - [ cloud-init-per, once, earlyboot, bash, /opt/tinybox/setup/earlyboot.sh ]
       users: []
       runcmd:
-        - [ cloud-init-per, once, enablesecondboot, systemctl, enable, secondboot.service ]
-        - [ cloud-init-per, once, enabledisplayservice, systemctl, enable, displayservice.service ]
-        - [ cloud-init-per, always, startdisplayservice, systemctl, start, displayservice.service ]
         - [ cloud-init-per, once, firstboot, bash, /opt/tinybox/setup/firstboot.sh ]
-        - [ cloud-init-per, once, enablebuttonservice, systemctl, enable, buttonservice.service ]
-        - [ cloud-init-per, always, startbuttonservice, systemctl, start, buttonservice.service ]
-        - [ cloud-init-per, once, enableautoupdate, systemctl, enable, autoupdate-tinybox.service ]
-        - [ cloud-init-per, once, enabletinychat, systemctl, enable, tinychat.service ]
-        - [ cloud-init-per, once, enablepoweroff, systemctl, enable, poweroff.service ]
-        - [ cloud-init-per, once, enablereboot, systemctl, enable, reboot.service ]
-        - [ cloud-init-per, once, hostname, hostnamectl, hostname, tinybox ]
-        - [ cloud-init-per, once, ntp, timedatectl, set-ntp, "true" ]
-        - [ cloud-init-per, once, updateinitramfs, update-initramfs, -u ]
-        - [ cloud-init-per, once, raidsetup, bash, /opt/tinybox/setup/raidsetup.sh ]
-        - [ cloud-init-per, once, fixdisk, bash, /opt/tinybox/setup/fixdisk.sh ]
-        - [ cloud-init-per, once, reboot, bash, /opt/tinybox/service/reboot.sh ]
       power_state:
         delay: now
         mode: reboot

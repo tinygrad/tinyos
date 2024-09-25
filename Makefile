@@ -3,6 +3,18 @@ help:
 	@echo "       build tinyos.red.img for tinybox red"
 	@echo "make green"
 	@echo "       build tinyos.green.img for tinybox green"
+	@echo "make pro"
+	@echo "       build tinyos.pro.img for tinybox pro"
+	@echo "make blue"
+	@echo "       build tinyos.blue.img for tinybox blue"
+	@echo "make red-dev"
+	@echo "       build tinyos.red.img development image for tinybox red"
+	@echo "make green-dev"
+	@echo "       build tinyos.green.img development image for tinybox green"
+	@echo "make pro-dev"
+	@echo "       build tinyos.pro.img development image for tinybox pro"
+	@echo "make blue-dev"
+	@echo "       build tinyos.blue.img development image for tinybox blue"
 	@echo "make clean"
 	@echo "       clean up"
 
@@ -23,6 +35,12 @@ green:
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
 	time make image
 
+pro:
+	sed 's/<|ARTIFACT_NAME|>/tinyos.pro.img/g' tinyos.template.yaml > tinyos.yaml
+	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
+	echo "TINYBOX_PRO=1" | tee --append build/tinybox-release
+	time make image
+
 blue:
 	sed 's/<|ARTIFACT_NAME|>/tinyos.blue.img/g' tinyos.template.yaml > tinyos.yaml
 	echo "TINYBOX_COLOR=blue" | tee --append build/tinybox-release
@@ -35,6 +53,10 @@ red-dev:
 green-dev:
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make green
+
+pro-dev:
+	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
+	make pro
 
 blue-dev:
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
@@ -60,4 +82,4 @@ image:
 	# final cleanup
 	rm -f tinyos.yaml build/tinybox-release
 
-.PHONY: clean red green blue red-dev green-dev blue-dev image
+.PHONY: clean red green pro blue red-dev green-dev pro-dev blue-dev image
