@@ -1,6 +1,10 @@
+# This Makefile is used to build a custom gadget snap for Ubuntu Core. Gadget snaps are responsible for the 
+# bootloader, kernel, and other low-level OS components.
+
 # this gadget can be built in two ways, either through snapcraft (and then a prebuilt gadget
 # is passed to ubuntu-image), or through make ARCH=a SERIES=s by livecd-rootfs or ubuntu-image
 
+# directory where packages and files are staged
 ifdef SNAPCRAFT_STAGE
 STAGEDIR ?= "$(SNAPCRAFT_STAGE)"
 else
@@ -9,6 +13,8 @@ endif
 
 # ARCH should be set by livecd-rootfs or ubuntu-image, or through
 # SNAPCRAFT_TARGET_ARCH by snapcraft; output a warning if unset (e.g. local build)
+
+# target architecture
 ifdef SNAPCRAFT_TARGET_ARCH
 ARCH := $(SNAPCRAFT_TARGET_ARCH)
 endif
@@ -17,9 +23,10 @@ ARCH := $(shell dpkg --print-architecture)
 $(warning Setting ARCH to $(ARCH) for local build)
 endif
 
+# Ubuntu archive URL used to fetch packages, differentiating between standard and ports
 ARCHIVE := $(if $(findstring $(ARCH),amd64 i386),http://archive.ubuntu.com/ubuntu/,http://ports.ubuntu.com/ubuntu-ports/)
 
-# architecture specific names
+# architecture-specific names and GRUB targets for UEFI boot
 EFI_ARCH_amd64 := x64
 EFI_ARCH_arm64 := aa64
 EFI_ARCH = $(EFI_ARCH_$(ARCH))
@@ -31,6 +38,8 @@ $(if $(EFI_ARCH),,$(error Unknown EFI architecture))
 
 # SERIES should be set by livecd-rootfs or snapcraft should setup a clean environment; output a
 # warning if unset (e.g. local build)
+
+# Ubuntu series (release) being targeted
 ifndef SERIES
 SERIES := $(shell . /etc/os-release && echo $$UBUNTU_CODENAME)
 # no target series env var in snapcraft
@@ -39,15 +48,23 @@ $(warning Setting SERIES to $(SERIES) for local build)
 endif
 endif
 
+# directory where the final installation files are placed
 DESTDIR ?= "$(CURDIR)/install"
+
+# paths to signed UEFI bootloader binaries
 SHIM_SIGNED := $(STAGEDIR)/usr/lib/shim/shim$(EFI_ARCH).efi.signed
 SHIM_LATEST := $(SHIM_SIGNED).latest
 
+
+# The primary targets
 all: boot install
 
 server: boot install
 
 desktop: boot install
+
+
+# Staging of packages
 
 # Check if we're running under snapcraft. If not, we need to 'stage' some
 # packages by ourselves.
@@ -83,6 +100,8 @@ stage-package:
 	dpkg-deb --extract $(STAGEDIR)/tmp/$(package)_*.deb $(STAGEDIR)
 endif
 
+
+# Stage bootloader packages (`grub-efi` and `shim-signed`) and prepares UEFI binaries
 boot:
 	$(MAKE) stage-package package=grub-efi-$(ARCH)-signed
 	$(MAKE) stage-package package=shim-signed
@@ -97,6 +116,8 @@ boot:
 	cp $(STAGEDIR)/usr/lib/shim/fb$(EFI_ARCH).efi fb$(EFI_ARCH).efi
 	cp $(STAGEDIR)/usr/lib/shim/mm$(EFI_ARCH).efi mm$(EFI_ARCH).efi
 
+
+# Installs the staged files into `DESTDIR`, ensuring the bootloader files and configuration are in place
 install: boot
 	mkdir -p $(DESTDIR)
 	install -m 644 \
@@ -108,6 +129,7 @@ install: boot
 	mkdir -p $(DESTDIR)/meta
 	ln gadget-$(ARCH).yaml gadget.yaml
 	cp gadget-$(ARCH).yaml $(DESTDIR)/meta/gadget.yaml
+
 
 # only used locally, not relevant for snapcraft, livecd-rootfs or ubuntu-image
 clean:

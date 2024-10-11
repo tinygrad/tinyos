@@ -3,7 +3,7 @@ set -xeo pipefail
 
 # enable networking in chroot
 mkdir -p /run/systemd/resolve
-echo "nameserver 1.1.1.1" > /run/systemd/resolve/stub-resolv.conf
+echo "nameserver 1.1.1.1" >/run/systemd/resolve/stub-resolv.conf
 
 # run in-chroot-pre scripts
 scripts=$(find /opt/tinybox/build/in-chroot-pre.d/ -type f -name "*.sh" | sort)
@@ -13,7 +13,7 @@ done
 
 # replace /opt/tinybox with the git repo
 rm -rf /opt/tinybox
-git clone https://github.com/tinygrad/tinyos /opt/tinybox
+git clone https://github.com/ppetroskevicius/tinyos /opt/tinybox
 
 # merge /opt/tinybox/userspace into /
 rsync -ah --info=progress2 /opt/tinybox/userspace/ /
