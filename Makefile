@@ -1,4 +1,6 @@
 help:
+	@echo "make setup"
+	@echo "       installs ubuntu-image"
 	@echo "make red"
 	@echo "       build tinyos.red.img for tinybox red"
 	@echo "make green"
@@ -18,6 +20,9 @@ help:
 	@echo "make clean"
 	@echo "       clean up"
 
+setup:
+	sudo snap install ubuntu-image --classic --edge
+
 clean:
 	rm -f tinyos.yaml build/tinybox-release
 	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev || true
@@ -25,40 +30,40 @@ clean:
 	(mount | grep result/chroot) && echo "ERROR: something is still mounted" && exit 1 || true
 	sudo rm -rf result
 
-red:
+red: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.red.img/g' tinyos.template.yaml > tinyos.yaml
 	echo "TINYBOX_COLOR=red" | tee --append build/tinybox-release
 	time make image
 
-green:
+green: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.green.img/g' tinyos.template.yaml > tinyos.yaml
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
 	time make image
 
-pro:
+pro: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.pro.img/g' tinyos.template.yaml > tinyos.yaml
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
 	echo "TINYBOX_PRO=1" | tee --append build/tinybox-release
 	time make image
 
-blue:
+blue: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.blue.img/g' tinyos.template.yaml > tinyos.yaml
 	echo "TINYBOX_COLOR=blue" | tee --append build/tinybox-release
 	time make image
 
-red-dev:
+red-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make red
 
-green-dev:
+green-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make green
 
-pro-dev:
+pro-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make pro
 
-blue-dev:
+blue-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make blue
 
@@ -82,4 +87,4 @@ image:
 	# final cleanup
 	rm -f tinyos.yaml build/tinybox-release
 
-.PHONY: clean red green pro blue red-dev green-dev pro-dev blue-dev image
+.PHONY: setup clean red green pro blue red-dev green-dev pro-dev blue-dev image
