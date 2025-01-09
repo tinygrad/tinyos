@@ -17,14 +17,14 @@ QUERY_STATUS = bytearray([0xcf, 0xef, 0x69, 0x00, 0x00, 0x00, 0x01])
 
 WIDTH, HEIGHT = 800, 480
 class Display:
-  def __init__(self):
+  def __init__(self, brightness:int=0xff):
     self._connect()
 
     # initialize display
     self.send_command(HELLO)
     logging.debug(self.lcd.read(22))
     self.send_command(OPTIONS, bytearray([0x00, 0x00, 0x00, 0x00]))
-    self.send_command(SET_BRIGHTNESS, bytearray([0xff]))
+    self.send_command(SET_BRIGHTNESS, bytearray([brightness]))
 
     self.width, self.height = WIDTH, HEIGHT
 
