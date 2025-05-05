@@ -28,18 +28,16 @@ clean:
 
 red: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.red.img/g' tinyos.template.yaml > tinyos.yaml
-	sed -i 's/<|UBUNTU_SERIES|>/jammy/g' tinyos.yaml
-	sed -i 's/<|UBUNTU_VERSION|>/22.04/g' tinyos.yaml
+	sed -i 's/<|UBUNTU_SERIES|>/noble/g' tinyos.yaml
+	sed -i 's/<|UBUNTU_VERSION|>/24.04/g' tinyos.yaml
 	echo "TINYBOX_COLOR=red" | tee --append build/tinybox-release
-	echo "TINYBOX_VERSION=1" | tee --append build/tinybox-release
 	time make image
 
 green: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.green.img/g' tinyos.template.yaml > tinyos.yaml
-	sed -i 's/<|UBUNTU_SERIES|>/jammy/g' tinyos.yaml
-	sed -i 's/<|UBUNTU_VERSION|>/22.04/g' tinyos.yaml
+	sed -i 's/<|UBUNTU_SERIES|>/noble/g' tinyos.yaml
+	sed -i 's/<|UBUNTU_VERSION|>/24.04/g' tinyos.yaml
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
-	echo "TINYBOX_VERSION=1" | tee --append build/tinybox-release
 	time make image
 
 green-v2: setup
@@ -47,7 +45,6 @@ green-v2: setup
 	sed -i 's/<|UBUNTU_SERIES|>/noble/g' tinyos.yaml
 	sed -i 's/<|UBUNTU_VERSION|>/24.04/g' tinyos.yaml
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
-	echo "TINYBOX_VERSION=2" | tee --append build/tinybox-release
 	time make image
 
 red-dev: setup
