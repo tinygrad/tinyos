@@ -1,0 +1,45 @@
+This seed exists only to allow fine tuning the 3y support time
+
+= Dev tools =
+
+ * gnupg
+ * dirmngr
+
+= Documentation =
+ * gnupg-doc
+ * manpages-dev
+ * tar-doc
+
+= Additional multimedia =
+
+ * gstreamer1.0-tools
+
+= Extra desktop =
+
+ * libreoffice-nlpsolver
+ * libreoffice-officebean
+ * libreoffice-style-colibre
+ * icc-profiles-free
+ * vim-gnome
+ * firefox
+
+== Restricted drivers ==
+
+ * fglrx-amdcccle-updates
+ * fglrx-updates-dev
+ * nvidia-current-updates
+ * nvidia-current-updates-dev
+ * nvidia-settings-updates
+ * %nvidia-graphics-drivers-470
+ * %nvidia-graphics-drivers-535
+ * %nvidia-graphics-drivers-545
+ * %nvidia-graphics-drivers-470-server
+ * %nvidia-graphics-drivers-535-server
+
+== VM integration ==
+
+ * open-vm-tools-desktop
+
+== ZFS snapshot support ==
+
+ * zsys

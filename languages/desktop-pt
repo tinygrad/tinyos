@@ -1,0 +1,24 @@
+# Dictionaries for LibreOffice
+## hyphenation and thesaurus
+ * Language: pt-pt
+ * hyphen-${Language}
+ * hyphen-pt-br
+ * mythes-${Language}
+
+## hunspell dict
+ * Languages: pt-br pt-pt
+ * hunspell-${Languages}
+
+# Other Dictionaries
+ * wportuguese
+ * wbrazilian
+
+# Default apps having separates translations
+## Libreoffice l10n and help
+ * Languages: pt pt-br
+ * libreoffice-l10n-${Languages}
+ * libreoffice-help-${Languages}
+
+## Thunderbird
+ * Languages: pt pt-br pt-pt
+ * thunderbird-locale-${Languages}

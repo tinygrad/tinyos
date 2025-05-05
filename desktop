@@ -1,0 +1,43 @@
+Task-Per-Derivative: 1
+Task-Section: user
+Task-Description: Ubuntu desktop
+Task-Extended-Description: This task provides the Ubuntu desktop environment.
+Task-Key: ubuntu-desktop
+Task-Seeds: desktop-minimal desktop-common
+
+= GUI infrastructure =
+
+Desktop Experience:
+ * snap:thunderbird
+
+= Desktop apps =
+
+We use many GNOME applications as part of our desktop user interface. Rather than using Debian's meta-packages they are deliberately expanded so that we can select things a bit better.
+
+ * (thunderbird)
+ * (transmission-gtk)
+ * (rhythmbox)
+ * (gnome-snapshot)
+ * (totem)
+ * (simple-scan)
+ * (remmina)
+ * (shotwell)
+ * (usb-creator-gtk) [i386 amd64]
+ * (deja-dup)
+ * (file-roller)
+ * (gnome-calendar)
+
+Default office suite: libreoffice
+
+ * !libreoffice-core-nogui
+ * (libreoffice-style-yaru)
+ * (libreoffice-gnome)
+ * (libreoffice-writer)
+ * (libreoffice-calc)
+ * (libreoffice-impress)
+ * (libreoffice-math)
+
+= Other =
+
+ * ubuntu-desktop-minimal # we are a superset of minimal
+ * ubuntu-desktop # metapackage for everything here

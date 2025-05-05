@@ -1,0 +1,9 @@
+Task-Section: server
+Task-Description: Ubuntu server installer live environment
+Task-Extended-Description: This task provides the extra packages installed on the Ubuntu Server live CD. It is neither useful nor recommended to install this task in other environments.
+
+ * casper
+ * linux-firmware
+ * openssh-server
+ * snap:subiquity/classic=24.04/stable
+ * s390-tools-zkey [s390x]

@@ -1,0 +1,7 @@
+Task-Section: server
+Task-Description: OpenSSH server
+Task-Extended-Description: Selects packages needed for an OpenSSH server.
+Task-Relevance: 7
+Task-Key: openssh-server
+
+ * openssh-server

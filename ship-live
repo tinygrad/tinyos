@@ -1,0 +1,97 @@
+The ship-live seed will be added to the live CD as an ordinary package
+archive. Here belongs anything that somebody might need to install after
+installing the contents of the live CD in order to get online and fetch more
+packages.
+
+== Hardware & Network Access ==
+
+ * sl-modem-daemon	# needed for some Winmodems (see OutoftheboxWinmodem)
+ * intel-microcode      # needed to update Intel cpu microcode LP #1386257
+ * amd64-microcode      # needed to update AMD cpu microcode LP #1386257 
+
+ * setserial	# needed by folks with nonstandard serial ports
+ * b43-fwcutter
+ * broadcom-sta-dkms # for remaining odd wifi support
+
+= wpasupplicant =
+
+wpasupplicant is required to configure a wifi network card with
+netplan. The installer will install it in both the installer live
+session and the target system if wifi network cards are present when
+it runs.
+
+ * wpasupplicant
+
+= Curtin =
+
+These packages may be installed dynamically by curtin based on
+installation parameters. They should generally be made available on
+curtin based CDs.
+
+== curtin block/deps.py ==
+
+ * bcache-tools
+ * btrfs-progs
+ * cryptsetup
+ * e2fsprogs
+ * jfsutils
+ * lvm2
+ * mdadm
+ * ntfs-3g
+ * open-iscsi
+ * reiserfsprogs
+ * xfsprogs
+ * zfs-initramfs
+ * zfsutils-linux
+
+== curtin curthooks.py ==
+
+ * multipath-tools-boot
+ * grub-efi-amd64 [amd64]
+ * grub-efi-amd64-signed [amd64]
+ * grub-efi-arm64 [arm64]
+ * grub-efi-amd64-signed [arm64]
+ * grub-pc
+ * shim-signed
+ * efibootmgr
+ * mdadm
+
+== AD integration ==
+
+ * sssd
+ * realmd
+
+== OEM support ==
+
+These packages are dynamically installed by the Ubuntu installer when we're
+installing on compatible hardware. They will pull in additional hardware
+support packages. They default to oem linux flavour, seed it too.
+
+Note that desktop explicitly requests linux-generic-hwe-24.04 as the kernel to
+install.
+
+ * /^oem-.+-meta$/
+ * linux-oem-24.04
+ * linux-generic-hwe-24.04 [amd64]
+ * /^linux-modules-iwlwifi-generic-hwe-24.04$/
+ * /^linux-modules-ipu6-generic-hwe-24.04$/
+ * /^linux-modules-ivsc-generic-hwe-24.04$/
+ * /^linux-modules-iwlwifi-oem-24.04$/
+ * /^linux-modules-ipu6-oem-24.04$/
+ * /^linux-modules-ivsc-oem-24.04$/
+
+== nvidia ==
+
+ * /^nvidia-driver-535$/ [amd64]
+ * /^linux-modules-nvidia-535-generic-hwe-24.04$/ [amd64]
+ * /^linux-modules-nvidia-535-oem-24.04$/ [amd64]
+ * /^nvidia-driver-550$/ [amd64]
+ * /^linux-modules-nvidia-550-generic-hwe-24.04$/ [amd64]
+ * /^linux-modules-nvidia-550-oem-24.04$/ [amd64]
+ * nvidia-prime [amd64]
+
+== Blacklist ==
+
+libavcodec cannot be shipped on CDs (c.f. Ubuntu technical board resolution 2007-01-02).
+
+ * !libavcodec*

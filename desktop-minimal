@@ -1,0 +1,181 @@
+Task-Per-Derivative: 1
+Task-Section: user
+Task-Description: Ubuntu minimal desktop
+Task-Extended-Description: This task provides the Ubuntu desktop minimal environment.
+Task-Key: ubuntu-desktop-minimal
+Task-Seeds: desktop-common
+
+= Hardware and Architecture Support =
+
+== Architecture-independent ==
+
+Bluetooth:
+
+ * (gnome-bluetooth-sendto) # desktop bluetooth support
+
+= Network Services =
+
+Basic network services, VPN and Windows integration.
+
+ * (network-manager)
+ * (network-manager-config-connectivity-ubuntu)
+ * (network-manager-pptp-gnome)
+ * (network-manager-openvpn-gnome)
+ * (libproxy1-plugin-gsettings)
+ * (libproxy1-plugin-networkmanager)
+
+= GUI infrastructure =
+
+ * libnotify-bin                  # various scripts need notify-send (such as .bashrc's "alert")
+ * !notification-daemon           # gnome-shell provides this feature instead
+
+Input methods:
+
+ * (im-config)
+ * (ibus)
+ * (ibus-gtk)
+ * (ibus-gtk3)
+ * (ibus-table)
+
+Desktop Experience:
+ * gnome-shell
+ * ubuntu-session [!s390x]
+ * gnome-shell-extension-desktop-icons-ng
+ * gnome-shell-extension-ubuntu-dock
+ * gnome-shell-extension-ubuntu-tiling-assistant
+ * gnome-shell-extension-appindicator
+ * (gir1.2-gmenu-3.0) # LP: #1726093
+ * (gnome-initial-setup)
+ * (ubuntu-report)
+ * (gnome-remote-desktop)
+ * (systemd-oomd)
+
+= Desktop apps =
+
+We use many GNOME applications as part of our desktop user interface. Rather than using Debian's meta-packages they are deliberately expanded so that we can select things a bit better.
+
+ * (apport-gtk)
+ * (whoopsie)
+ * (baobab)
+ * (eog)
+ * gdm3
+ * (gnome-clocks)
+ * gnome-settings-daemon
+ * gnome-control-center
+ * gnome-menus
+ * (gnome-power-manager)
+ * (gnome-terminal)
+ * (gnome-text-editor)
+ * (gnome-font-viewer)
+ * language-selector-gnome
+ * (firefox)
+ * nautilus
+ * (nautilus-sendto)
+ * software-properties-gtk
+ * ubuntu-release-upgrader-gtk
+ * update-manager
+ * update-notifier
+ * yelp
+ * zenity
+ * (xdg-desktop-portal-gnome) # Useful for desktop snaps
+ * (xdg-utils)         # useful utilities
+ * xdg-user-dirs
+ * xdg-user-dirs-gtk
+ * pipewire-pulse
+ * wireplumber
+ * (libspa-0.2-bluetooth) # PipeWire Bluetooth
+ * (libglib2.0-bin)     # mostly used as xdg-open backend (gio open)
+ * (gvfs-fuse)          # let non-GNOME apps see GVFS via fuse
+ * (gnome-disk-utility)
+ * (evince)
+ * (gnome-system-monitor)
+ * (gnome-calculator)
+ * (gnome-characters)
+ * (gnome-logs)
+ * (appstream)          # required by snap:snap-store for appstream cache
+ * (apt-config-icons-hidpi)   # required by snap:snap-store for apt icons
+ * (gamemode)
+ 
+ Desktop snaps: these also exist in ubuntu-release-upgrader's DistUpgradeQuirks.py for users who upgrade.
+ * snap:firefox
+ * snap:gnome-42-2204
+ * snap:gtk-common-themes
+ * snap:snap-store=2/stable/ubuntu-24.04
+ * snap:snapd-desktop-integration
+ * snap:firmware-updater=1/stable/ubuntu-24.04 [amd64]
+
+= Key management and signing =
+
+ * (gnome-keyring)
+ * (seahorse)
+ * (libpam-gnome-keyring)
+
+We use gnupg's pinentry support as of wily, instead of gnome-keyring as before.
+
+ * (gpg-agent)
+ * (dirmngr)
+
+Themes: we will ship only the very best looking themes. We won't ship everything that Debian ships, just a custom package that includes our default theme.
+
+Yaru Theming
+
+ * (yaru-theme-gnome-shell)
+ * (yaru-theme-gtk)
+ * (yaru-theme-icon)
+ * (yaru-theme-sound)
+
+Wallpapers
+
+ * (ubuntu-wallpapers)
+
+Others
+
+ * gnome-session-canberra   # Needed to make login/logout sounds audible.
+ * dmz-cursor-theme
+
+Boot theme
+
+ * (plymouth-theme-spinner)
+
+Settings: we have some settings overrides by default in an unique package.
+          and provide our ones, like sound settings
+ * ubuntu-settings
+ * (gsettings-ubuntu-schemas)
+
+The gstreamer1.0 packages we want to install:
+
+ * gstreamer1.0-alsa
+ * gstreamer1.0-plugins-base-apps
+ * gstreamer1.0-packagekit [!riscv64 !s390x]
+
+Accessibility tools:
+
+ * (gnome-accessibility-themes)
+ * (orca)
+ * (brltty)
+ * (xcursor-themes)
+ * (speech-dispatcher)
+ * (mousetweaks)
+ * at-spi2-core
+ * libatk-adaptor
+
+== PAM modules for GDM ==
+
+ * (libpam-fprintd)
+ * (libpam-sss) # used by the default smartcard service
+
+= Installer integration =
+
+ubuntu-desktop-installer (based on subiquity) needs cloud-init present in
+the target install to finish setup on first boot
+
+ * (cloud-init)
+
+= Documentation =
+
+ * (ubuntu-docs)
+
+= Other =
+
+ * ubuntu-desktop-minimal # metapackage for everything here
+ * (libwmf0.2-7-gtk) # provides a gdk-pixbuf loader for WMF images

@@ -1,0 +1,65 @@
+= Kernel =
+
+== generic ==
+
+ * linux-generic
+ * /^nvidia-driver-470-server$/
+ * /^nvidia-driver-535-server$/
+ * /^linux-modules-nvidia-470-server-generic$/
+ * /^linux-modules-nvidia-535-server-generic$/
+ * opal-prd [ppc64el] # for OpenPOWER machines LP: #1555904 LP: #1691557
+
+= OpenSSH server =
+
+The security team's position has always been that installing openssh should be
+opt-in, so that it is clear to the person performing the installation that ssh
+will be active. And so it is necessary to have openssh-server in the pool so
+that it can be installed if the user opts into it.
+
+ * openssh-server
+
+= wpasupplicant =
+
+wpasupplicant is required to configure a wifi network card with
+netplan. The installer will install it in both the installer live
+session and the target system if wifi network cards are present when
+it runs.
+
+ * wpasupplicant
+
+= Curtin =
+
+These packages may be installed dynamically by curtin based on
+installation parameters. They should generally be made available on
+curtin based CDs.
+
+== curtin block/deps.py ==
+
+ * bcache-tools
+ * btrfs-progs
+ * e2fsprogs
+ * jfsutils
+ * lvm2
+ * mdadm
+ * ntfs-3g
+ * nvme-cli
+ * nvme-stas
+ * open-iscsi
+ * reiserfsprogs
+ * xfsprogs
+ * zfs-initramfs
+ * zfsutils-linux
+
+== curtin net/deps.py ==
+
+ * openvswitch-switch
+
+== curtin curthooks.py ==
+
+ * multipath-tools-boot
+ * s390-tools
+ * s390-tools-zkey
+ * grub-efi [amd64 i386]
+ * grub-efi-arm64 [arm64]
+ * shim-signed
+ * grub-efi-riscv64 [riscv64]
