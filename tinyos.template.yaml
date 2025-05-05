@@ -2,9 +2,9 @@ name: tinyos
 display-name: tinyos
 revision: 1
 architecture: amd64
-series: jammy
+series: <|UBUNTU_SERIES|>
 class: preinstalled
-kernel: linux-generic-hwe-22.04
+kernel: linux-generic-hwe-<|UBUNTU_VERSION|>
 gadget:
   url: file://./pc-gadget/
   type: directory
@@ -76,7 +76,7 @@ customization:
     - name: ipmitool
     - name: jc
     - name: jq
-    - name: linux-tools-generic-hwe-22.04
+    - name: linux-tools-generic-hwe-<|UBUNTU_VERSION|>
     - name: lm-sensors
     - name: locales
     - name: lshw

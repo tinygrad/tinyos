@@ -14,38 +14,27 @@ if [[ "$TINYBOX_COLOR" == "red" ]]; then
 elif [[ "$TINYBOX_COLOR" == "green" ]]; then
   pushd /tmp
 
-  curl -o keyring.deb -L "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
-  dpkg -i keyring.deb
+  if [[ "$TINYBOX_VERSION" == "1" ]]; then
+    curl -o keyring.deb -L "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
+    curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/550.90.07-p2p/nvidia-kernel-source-550-open-0ubuntu1_amd64.deb"
+  elif [[ "$TINYBOX_VERSION" == "2" ]]; then
+    curl -o keyring.deb -L "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb"
+    curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/570.124.06-p2p/nvidia-kernel-source-570-open-0ubuntu1_amd64.deb"
+  fi
 
-  curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/550.90.07-p2p/nvidia-kernel-source-550-open-0ubuntu1_amd64.deb"
+  dpkg -i keyring.deb
   dpkg -i driver.deb
 
   apt update -y
-  apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
+  if [[ "$TINYBOX_VERSION" == "1" ]]; then
+    apt install cuda-toolkit-12-4 nvidia-driver-550-open cuda-drivers-550 -y
+    apt-mark hold nvidia-driver-550-open nvidia-dkms-550-open nvidia-kernel-common-550 nvidia-kernel-source-550-open cuda-drivers-550 cuda-toolkit-12-4 libnvidia-common-550
+  elif [[ "$TINYBOX_VERSION" == "2" ]]; then
+    apt install cuda-toolkit-12-8 nvidia-driver-570-open cuda-drivers-570 -y
+    apt-mark hold nvidia-driver-570-open nvidia-dkms-570-open nvidia-kernel-common-570 nvidia-kernel-source-570-open cuda-drivers-570 cuda-toolkit-12-8 libnvidia-common-570
+  fi
 
-  # hold the nvidia driver
-  apt-mark hold nvidia-driver-550-open nvidia-dkms-550-open nvidia-kernel-common-550 nvidia-kernel-source-550-open cuda-drivers-550 cuda-toolkit-12-4 libnvidia-common-550
   popd
-elif [[ "$TINYBOX_COLOR" == "blue" ]]; then
-  wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg
-  wget -qO - https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --yes --dearmor --output /usr/share/keyrings/oneapi-archive-keyring.gpg
-
-  echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy/lts/2350 unified" | tee /etc/apt/sources.list.d/intel-graphics-jammy.list
-  echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-
-  # install intel drivers and mesa
-  apt update -y
-  apt install "linux-headers-$(uname -r)" "linux-modules-extra-$(uname -r)" -y
-  apt install flex bison -y
-  apt install intel-fw-gpu xpu-smi -y # out-of-tree: intel-i915-dkms
-  apt install intel-opencl-icd intel-level-zero-gpu level-zero intel-media-va-driver-non-free -y
-  apt install libmfx1 libmfxgen1 libvpl2 libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 -y
-  apt install mesa-va-drivers mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all -y
-  apt install vainfo hwinfo clinfo -y
-  apt install libigc-dev intel-igc-cm libigdfcl-dev libigfxcmrt-dev level-zero-dev -y
-
-  # install oneAPI
-  apt install intel-basekit -y
 else
   echo "Unknown tinybox color: $TINYBOX_COLOR"
   exit 1

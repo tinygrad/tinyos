@@ -5,18 +5,14 @@ help:
 	@echo "       build tinyos.red.img for tinybox red"
 	@echo "make green"
 	@echo "       build tinyos.green.img for tinybox green"
-	@echo "make pro"
-	@echo "       build tinyos.pro.img for tinybox pro"
-	@echo "make blue"
-	@echo "       build tinyos.blue.img for tinybox blue"
+	@echo "make green-v2"
+	@echo "       build tinyos.green-v2.img for tinybox green-v2"
 	@echo "make red-dev"
 	@echo "       build tinyos.red.img development image for tinybox red"
 	@echo "make green-dev"
 	@echo "       build tinyos.green.img development image for tinybox green"
-	@echo "make pro-dev"
-	@echo "       build tinyos.pro.img development image for tinybox pro"
-	@echo "make blue-dev"
-	@echo "       build tinyos.blue.img development image for tinybox blue"
+	@echo "make green-v2-dev"
+	@echo "       build tinyos.green-v2.img development image for tinybox green-v2"
 	@echo "make clean"
 	@echo "       clean up"
 
@@ -32,23 +28,26 @@ clean:
 
 red: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.red.img/g' tinyos.template.yaml > tinyos.yaml
+	sed -i 's/<|UBUNTU_SERIES|>/jammy/g' tinyos.yaml
+	sed -i 's/<|UBUNTU_VERSION|>/22.04/g' tinyos.yaml
 	echo "TINYBOX_COLOR=red" | tee --append build/tinybox-release
+	echo "TINYBOX_VERSION=1" | tee --append build/tinybox-release
 	time make image
 
 green: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.green.img/g' tinyos.template.yaml > tinyos.yaml
+	sed -i 's/<|UBUNTU_SERIES|>/jammy/g' tinyos.yaml
+	sed -i 's/<|UBUNTU_VERSION|>/22.04/g' tinyos.yaml
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
+	echo "TINYBOX_VERSION=1" | tee --append build/tinybox-release
 	time make image
 
-pro: setup
+green-v2: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.pro.img/g' tinyos.template.yaml > tinyos.yaml
+	sed -i 's/<|UBUNTU_SERIES|>/noble/g' tinyos.yaml
+	sed -i 's/<|UBUNTU_VERSION|>/24.04/g' tinyos.yaml
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
-	echo "TINYBOX_PRO=1" | tee --append build/tinybox-release
-	time make image
-
-blue: setup
-	sed 's/<|ARTIFACT_NAME|>/tinyos.blue.img/g' tinyos.template.yaml > tinyos.yaml
-	echo "TINYBOX_COLOR=blue" | tee --append build/tinybox-release
+	echo "TINYBOX_VERSION=2" | tee --append build/tinybox-release
 	time make image
 
 red-dev: setup
@@ -59,13 +58,9 @@ green-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make green
 
-pro-dev: setup
+green-v2-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make pro
-
-blue-dev: setup
-	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
-	make blue
 
 image:
 	sed -i 's/<|CURRENT_DIR|>/$(shell pwd | sed 's/\//\\\//g')/g' tinyos.yaml
