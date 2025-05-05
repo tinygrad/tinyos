@@ -1,0 +1,4 @@
+= Landscape =
+
+ * landscape-client
+ * landscape-common # LP: #1756261, recommends from server seed to be removable for minimal (LP: #1763182)

@@ -1,0 +1,15 @@
+== Filesystems ==
+
+ * ocfs2-tools
+
+== Storage ==
+
+ * ceph
+ * ceph-mds
+ * radosgw
+ * nfs-ganesha-ceph
+ * targetcli-fb             # targetcli-fb promotion to main (LP: #1854362)
+ * libaio1
+ * open-iscsi
+ * nfs-kernel-server
+ * nfs-common

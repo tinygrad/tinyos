@@ -1,0 +1,64 @@
+= MAAS as a snap (~maas-maintainers) =
+
+Staged Packages:
+
+ * snmp                    # APC
+ * wget                    # DLI
+ * freeipmi-tools          # IPMI
+ * libvirt-clients         # Virsh
+ * pxelinux                # Booting legacy x86, PowerNV, Windows
+ * syslinux-common         # Booting legacy x86, PowerNV, Windows
+ * shim-signed             # Booting UEFI secure boot AMD64
+ * grub-efi-amd64-signed   # Booting UEFI AMD64
+ * grub-efi-arm64-bin      # Booting UEFI ARM64
+ * grub-ieee1275-bin       # Booting PPC64
+ * archdetect-deb
+ * avahi-utils
+ * bind9
+ * gpgv
+ * iproute2
+ * libatm1
+ * libpq5
+ * libxtables12
+ * lshw
+ * chrony
+ * nginx-core
+ * openssh-client
+ * postgresql
+ * python3-bson
+ * python3-crochet
+ * python3-django
+ * python3-django-piston3
+ * python3-distro-info
+ * python3-formencode
+ * python3-httplib2
+ * python3-jsonschema
+ * python3-lxml
+ * python3-mimeparse
+ * python3-netaddr
+ * python3-netifaces
+ * python3-paramiko
+ * python3-petname
+ * python3-pexpect
+ * python3-psycopg2
+ * python3-pyparsing
+ * python3-requests
+ * python3-sphinx
+ * python3-tempita
+ * python3-twisted
+ * python3-zope.interface
+ * python3-seamicroclient
+ * python3-txtftp
+ * python3-yaml
+ * python3-simplestreams
+ * python3-curtin
+ * python3-oauth
+ * python3-oauthlib
+ * python3-attr
+ * python3-simplejson
+ * python3-markupsafe
+ * rsyslog
+ * squid
+ * tcpdump
+ * ubuntu-keyring
+ * util-linux

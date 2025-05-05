@@ -1,0 +1,141 @@
+This seed provides the basic components that should be installed on an
+Ubuntu-family desktop system. It is expected to be supplemented with a
+particular flavour of desktop environment (e.g. GNOME, KDE, or XFCE).
+
+Before packages are added here, they must follow the procedure to
+ensure that all parties are aware of the addition:
+https://wiki.ubuntu.com/SeedManagement/AddingPackagesToDesktopCommon
+
+= Hardware and Architecture Support =
+
+== Architecture-independent ==
+
+ * alsa-base # needed for proper hardware detection (hotplug/blacklist.d, modprobe.d)
+ * alsa-utils           # basic audio support and mixer level handling
+ * (pcmciautils)        # PCMCIA support for >= 2.6.13-rc1 kernels
+ * inputattach          # needed for serial mice
+ * ubuntu-drivers-common # Make it harder to remove detection support, LP#704597
+ * libu2f-udev          # needed to get U2F and yubikeys to work properly
+
+Bluetooth:
+TODO not for Xubuntu
+
+ * (bluez) # base for bluetooth support
+ * (bluez-cups)  # allow connecting to bluetooth printers from CUPS
+
+== armel ==
+
+ * apmd [armel]
+
+== ppc32, ppc64 ==
+
+ * pbbuttonsd [powerpc]
+
+= Console-Based Tools =
+
+These tools are very commonly used by people who drop into a console shell to do some work.
+
+ * bc
+ * zip
+ * unzip                # also used for .zip support in file-roller
+
+= Network Services =
+
+Basic network services and Windows integration.
+
+ * wireless-tools
+ * rfkill              # No longer using the copy from wireless-tools (LP: #715309)
+ * wpasupplicant  # ScottJamesRemnant
+ * (libnss-mdns)       # IPv4 link-local DNS support
+ * ca-certificates     # common SSL certificates
+
+These packages help with system integration
+
+ * libsasl2-modules    # allows integration with MTA and login system
+ * (avahi-daemon)      # some people do not like it, and it is not essential
+
+= Printing =
+
+Printing and printer configuration is a real weak spot in Debian, and in Linux in general. We will need to stay at the front of the curve here.
+
+ * (cups)                     # our preferred printer management infrastructure
+ * (cups-bsd)                 # gives us lpc, lpq, lpr, lprm
+ * (cups-client)              # gives us cancel, cupstestppd, lp, lpoptions, lppasswd, lpstat, cupsaddsmb, accept, lpadmin, lpinfo, lpmove
+ * foomatic-db-compressed-ppds  # the foomatic printer driver database
+ * (cups-filters)
+ * openprinting-ppds            # Most common drivers we want in desktop; less common are in o-p-extra
+ * printer-driver-pnm2ppa       # several ppds require this
+ * ghostscript
+ * (hplip)     			# support for HP all-in-one printers
+ * (printer-driver-min12xxw)	# support for KonicaMinolta PagePro 1200W, 1300W printers
+ * (printer-driver-foo2zjs)	# support for printing to ZjStream-based printers
+ * (printer-driver-splix)	# support for Samsung lasers
+ * (printer-driver-pxljr)	# support for HP Color lasers
+ * (printer-driver-c2esp)       # support for Kodak injket printers
+ * (printer-driver-ptouch)      # support for Brother P-touch printers
+ * (printer-driver-sag-gdi)     # support for Rico Aficio SPxxxx printers
+ * (printer-driver-brlaser)     # support for some Brother laser printers
+ * (printer-driver-m2300w)      # support for the Minolta magicolor 2300W/24000W color laser printers
+
+= GUI infrastructure =
+
+Packages used for X preconfiguration are just Recommends; removing them after initial installation should be relatively safe.
+
+ * (laptop-detect)
+
+ * xorg                          # this includes xserver-xorg->xserver-xorg-{input|video}-* (no need to add specific drivers manually)
+ * !linux-image-*                # xorg transitively depends on this, but this would pull in grub-pc; we handle that separately
+ * xkb-data                      # XKB data now lives here
+ * spice-vdagent                 # Better when run as a Spice VM, like with GNOME Boxes LP: #1200296
+
+Fonts:
+
+ * fontconfig
+ * fonts-dejavu-core             # DejaVu Sans Mono is the default monospace font in /etc/fonts/conf.d/60-latin.conf.
+                                 # The reason for the hard dependency is to make sure that DejaVu Sans is available in
+                                 # connection with distupgrades. LP: #2034986
+ * (fonts-liberation)
+ * (fonts-noto-cjk)
+ * (fonts-noto-color-emoji)
+ * (fonts-noto-core)             # Noto Sans and Noto Serif are default in /etc/fonts/conf.d/60-latin.conf.
+ * (fonts-ubuntu)                # desktop default via an override in the ubuntu-settings package
+
+= Debugging and Diagnostics =
+
+ * (memtest86+)
+
+= Common Packaging Framework Stuff =
+
+ * (packagekit)
+ * (snapd)
+
+= Firmware updating support =
+
+ * (fwupd)
+ * (fwupd-signed)
+
+= Other =
+
+ * anacron # generally appropriate for desktops
+ * (kerneloops-daemon) # watch for and allow reporting of kernel problems
+ * (policykit-desktop-privileges) # passwordless disk/CPU speed/time operations for admins
+ * language-selector-common # helps installer to work out which language-support packages to install
+
+== Blacklist ==
+
+inetutils-telnet was introduced through MIR (LP: #2008789), but only the
+-telnet package got reviewed and the other binaries from src:inetutils should
+stay out of main. Related to:
+https://git.launchpad.net/~ubuntu-core-dev/ubuntu-seeds/+git/platform/commit/?h=lunar&id=349619d
+
+ * !inetutils-ftp
+ * !inetutils-ftpd
+ * !inetutils-inetd
+ * !inetutils-ping
+ * !inetutils-syslogd
+ * !inetutils-talk
+ * !inetutils-talkd
+ * !inetutils-telnetd
+ * !inetutils-tools
+ * !inetutils-traceroute
+ * !telnetd

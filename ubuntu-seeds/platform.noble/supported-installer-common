@@ -1,0 +1,15 @@
+= Installer =
+
+ * debian-installer # just an html page explaining it is gone
+ * grub-efi [amd64 i386]
+ * grub-efi-amd64 [amd64 i386]
+ * grub-efi-ia32 [amd64 i386]
+ * grub-efi-amd64-signed [amd64]
+ * grub-efi-arm64-signed [arm64]
+ * grub-efi-arm [armhf]
+ * grub-uboot [armhf]
+ * grub-xen [amd64 i386]
+ * mini-iso-tools   # support package for ubuntu-mini-iso
+ * sbsigntool
+
+ * ntfs-3g # no longer in the minimal image but bundled in subiquity snap

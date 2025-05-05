@@ -1,0 +1,10 @@
+= MAAS as a snap (~maas-maintainers), universe packages =
+
+ * Feature: no-follow-recommends
+
+Staged Packages:
+
+ * amtterm                 # AMT
+ * ipmitool                # IPMI (Never got to main - LP: #1978144)
+ * isc-dhcp-server         # Demoted as of noble (LP: #2045577 #2045771)
+ * wsmancli

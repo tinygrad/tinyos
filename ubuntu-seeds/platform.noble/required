@@ -1,0 +1,50 @@
+This seed describes the packages at Priority: required. These packages are installed by the first pass of debootstrap, which extracts them (dpkg -x, without running maintainer scripts) in order to construct a basic environment into which it can chroot and install them properly.
+
+A system containing only required packages is not a supported Ubuntu system; you need to install at least the packages from minimal as well.
+
+We avoid following Recommends for this seed because it is processed by debootstrap, not apt, and debootstrap only does the minimum necessary.
+
+ * Feature: no-follow-recommends
+
+= UNIX =
+
+== Essential ==
+
+These are packages which have "Essential: yes" in their control file.
+
+ * base-files
+ * base-passwd    # ColinWatson
+ * bash
+ * bsdutils       # LaMontJones
+ * coreutils
+ * dash           # Much faster default shell
+ * debianutils
+ * diffutils
+ * dpkg
+ * e2fsprogs
+ * findutils
+ * grep
+ * gzip
+ * hostname
+ * init-system-helpers
+ * libc-bin
+ * login
+ * mount          # LaMontJones
+ * ncurses-base
+ * ncurses-bin
+ * perl-base
+ * sed
+ * tar            # LaMontJones
+ * util-linux     # LaMontJones
+
+In some sense, debconf isn't truly required, but it makes our life a lot easier to have it installed in the first pass.
+
+ * debconf
+
+Other packages necessary to get started:
+
+ * mawk
+ * passwd
+ * procps
+ * sensible-utils # used to be pulled in by debianutils, tons of undeclared deps
+ * sysvinit-utils # pidof tool (Debian #810018) and init-d-script for SysV init scripts

@@ -1,0 +1,13 @@
+= Hardware =
+
+ * irda-utils
+ * wacom-tools
+ * gobi-loader
+
+== Filesystems ==
+
+ * hfsplus
+
+= OEM =
+
+ * tlp # for oem-somerville-melisa-meta LP: #1888498

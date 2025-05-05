@@ -1,0 +1,101 @@
+= Openstack =
+
+Networking:
+
+ * radvd
+
+ * openvswitch-switch
+ * openvswitch-switch-dpdk
+
+ * ovn-central
+ * ovn-host
+
+OpenStack:
+
+ * ubuntu-cloud-keyring # keyring for the Ubuntu Cloud Archive
+
+ * masakari-host-monitor
+ * masakari-api
+ * masakari-engine
+
+ * nova-api
+ * nova-common
+ * nova-scheduler
+ * nova-volume
+ * nova-compute
+ * nova-compute-kvm
+ * nova-compute-lxc
+ * nova-spiceproxy
+ * nova-scheduler # James Page LP: #1180084
+ * nova-conductor
+
+ * swift
+ * swift-account
+ * swift-container
+ * swift-doc
+ * swift-object
+ * swift-object-expirer
+ * swift-proxy
+
+ * glance
+
+ * keystone
+
+ * python3-openstackclient
+ * python3-keystoneclient
+ * python3-cinderclient
+ * python3-swiftclient
+ * python3-glanceclient
+ * python3-neutronclient
+ * python3-osc-placement # https://bugs.launchpad.net/bugs/1790921
+
+ * ceilometer-agent-compute
+ * ceilometer-agent-central
+
+ * openstack-dashboard
+
+ * cinder-volume
+ * cinder-api
+ * cinder-scheduler
+ * cinder-backup
+
+ * neutron-server
+ * neutron-l3-agent
+ * neutron-dhcp-agent
+ * neutron-openvswitch-agent
+ * neutron-linuxbridge-agent
+ * neutron-metadata-agent
+ * neutron-ovn-metadata-agent
+
+ * python3-neutron-vpnaas # https://bugs.launchpad.net/bugs/1482765
+
+ * heat-engine
+ * heat-api
+ * heat-api-cfn
+
+ * aodh-api # https://bugs.launchpad.net/bugs/1546728
+ * aodh-evaluator
+ * aodh-notifier
+ * aodh-listener
+ * aodh-expirer
+
+ * barbican-api # https://bugs.launchpad.net/bugs/1543754
+ * barbican-worker
+ * barbican-keystone-listener
+
+ * designate # https://bugs.launchpad.net/bugs/1543748
+ * designate-zone-manager
+ * designate-sink
+ * designate-pool-manager
+ * designate-mdns
+ * designate-producer
+ * designate-worker
+
+ * libapache2-mod-auth-mellon # https://bugs.launchpad.net/bugs/1610286
+
+ * placement-api # https://launchpad.net/bugs/1805691
+
+ * python3-heat-dashboard # https://bugs.launchpad.net/bugs/1750576
+ * python3-octavia-dashboard # https://bugs.launchpad.net/bugs/1801094
+
+ * python3-ovn-octavia-provider # https://bugs.launchpad.net/bugs/1864666
