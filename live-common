@@ -1,0 +1,23 @@
+Ubiquity needs full filesystem support for the partitioner.
+
+ * xfsprogs
+ * jfsutils
+ * hfsplus [powerpc]  # ColinWatson
+ * reiserfsprogs
+ * btrfs-progs
+ * ntfs-3g
+ * lvm2
+ * dmraid
+
+# workaround for a broken aufs/overlayfs (e. g. LP #587888); also needs
+# cdimage change to use union=unionfs-fuse kernel parameter
+# * unionfs-fuse
+
+# * (bootchart) [!armel] # scheduled for removal before maverick beta
+
+ * mokutil [amd64] # Needed for EFI install with third-party drivers
+
+== Germinate workarounds ==
+
+ * wamerican  # iamerican Depends: ispell Recommends: wordlist, but wamerican isn't spotted in time so germinate arbitrarily picks miscfiles instead
+

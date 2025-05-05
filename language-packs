@@ -1,0 +1,5 @@
+= Language packs =
+
+Language packs are used to deliver translations and other language-specific facilities. They're seeded elsewhere to get them onto CD images, but this seed collects the basic ones together so that we can easily identify them for the purposes of constructing package sets.
+
+ * /^language-pack-[^-]+$/

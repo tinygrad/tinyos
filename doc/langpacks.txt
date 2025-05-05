@@ -1,0 +1,41 @@
+Language pack sizes
+===================
+
+langpack-o-matic has a script 'langpacksize' that helps to determine
+which packages fit on the CDs. You can download the latest version from 
+
+  http://bazaar.launchpad.net/~ubuntu-langpack/langpack-o-matic/main/view/head:/langpacksize
+
+This script prints a table of languages vs. categories and their
+single and cumulative sizes; by default, the numbers are bytes, but
+when being invoked with 'MB' as first argument, the numbers will be
+MB.
+
+E. g.:
+
+en     G:     5.30  K:     5.55  G+K:     7.93  GSum:     5.30  KSum:     5.55 G+KSum:     7.93
+es     G:     3.57  K:     4.76  G+K:     6.16  GSum:     8.87  KSum:    10.32 G+KSum:    14.09
+
+'G' is the size of base+gnome (as needed for Ubuntu CDs), 'K' is the
+size of base+kde (Kubuntu), 'G+K' is the size of base+gnome+kde
+(Edubuntu). In this context, 'base' means packages which are UI
+independent, such as coreutils, gcc, or hwdb-client.
+
+The 'Sum' field show the cumulative size of the packages for that
+language and all languages above it.
+
+The list is vertically ordered by the priority, i. e. they should be
+added from top to down.
+
+Input support packages
+======================
+
+When shipping a language on a CD, the required input support packages
+should be shipped as well.
+
+To find out the necessary packages, run this command for the particular
+language code:
+
+  check-language-support -l ja --show-installed -p ibus
+
+This displays the input methods for Japanese ("ja").

@@ -1,0 +1,47 @@
+== Kernel ==
+
+ * %linux
+ * %linux-meta
+ * %linux-signed
+ * %linux-restricted-modules
+ * %linux-lowlatency
+ * %linux-meta-lowlatency
+ * %linux-signed-lowlatency
+ * %linux-restricted-modules-lowlatency
+ * %linux-restricted-signatures-lowlatency
+ * %linux-hwe
+ * %linux-meta-hwe
+ * %linux-signed-hwe
+ * %linux-riscv
+ * %linux-meta-riscv
+ * %linux-allwinner
+ * %linux-meta-allwinner
+ * %linux-starfive
+ * %linux-meta-starfive
+ * %linux-raspi
+ * %linux-meta-raspi
+ * %linux-laptop
+ * %linux-meta-laptop
+ * %linux-intel-iotg
+ * %linux-meta-intel-iotg
+ * %linux-signed-intel-iotg
+ * %linux-restricted-modules-intel-iotg
+ * %linux-restricted-signatures-intel-iotg
+ * /^linux-image-[0-9]+/
+ * /^linux-image-unsigned-[0-9]+/
+ * /^linux-headers-[0-9]+/
+ * /^linux-buildinfo-[0-9]+/
+ * /^linux-tools-[0-9]+/
+ * /^linux-cloud-tools-[0-9]+/
+ * /^linux-modules-nvidia-[0-9]+/
+ * /^linux-modules-extra-[0-9]+/
+ * /^linux-source-[0-9]+/
+ * kexec-tools
+ * thermald
+
+== Proprietary drivers ==
+
+ * broadcom-sta-common
+ * bcmwl-kernel-source
+ * broadcom-sta-source
+ * !module-assistant

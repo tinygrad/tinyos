@@ -1,0 +1,198 @@
+= Servers and Daemons =
+
+Database:
+
+ * postgresql-plperl-*
+ * postgresql-plpython3-*
+ * postgresql-pltcl-*
+
+ # the mysql-server is also seeded via lamp-server task
+ * mysql-server
+ * mysql-client
+
+Email:
+
+ * fetchmail
+ * procmail
+ * exim4
+ * exim4-daemon-heavy
+ * exim4-daemon-light
+ * exim4-doc-html
+ * dovecot-core
+ * postfix
+ * postfix-cdb
+ * postfix-doc
+ * postfix-ldap
+ * postfix-mysql
+ * postfix-pcre
+ * postfix-pgsql
+ * amavisd-new
+ * spamassassin
+
+Must also consider webmail and so on...
+
+VPN:
+
+ * strongswan # ipsec vpn - jpds/14.04 (LP: #1266066)
+ * openvpn
+ * wireguard-tools # (MIR LP: #1950317)
+
+Web servers:
+
+ * nginx
+ * libapache2-mod-auth-pgsql # not in lamp task, but relevant
+ * libapache2-mod-auth-plain # not in lamp task, but relevant
+ * libapache2-mod-perl2      # not in lamp task, might consider demotion for 22.04?
+ * libapache2-mod-php
+
+Web applications:
+
+ * memcached #ClintByrum - server-maverick-uds-web20-workloads
+ * libmemcached-dev #ClintByrum - server-maverick-uds-web20-workloads
+ * rabbitmq-server
+ * php
+ * php-pear
+ * php-cgi
+ * php-cli
+ * php-curl
+ * php-gd
+ * php-gmp
+ * php-ldap
+ * php-mysql
+ * php-odbc
+ * php-pgsql
+ * php-pspell
+ * php-snmp
+ * php-sqlite3
+ * php-tidy
+ * php-xml
+
+Proxy:
+
+ * squid   # (LP: #885283) and (LP: #1780944)
+
+Utilities:
+
+ * gpsd    # optional to enhance chrony with HW based time data
+ * htop    # used quite often in favor of top
+ * logcheck		  # great security tool for any server
+ * logcheck-database	  # useful for above
+ * rrdtool
+ * iotop
+ * john
+ * libmemcached-tools #ClintByrum - server-maverick-uds-web20-workloads
+ * nut # UPS management
+ * nut-cgi
+ * nut-snmp
+ * ndctl   # for management of nvdimm devices (LP: #1853506)
+ * prips  # LP: #1930207; needed for Google images.
+ * snmp
+ * snmpd
+
+Radius server:
+
+ * freeradius
+
+Authentication:
+
+ * sssd
+ * sssd-tools
+ * adcli
+ * realmd
+ * slapd
+ * ldap-utils
+ * libpam-krb5
+ * libpam-mount
+ * libpam-p11
+ * python3-aws-requests-auth  # LP: #1915445; needed for Google images.
+
+Backup:
+
+ * mtx
+
+High Availability:
+
+ * haproxy #ClintByrum server-maverick-uds-cloud-loadbalancing
+ * ipvsadm
+ * keepalived
+ * pacemaker
+ * multipath-tools-boot
+ * nbd-server
+ * drbd-utils
+
+Configuration Management:
+
+ * etckeeper
+
+Other:
+
+ * anope  # requested by Canonical IS (LP: #1459692)
+ * rabbitmq-server
+ * unzip
+ * containerd # for OCF support (LP: #1819761)
+ * runc # for OCF support (LP: #1817336)
+ * clamav
+ * clamav-daemon
+
+FTP:
+
+ * vsftpd
+ * tftpd-hpa
+ * tftp-hpa
+ * lftp
+
+Networking:
+
+ * kea
+ * radvd
+
+ * openvswitch-switch
+ * openvswitch-switch-dpdk
+
+KVM Virtualization Stack:
+# held via virt-host tasks before
+
+ * qemu-system-x86 [i386 amd64]
+ * qemu-system-ppc [powerpc ppc64el]
+ * qemu-system-aarch64 [arm64]
+ * qemu-system-s390x [s390x]
+ * qemu-kvm
+ * libvirt-daemon-system
+ * libvirt-clients
+ * python3-libvirt
+
+Other Virtualization:
+
+ * open-vm-tools
+
+Cloud:
+
+ * cloud-utils
+ * joyent-mdata-client
+
+IPv6 tools:
+
+ * frr                 # MIR LP: #1951834, replaces quagga
+
+Language Interpreters:
+
+ * ruby
+
+Python transitional symlinks:
+
+ * python-dev-is-python3
+ * python-is-python3
+
+ppp stack:
+
+# This stack is no more very relevant, but was in the early days of internet
+# dialin. This stack is a candidate for demotion, but OTOH received no
+# bugs/CVEs over the last years and therefore can stay as-is for now.
+# ppp itself is still recommended by network-manager and thereby has quite
+# an install base.
+
+ * pptpd
+ * pptp-linux
+ * libatm1
+ * ppp
+ * pppconfig

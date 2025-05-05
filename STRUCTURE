@@ -1,0 +1,35 @@
+feature follow-recommends
+feature no-follow-build-depends
+required:
+minimal: required
+boot:
+standard: minimal
+desktop-common: standard
+installer:
+build-essential: required
+language-packs: desktop-common
+live-common: standard
+raspi-common: standard
+supported-cloud: standard
+supported-development-common: standard
+supported-development-desktop: standard
+supported-kernel-common: standard
+supported-kernel-desktop: standard
+supported-maas: standard
+community-maas: supported-maas standard
+supported-landscape: standard
+supported-misc-servers: standard
+supported-openstack: standard
+supported-hardware-common: standard
+supported-hardware-desktop: standard
+supported-hardware-server: standard
+supported-installer-common: standard
+supported-installer-desktop: standard
+supported-network-common: standard
+supported-network-client: standard
+supported-raspi-common: standard
+supported-sysadmin-common: standard
+supported-sysadmin-server: standard
+supported-server: supported-misc-servers supported-hardware-common supported-hardware-server supported-installer-common supported-network-common supported-sysadmin-common supported-sysadmin-server supported-raspi-common build-essential supported-development-common supported-kernel-common supported-cloud supported-maas supported-landscape supported-openstack
+supported-desktop: supported-hardware-desktop supported-installer-desktop supported-hardware-common supported-installer-common supported-network-common supported-network-client supported-sysadmin-common supported-raspi-common build-essential supported-development-common supported-development-desktop supported-kernel-common supported-kernel-desktop
+supported-common: supported-server supported-desktop 
