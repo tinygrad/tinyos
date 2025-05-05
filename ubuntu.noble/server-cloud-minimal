@@ -1,0 +1,40 @@
+This seed contains a common set of packages for minimal Ubuntu server
+and minimal Ubuntu cloud.
+
+ * feature: no-follow-recommends
+
+== Packages needed for the system to operate ==
+
+ * apparmor
+ * apport
+ * apt
+ * cloud-init
+ * dbus
+ * flash-kernel [riscv64]  # DTB upgrades when booting via grub
+ * netbase
+ * pollinate
+ * s390-tools [s390x]
+ * snapd
+ * sudo
+ * systemd
+ * systemd-resolved
+ * systemd-sysv
+ * udev
+ * ubuntu-release-upgrader-core
+ * unminimize
+
+== Block device / filesystem tools ==
+
+ * e2fsprogs
+
+== Other ==
+
+ubuntu-drivers is installed in the server-minimal-common seed because
+the environment that the installer runs in does not have apt configured
+the same way as the installed system (or, more pedantically, the
+filesystem tree that will be copied to the installed system), so it
+essentially runs "chroot /target ubuntu-drivers install --gpgpu" or
+similar. It's also not useless to have installed in the target system:
+the user can add hardware later and install drivers then.
+
+ * ubuntu-drivers-common

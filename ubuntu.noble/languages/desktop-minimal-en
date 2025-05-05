@@ -1,0 +1,4 @@
+# Default languages for most applications we ship by default
+ * Language: en
+ * language-pack-${Language}
+ * language-pack-gnome-${Language}

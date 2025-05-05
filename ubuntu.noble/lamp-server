@@ -1,0 +1,9 @@
+Task-Section: server
+Task-Description: LAMP server
+Task-Extended-Description: Selects a ready-made Linux/Apache/MySQL/PHP server.
+Task-Key: apache2 mysql-server
+
+ * apache2
+ * php-mysql
+ * libapache2-mod-php
+ * mysql-server

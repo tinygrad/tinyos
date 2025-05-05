@@ -1,0 +1,17 @@
+Task-Per-Derivative: 1
+Task-Section: user
+Task-Description: Basic Ubuntu server for Raspberry Pi
+Task-Extended-Description: This task provides the Ubuntu server environment for Raspberry Pi
+Task-Key: ubuntu-server-raspi
+Task-Seeds: server raspi-common
+
+= Packages required exclusively by the Raspberry Pi server image =
+
+ * cloud-guest-utils
+ * ubuntu-raspi-settings-server
+ * pemmican-server
+
+= Metapackages produced by this and depdendent seeds =
+
+ * ubuntu-server
+ * ubuntu-server-raspi

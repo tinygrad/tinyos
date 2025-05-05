@@ -1,0 +1,17 @@
+Task-Per-Derivative: 1
+Task-Section: user
+Task-Description: Ubuntu desktop for Raspberry Pi
+Task-Extended-Description: This task provides the Ubuntu desktop environment for Raspberry Pi
+Task-Key: ubuntu-desktop-raspi
+Task-Seeds: desktop desktop-common raspi-common
+
+= Packages required exclusively by the Raspberry Pi desktop image =
+
+ * cloud-initramfs-growroot
+ * ubuntu-raspi-settings-desktop
+ * pemmican-desktop
+
+= Metapackages produced by this and dependent seeds =
+
+ * ubuntu-desktop
+ * ubuntu-desktop-raspi

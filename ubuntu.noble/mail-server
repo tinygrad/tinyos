@@ -1,0 +1,14 @@
+Task-Section: server
+Task-Description: Mail server
+Task-Extended-Description: This task selects a variety of package useful for a general purpose mail
+Task-Extended-Description: server system.
+Task-Key: postfix
+ 
+ * postfix
+ * dovecot-pop3d
+ * dovecot-imapd
+ * bsd-mailx
+ * mutt
+ * procmail
+
+Additionally, Debian has mailagent, but that's in universe and not an option.

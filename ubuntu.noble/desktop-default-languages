@@ -1,0 +1,17 @@
+Task-Per-Derivative: 1
+Task-Section: user
+Task-Description: Ubuntu desktop default languages
+Task-Extended-Description: This task provides the Ubuntu desktop default languages.
+Task-Key: hyphen-de hyphen-en-us hyphen-es hyphen-fr hyphen-it hyphen-pt-pt hyphen-ru
+Task-Seeds: desktop-minimal-default-languages desktop-en desktop-es desktop-de desktop-fr desktop-it desktop-pt desktop-ru desktop-zh desktop-minimal-en desktop-minimal-es desktop-minimal-de desktop-minimal-fr desktop-minimal-it desktop-minimal-pt desktop-minimal-ru desktop-minimal-zh
+
+The full rationale on how we choose the languages and what we install
+is at https://launchpad.net/bugs/1520278
+
+The ones currently installed on the live are:
+en, es, pt, de, fr, it, ru, zh (simplified)
+
+This should install check-language-support --show-installed -l $LANG from
+default live.
+
+For the tasks to appear in tasksel, it needs a Key package, We take the en langpack.

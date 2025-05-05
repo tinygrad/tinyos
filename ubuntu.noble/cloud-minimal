@@ -1,0 +1,41 @@
+Task-Description: Minimal Ubuntu cloud
+Task-Seeds: server-cloud-minimal
+Task-Key: cloud-minimal
+
+The above seed (server-cloud-minimal) is the seed we inherit from.
+
+ * feature: no-follow-recommends
+
+This seed is approximately the smallest set of packages that could be
+called "an Ubuntu cloud".
+
+The intention is that this seed will be used to build minimal cloud images
+and will be used/installed without any recommended packages.
+
+== Packages needed on top of server-cloud-minimal ==
+
+ * console-setup          # needed by 020-pkg-configure.chroot.
+ * lxd-installer
+ * microcode-initrd       # required by bare metal servers using minimized cloud images booting initramfsless.
+ * openssh-server
+ * ssh-import-id
+ * unattended-upgrades
+ * ubuntu-pro-client      # needs to be on the system by default for the offerings of Ubuntu Pro like ESM
+
+== Dependencies of cloud-init modules ==
+
+ * cloud-guest-utils
+ * dmsetup
+ * fdisk
+ * parted
+ * util-linux
+
+== Dependencies which were previously recommended but determined as required for cloud minimal images ==
+
+ * lxd-agent-loader                  # previously reccomended by ubuntu-server and required for running LXD VM images.
+ * secureboot-db                     # previously recommended by grub-efi-amd64-signed.
+ * systemd-timesyncd | time-daemon   # previously recommended by systemd.
+
+== Other ==
+
+ * ubuntu-cloud-minimal  # metapackage for everything here.

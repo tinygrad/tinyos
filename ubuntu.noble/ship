@@ -1,0 +1,59 @@
+== Kernel ==
+
+ * linux-generic [amd64 i386 ppc64el arm64 s390x]
+
+== Server ==
+
+ * ssh
+ * nfs-kernel-server   # need an NFS server
+ * open-iscsi
+
+== Networking ==
+
+ * bsd-mailx
+
+== Common UNIX stuff ==
+
+ * nfs-common		  # allows people to access NFS filesystems
+ # * vim                    # vim-tiny is in minimal; vim includes syntax highlighting, help files, etc.
+
+== Hardware & Network Access ==
+
+ * pptp-linux             # client for Microsoft-compatible VPN's, needed for some ISPs
+
+ * setserial	# needed by folks with nonstandard serial ports
+ * b43-fwcutter
+ * sosreport
+
+== Common language packs ==
+
+ * Languages: en
+ * language-pack-${Languages}
+ * language-pack-gnome-${Languages}
+
+ # no space on powerpc
+ * Languages: es
+ * language-pack-${Languages} [i386 amd64 amd64+mac]
+ * language-pack-gnome-${Languages} [i386 amd64 amd64+mac]
+
+# subset of English language support which we want by default:
+ * libreoffice-help-en-us [i386 amd64 amd64+mac]
+ * hunspell-en-us
+ * hyphen-en-gb
+
+== Installer ==
+
+ * uboot-mkimage [armel]
+ * s390-tools-zkey [s390x]
+
+== Transitional packages ==
+
+== Germinate workarounds ==
+
+ * wamerican  # iamerican Depends: ispell Recommends: wordlist, but wamerican isn't spotted in time so germinate arbitrarily picks miscfiles instead
+
+== Blacklist ==
+
+libavcodec cannot be shipped on CDs (cf. Ubuntu technical board resolution 2007-01-02).
+
+ * !libavcodec*

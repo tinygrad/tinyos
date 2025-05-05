@@ -1,0 +1,51 @@
+Task-Description: Minimal Ubuntu server
+Task-Seeds: server-cloud-minimal
+
+ * feature: no-follow-recommends
+
+This seed is approximately the smallest set of packages that could be
+called "an Ubuntu server".
+
+== Packages needed for the system to operate on top of server-cloud-minimal ==
+
+ * (needrestart)
+ * (unattended-upgrades)
+
+== Block device / filesystem tools ==
+
+Some of these could be installed only when needed. But for now we just
+always include all of them.
+
+ * bcache-tools
+ * btrfs-progs
+ * cryptsetup
+ * lvm2
+ * mdadm
+ * multipath-tools
+ * open-iscsi
+ * xfsprogs
+
+== Other ==
+
+ * ubuntu-server-minimal
+ * u-boot-sifive [riscv64]  # we decided that all riscv64 installers
+                            # should ship u-boot-sifive on the minimal layer
+
+== Blacklist ==
+
+inetutils-telnet was introduced through MIR (LP: #2008789), but only the
+-telnet package got reviewed and the other binaries from src:inetutils should
+stay out of main. Related to:
+https://git.launchpad.net/~ubuntu-core-dev/ubuntu-seeds/+git/platform/commit/?h=lunar&id=349619d
+
+ * !inetutils-ftp
+ * !inetutils-ftpd
+ * !inetutils-inetd
+ * !inetutils-ping
+ * !inetutils-syslogd
+ * !inetutils-talk
+ * !inetutils-talkd
+ * !inetutils-telnetd
+ * !inetutils-tools
+ * !inetutils-traceroute
+ * !telnetd
