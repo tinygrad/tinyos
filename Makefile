@@ -5,14 +5,10 @@ help:
 	@echo "       build tinyos.red.img for tinybox red"
 	@echo "make green"
 	@echo "       build tinyos.green.img for tinybox green"
-	@echo "make green-v2"
-	@echo "       build tinyos.green-v2.img for tinybox green-v2"
 	@echo "make red-dev"
 	@echo "       build tinyos.red.img development image for tinybox red"
 	@echo "make green-dev"
 	@echo "       build tinyos.green.img development image for tinybox green"
-	@echo "make green-v2-dev"
-	@echo "       build tinyos.green-v2.img development image for tinybox green-v2"
 	@echo "make clean"
 	@echo "       clean up"
 
@@ -40,13 +36,6 @@ green: setup
 	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
 	time make image
 
-green-v2: setup
-	sed 's/<|ARTIFACT_NAME|>/tinyos.pro.img/g' tinyos.template.yaml > tinyos.yaml
-	sed -i 's/<|UBUNTU_SERIES|>/noble/g' tinyos.yaml
-	sed -i 's/<|UBUNTU_VERSION|>/24.04/g' tinyos.yaml
-	echo "TINYBOX_COLOR=green" | tee --append build/tinybox-release
-	time make image
-
 red-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make red
@@ -54,10 +43,6 @@ red-dev: setup
 green-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
 	make green
-
-green-v2-dev: setup
-	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
-	make pro
 
 image:
 	sed -i 's/<|CURRENT_DIR|>/$(shell pwd | sed 's/\//\\\//g')/g' tinyos.yaml
