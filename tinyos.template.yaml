@@ -17,7 +17,7 @@ rootfs:
   seed:
     urls:
       - file://<|CURRENT_DIR|>/ubuntu-seeds/
-    branch: jammy
+    branch: <|UBUNTU_SERIES|>
     vcs: false
     names:
       - server
