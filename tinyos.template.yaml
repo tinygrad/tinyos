@@ -101,7 +101,7 @@ customization:
   extra-snaps:
     # required
     - name: snapd
-    - name: core20
+    - name: core22
     # preinstalled
     - name: nvtop
 artifacts:
