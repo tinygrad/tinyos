@@ -15,7 +15,7 @@ elif [[ "$TINYBOX_COLOR" == "green" ]]; then
   pushd /tmp
 
   curl -o keyring.deb -L "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb"
-  curl -o driver.deb -L "https://github.com/tinygrad/open-gpu-kernel-modules/releases/download/570.124.06-p2p/nvidia-kernel-source-570-open-0ubuntu1_amd64.deb"
+  curl -o driver.deb -L "https://github.com/wozeparrot/open-gpu-kernel-modules/releases/download/570.124.06-p2p/nvidia-kernel-source-570-open-0ubuntu1_amd64.deb"
 
   dpkg -i keyring.deb
   dpkg -i driver.deb
