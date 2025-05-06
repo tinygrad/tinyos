@@ -1,8 +1,10 @@
 import gzip, unittest
-from PIL import Image
+from tinygrad import Variable
 from tinygrad.helpers import Context, ContextVar
-from tinygrad.helpers import merge_dicts, strip_parens, prod, round_up, fetch, fully_flatten, from_mv, to_mv, get_contraction, get_shape
-from tinygrad.shape.symbolic import Variable, NumNode
+from tinygrad.helpers import merge_dicts, strip_parens, prod, round_up, fetch, fully_flatten, from_mv, to_mv, polyN, time_to_str, cdiv, cmod
+from tinygrad.tensor import get_shape
+from tinygrad.codegen.lowerer import get_contraction, get_contraction_with_reduce
+import numpy as np
 
 VARIABLE = ContextVar("VARIABLE", 0)
 
@@ -16,34 +18,32 @@ class TestContextVars(unittest.TestCase):
     _TMP = ContextVar("_TMP", 5)
     self.assertEqual(_TMP.value, 5)
 
-  def test_multiple_creation_ignored(self):
+  def test_cannot_recreate(self):
     _TMP2 = ContextVar("_TMP2", 1)
-    _TMP2 = ContextVar("_TMP2", 2)
-    self.assertEqual(_TMP2.value, 1)
+    with self.assertRaises(RuntimeError):
+      _TMP2 = ContextVar("_TMP2", 2)
 
   def test_new_var_inside_context(self):
-    # Creating a _new_ variable inside a context should not have any effect on its scope (?)
     with Context(VARIABLE=1):
       _TMP3 = ContextVar("_TMP3", 1)
-    _TMP3 = ContextVar("_TMP3", 2)
-    self.assertEqual(_TMP3.value, 1)
+    with self.assertRaises(RuntimeError):
+      _TMP3 = ContextVar("_TMP3", 2)
 
-  def test_value_accross_modules(self):
+  def test_value_across_modules(self):
     # Mocking module import by invoking the code but not in our globals().
     exec('from tinygrad.helpers import ContextVar;C = ContextVar("C", 13)', {}) # pylint:disable=exec-used
     # It should not matter that the first creation was in another module.
-    C = ContextVar("C", 0)
-    self.assertEqual(C.value, 13)
+    with self.assertRaises(RuntimeError):
+      _C = ContextVar("C", 0)
 
   def test_assignment_across_modules(self):
     B = ContextVar("B", 1)
     # local assignment
     B.value = 2
     self.assertEqual(B.value, 2)
-    # Assignment in another module.
-    exec('from tinygrad.helpers import ContextVar;B = ContextVar("B", 0);B.value = 3;', {}) # pylint:disable=exec-used
-    # Assignment in another module should affect this one as well.
-    self.assertEqual(B.value, 3)
+    with self.assertRaises(RuntimeError):
+      # Assignment in another module.
+      exec('from tinygrad.helpers import ContextVar;B = ContextVar("B", 0);B.value = 3;', {}) # pylint:disable=exec-used
 
   def test_context_assignment(self):
     with Context(VARIABLE=1):
@@ -55,42 +55,17 @@ class TestContextVars(unittest.TestCase):
       with Context(SOMETHING_ELSE=1):
         pass
 
-  def test_inside_context_assignment(self):
-    with Context(VARIABLE=4):
-      # What you can and cannot do inside a context.
-      # 1. This type of statement has no effect.
-      VARIABLE = ContextVar("VARIABLE", 0)
-      self.assertTrue(VARIABLE >= 4, "ContextVars inside contextmanager may not set a new value")
-
-      # 2. The call syntax however has a local effect.
-      VARIABLE.value = 13
-      self.assertTrue(VARIABLE.value == 13, "Call syntax however works inside a contextmanager.")
-
-    # Related to 2. above. Note that VARIABLE is back to 0 again as expected.
-    self.assertEqual(VARIABLE.value, 0)
-
-  def test_new_var_inside_context_other_module(self):
-    with Context(VARIABLE=1):
-      _NEW2 = ContextVar("_NEW2", 0)
-    _NEW2 = ContextVar("_NEW2", 1)
-    self.assertEqual(_NEW2.value, 0)
-
-    code = """\
-from tinygrad.helpers import Context, ContextVar
-with Context(VARIABLE=1):
-  _NEW3 = ContextVar("_NEW3", 0)"""
-    exec(code, {})  # pylint:disable=exec-used
-    # While _NEW3 was created in an outside scope it should still work the same as above.
-    _NEW3 = ContextVar("_NEW3", 1)
-    self.assertEqual(_NEW3.value, 0)
-
   def test_nested_context(self):
     with Context(VARIABLE=1):
       with Context(VARIABLE=2):
-        with Context(VARIABLE=3):
+        MORE = ContextVar("MORE", 2)
+        with Context(VARIABLE=3, MORE=3):
           self.assertEqual(VARIABLE.value, 3)
+          self.assertEqual(MORE.value, 3)
         self.assertEqual(VARIABLE.value, 2)
+        self.assertEqual(MORE.value, 2)
       self.assertEqual(VARIABLE.value, 1)
+      self.assertEqual(MORE.value, 2)  # TODO: should this raise?
     self.assertEqual(VARIABLE.value, 0)
 
   def test_decorator(self):
@@ -131,7 +106,6 @@ class TestProd(unittest.TestCase):
   def test_ints(self): self.assertEqual(30, prod((2, 3, 5)))
   def test_variable(self): self.assertEqual("(a*12)", prod((Variable("a", 1, 5), 3, 4)).render())
   def test_variable_order(self): self.assertEqual("(a*12)", prod((3, 4, Variable("a", 1, 5))).render())
-  def test_num_nodes(self): self.assertEqual(NumNode(6), prod((NumNode(2), NumNode(3))))
 
 class TestRoundUp(unittest.TestCase):
   def test_round_up(self):
@@ -151,11 +125,13 @@ class TestFetch(unittest.TestCase):
     assert (len(fetch('https://google.com', allow_caching=False).read_bytes())>0)
 
   def test_fetch_img(self):
+    from PIL import Image
     img = fetch("https://avatars.githubusercontent.com/u/132956020", allow_caching=False)
     with Image.open(img) as pimg:
       assert pimg.size == (77, 77), pimg.size
 
   def test_fetch_subdir(self):
+    from PIL import Image
     img = fetch("https://avatars.githubusercontent.com/u/132956020", allow_caching=False, subdir="images")
     with Image.open(img) as pimg:
       assert pimg.size == (77, 77), pimg.size
@@ -188,6 +164,16 @@ class TestFullyFlatten(unittest.TestCase):
     self.assertEqual(fully_flatten([[1, 2, [3, 4]], [5, 6], 7]), [1, 2, 3, 4, 5, 6, 7])
     self.assertEqual(fully_flatten([[1, "ab"], [True, None], [3.14, [5, "b"]]]), [1, "ab", True, None, 3.14, 5, "b"])
 
+  def test_fully_flatten_numpy(self):
+    self.assertEqual(fully_flatten([np.array([])]), [])
+    self.assertEqual(fully_flatten([np.array(3)]), [3])
+    self.assertEqual(fully_flatten([np.array([3])]), [3])
+    self.assertEqual(fully_flatten([np.array([[3]])]), [3])
+    self.assertEqual(fully_flatten([np.array([1, 3]), np.array([1, 2])]), [1, 3, 1, 2])
+    self.assertEqual(fully_flatten((np.array([1, 3]), np.array([1, 2]))), [1, 3, 1, 2])
+    self.assertEqual(fully_flatten([np.array([[1], [3]]), np.array([[1], [2]])]), [1, 3, 1, 2])
+    self.assertEqual(fully_flatten([[1, "ab"], [True, None], np.array([[3.14], [6.28]])]), [1, "ab", True, None, 3.14, 6.28])
+
 class TestMemoryview(unittest.TestCase):
   def test_from_mv_to_mv(self):
     base = memoryview(bytearray(b"\x11\x22\x33"*40))
@@ -197,6 +183,20 @@ class TestMemoryview(unittest.TestCase):
     assert base[0] == 2
 
 class TestGetContraction(unittest.TestCase):
+  def test_contraction_with_reduce(self):
+    r = get_contraction((16, 1, 1, 1), (16, 1, 1))
+    self.assertEqual(r, [[0], [], [1, 2, 3]])
+    r = get_contraction_with_reduce((16, 1, 1, 1), (16, 1, 1), (1,))
+    self.assertEqual(r, [[0], [1, 2], [3]])
+
+    r = get_contraction((16, 1, 1, 1, 1), (16, 1, 1, 1))
+    self.assertEqual(r, [[0], [], [], [1, 2, 3, 4]])
+    r = get_contraction_with_reduce((16, 1, 1, 1, 1), (16, 1, 1, 1), (1,))
+    self.assertEqual(r, [[0], [1, 2], [3], [4]])
+
+    r = get_contraction_with_reduce((2, 512, 1, 1), (2, 1, 512), (1,))
+    self.assertIsNone(r)
+
   def test_contraction(self):
     r = get_contraction((1,2,3,4), (2,3,4))
     self.assertEqual(r, [[0, 1], [2], [3]])
@@ -276,6 +276,61 @@ class TestGetShape(unittest.TestCase):
   def test_inhomogeneous_shape(self):
     with self.assertRaises(ValueError): get_shape([[], [1]])
     with self.assertRaises(ValueError): get_shape([[1, [2]], [1]])
+
+class TestPolyN(unittest.TestCase):
+  def test_float(self):
+    np.testing.assert_allclose(polyN(1.0, [1.0, -2.0, 1.0]), 0.0)
+    np.testing.assert_allclose(polyN(2.0, [1.0, -2.0, 1.0]), 1.0)
+    np.testing.assert_allclose(polyN(3.0, [1.0, -2.0, 1.0]), 4.0)
+    np.testing.assert_allclose(polyN(4.0, [1.0, -2.0, 1.0]), 9.0)
+
+  def test_tensor(self):
+    from tinygrad.tensor import Tensor
+    np.testing.assert_allclose(polyN(Tensor([1.0, 2.0, 3.0, 4.0]), [1.0, -2.0, 1.0]).numpy(), [0.0, 1.0, 4.0, 9.0])
+
+  def test_uop(self):
+    from tinygrad.dtype import dtypes
+    from tinygrad.ops import UOp
+    from test.helpers import eval_uop
+    np.testing.assert_allclose(eval_uop(polyN(UOp.const(dtypes.float, 1.0), [1.0, -2.0, 1.0])), 0.0)
+    np.testing.assert_allclose(eval_uop(polyN(UOp.const(dtypes.float, 2.0), [1.0, -2.0, 1.0])), 1.0)
+    np.testing.assert_allclose(eval_uop(polyN(UOp.const(dtypes.float, 3.0), [1.0, -2.0, 1.0])), 4.0)
+    np.testing.assert_allclose(eval_uop(polyN(UOp.const(dtypes.float, 4.0), [1.0, -2.0, 1.0])), 9.0)
+
+class TestTimeToStr(unittest.TestCase):
+  def test_seconds(self):           self.assertEqual("   10.01s ", time_to_str(10.01))
+  def test_boundary_sec_ms(self):   self.assertEqual("10000.00ms", time_to_str(10))
+  def test_milliseconds(self):      self.assertEqual("  500.00ms", time_to_str(0.5))
+  def test_boundary_ms_us(self):    self.assertEqual("10000.00us", time_to_str(0.01))
+  def test_microseconds(self):      self.assertEqual("  100.00us", time_to_str(0.0001))
+  def test_zero(self):              self.assertEqual("    0.00us", time_to_str(0))
+  def test_width_formatting(self):  self.assertEqual(" 10.01s ", time_to_str(10.01, w=6))
+
+class TestCStyleDivMod(unittest.TestCase):
+  def test_div_pos(self):
+    self.assertEqual(cdiv(-9, 5), -1)
+    self.assertEqual(cdiv(-4, 5), 0)
+    self.assertEqual(cdiv(0, 5), 0)
+    self.assertEqual(cdiv(4, 5), 0)
+    self.assertEqual(cdiv(9, 5), 1)
+  def test_div_neg(self):
+    self.assertEqual(cdiv(-9, -5), 1)
+    self.assertEqual(cdiv(-4, -5), 0)
+    self.assertEqual(cdiv(0, -5), 0)
+    self.assertEqual(cdiv(4, -5), 0)
+    self.assertEqual(cdiv(9, -5), -1)
+  def test_mod_pos(self):
+    self.assertEqual(cmod(-9, 5), -4)
+    self.assertEqual(cmod(-4, 5), -4)
+    self.assertEqual(cmod(0, 5), 0)
+    self.assertEqual(cmod(4, 5), 4)
+    self.assertEqual(cmod(9, 5), 4)
+  def test_mod_neg(self):
+    self.assertEqual(cmod(-9, -5), -4)
+    self.assertEqual(cmod(-4, -5), -4)
+    self.assertEqual(cmod(0, -5), 0)
+    self.assertEqual(cmod(4, -5), 4)
+    self.assertEqual(cmod(9, -5), 4)
 
 if __name__ == '__main__':
   unittest.main()

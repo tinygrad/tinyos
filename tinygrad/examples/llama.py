@@ -6,8 +6,6 @@
 from pathlib import Path
 from typing import List, Optional
 import argparse, json
-import numpy as np
-np.set_printoptions(linewidth=200)
 from tinygrad import Tensor, Device, GlobalCounters, nn
 from tinygrad.helpers import Context, Timing, Profiling, DEBUG, JIT, getenv, colored
 from tinygrad.nn.state import safe_load, torch_load, load_state_dict, get_parameters
@@ -213,11 +211,13 @@ class LLaMa:
     else:
       weights = load(str(model_path))
     if "model.embed_tokens.weight" in weights:
-      weights = convert_from_huggingface(weights, model, params["args"]["n_heads"], params["args"].get("n_kv_heads", params["args"]["n_heads"]))
+      weights = convert_from_huggingface(weights, params["args"]["n_layers"], params["args"]["n_heads"], params["args"].get("n_kv_heads", params["args"]["n_heads"]))
 
     weights = fix_bf16(weights)
 
-    with Context(BEAM=0):
+    # prevent tracking model weights
+    # this is a part of a larger problem with BUFFER UOps and gc in TRACK_MATCH_STATS=2
+    with Context(BEAM=0, TRACK_MATCH_STATS=0):
       # quantize
       if quantize is not None:
         weights = linear.quantize(weights, device)
@@ -250,6 +250,8 @@ class LLaMa:
     self.tokenizer = tokenizer
 
   def greedy_until(self, prompt:str, until, max_length, temperature):
+    # only used in old eval script
+    import numpy as np
     toks = [self.tokenizer.bos_id()] + self.tokenizer.encode(prompt)
     start_pos = 0
     for i in range(max_length):
@@ -498,14 +500,16 @@ After you are done speaking, output [EOS]. You are not Chad.
     if not chatbot: break
 
   # validate output!
-  if args.temperature == 0 and args.count == 10 and args.prompt == "Hello." and not args.quantize:
+  if args.temperature == 0 and args.count == 10 and args.prompt == "Hello.":
     text = llama.tokenizer.decode(toks)
-    key = (args.gen, args.size)
+    key = (args.gen, args.size, args.quantize)
     expected = {
-      ("1", "7B"): "Hello. I'm a 20 year old male",
-      ("2", "7B"): "Hello. I'm a 20 year old girl",
-      ("2", "70B"): "Hello. I am a 20 year old female.",
-      ("3", "8B"): "Hello. I am a 20 year old female. I",
+      ("1", "7B", None): "Hello. I'm a 20 year old male",
+      ("1", "7B", "int8"): "Hello. I'm a 20 year old male",
+      ("1", "7B", "nf4"): "Hello. I'm a 20 year old male",
+      ("2", "7B", None): "Hello. I'm a 20 year old girl",
+      ("2", "70B", None): "Hello. I am a 20 year old female.",
+      ("3", "8B", None): "Hello. I am a 20 year old female. I",
     }
     try:
       assert text == expected[key], f"invalid output: `{colored(text, 'red')}` != `{expected[key]}`"

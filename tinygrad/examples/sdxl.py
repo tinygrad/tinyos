@@ -3,16 +3,16 @@
 # Stability-AI/generative-models | MIT     | https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/LICENSE-CODE
 # mlfoundations/open_clip        | MIT     | https://github.com/mlfoundations/open_clip/blob/58e4e39aaabc6040839b0d2a7e8bf20979e4558a/LICENSE
 
-from tinygrad import Tensor, TinyJit, dtypes
+from tinygrad import Tensor, TinyJit, dtypes, GlobalCounters
 from tinygrad.nn import Conv2d, GroupNorm
-from tinygrad.nn.state import safe_load, load_state_dict
-from tinygrad.helpers import fetch, trange, colored, Timing, GlobalCounters
+from tinygrad.nn.state import safe_load, load_state_dict, get_state_dict
+from tinygrad.helpers import fetch, trange, colored, Timing
 from extra.models.clip import Embedder, FrozenClosedClipEmbedder, FrozenOpenClipEmbedder
 from extra.models.unet import UNetModel, Upsample, Downsample, timestep_embedding
 from examples.stable_diffusion import ResnetBlock, Mid
 import numpy as np
 
-from typing import Dict, List, Callable, Optional, Any, Set, Tuple
+from typing import Dict, List, Callable, Optional, Any, Set, Tuple, Union, Type
 import argparse, tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -47,21 +47,14 @@ class DiffusionModel:
     self.diffusion_model = UNetModel(*args, **kwargs)
 
 
-class Embedder(ABC):
-  input_key: str
-  @abstractmethod
-  def __call__(self, x:Tensor) -> Tensor:
-    pass
-
-
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/encoders/modules.py#L913
 class ConcatTimestepEmbedderND(Embedder):
   def __init__(self, outdim:int, input_key:str):
     self.outdim = outdim
     self.input_key = input_key
 
-  def __call__(self, x:Tensor):
-    assert len(x.shape) == 2
+  def __call__(self, x:Union[str,List[str],Tensor]):
+    assert isinstance(x, Tensor) and len(x.shape) == 2
     emb = timestep_embedding(x.flatten(), self.outdim)
     emb = emb.reshape((x.shape[0],-1))
     return emb
@@ -91,9 +84,8 @@ class Conditioner:
       emb_out = embedder(batch[embedder.input_key])
 
       if isinstance(emb_out, Tensor):
-        emb_out = [emb_out]
-      else:
-        assert isinstance(emb_out, (list, tuple))
+        emb_out = (emb_out,)
+      assert isinstance(emb_out, (list, tuple))
 
       for emb in emb_out:
         if embedder.input_key in force_zero_embeddings:
@@ -248,22 +240,23 @@ class SDXL:
     self.sigmas = self.discretization(config["denoiser"]["num_idx"], flip=True)
 
   # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/inference/helpers.py#L173
-  def create_conditioning(self, pos_prompt:str, img_width:int, img_height:int, aesthetic_score:float=5.0) -> Tuple[Dict,Dict]:
+  def create_conditioning(self, pos_prompts:List[str], img_width:int, img_height:int, aesthetic_score:float=5.0) -> Tuple[Dict,Dict]:
+    N = len(pos_prompts)
     batch_c : Dict = {
-      "txt": pos_prompt,
+      "txt": pos_prompts,
       "original_size_as_tuple": Tensor([img_height,img_width]).repeat(N,1),
       "crop_coords_top_left": Tensor([0,0]).repeat(N,1),
       "target_size_as_tuple": Tensor([img_height,img_width]).repeat(N,1),
       "aesthetic_score": Tensor([aesthetic_score]).repeat(N,1),
     }
     batch_uc: Dict = {
-      "txt": "",
+      "txt": [""]*N,
       "original_size_as_tuple": Tensor([img_height,img_width]).repeat(N,1),
       "crop_coords_top_left": Tensor([0,0]).repeat(N,1),
       "target_size_as_tuple": Tensor([img_height,img_width]).repeat(N,1),
       "aesthetic_score": Tensor([aesthetic_score]).repeat(N,1),
     }
-    return model.conditioner(batch_c), model.conditioner(batch_uc, force_zero_embeddings=["txt"])
+    return self.conditioner(batch_c), self.conditioner(batch_uc, force_zero_embeddings=["txt"])
 
   # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/denoiser.py#L42
   def denoise(self, x:Tensor, sigma:Tensor, cond:Dict) -> Tensor:
@@ -289,19 +282,29 @@ class SDXL:
     return self.first_stage_model.decode(1.0 / 0.13025 * x)
 
 
-class VanillaCFG:
+class Guider(ABC):
   def __init__(self, scale:float):
     self.scale = scale
 
-  def prepare_inputs(self, x:Tensor, s:float, c:Dict, uc:Dict) -> Tuple[Tensor,Tensor,Tensor]:
+  @abstractmethod
+  def __call__(self, denoiser, x:Tensor, s:Tensor, c:Dict, uc:Dict) -> Tensor:
+    pass
+
+class VanillaCFG(Guider):
+  def __call__(self, denoiser, x:Tensor, s:Tensor, c:Dict, uc:Dict) -> Tensor:
     c_out = {}
     for k in c:
       assert k in ["vector", "crossattn", "concat"]
       c_out[k] = Tensor.cat(uc[k], c[k], dim=0)
-    return Tensor.cat(x, x), Tensor.cat(s, s), c_out
 
-  def __call__(self, x:Tensor, sigma:float) -> Tensor:
-    x_u, x_c = x.chunk(2)
+    x_u, x_c = denoiser(Tensor.cat(x, x), Tensor.cat(s, s), c_out).chunk(2)
+    x_pred = x_u + self.scale*(x_c - x_u)
+    return x_pred
+
+class SplitVanillaCFG(Guider):
+  def __call__(self, denoiser, x:Tensor, s:Tensor, c:Dict, uc:Dict) -> Tensor:
+    x_u = denoiser(x, s, uc).clone().realize()
+    x_c = denoiser(x, s, c)
     x_pred = x_u + self.scale*(x_c - x_u)
     return x_pred
 
@@ -309,13 +312,12 @@ class VanillaCFG:
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/sampling.py#L21
 # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/modules/diffusionmodules/sampling.py#L287
 class DPMPP2MSampler:
-  def __init__(self, cfg_scale:float):
+  def __init__(self, cfg_scale:float, guider_cls:Type[Guider]=VanillaCFG):
     self.discretization = LegacyDDPMDiscretization()
-    self.guider = VanillaCFG(cfg_scale)
+    self.guider = guider_cls(cfg_scale)
 
   def sampler_step(self, old_denoised:Optional[Tensor], prev_sigma:Optional[Tensor], sigma:Tensor, next_sigma:Tensor, denoiser, x:Tensor, c:Dict, uc:Dict) -> Tuple[Tensor,Tensor]:
-    denoised = denoiser(*self.guider.prepare_inputs(x, sigma, c, uc))
-    denoised = self.guider(denoised, sigma)
+    denoised = self.guider(denoiser, x, sigma, c, uc)
 
     t, t_next = sigma.log().neg(), next_sigma.log().neg()
     h = t_next - t
@@ -336,25 +338,25 @@ class DPMPP2MSampler:
     return x, denoised
 
   def __call__(self, denoiser, x:Tensor, c:Dict, uc:Dict, num_steps:int, timing=False) -> Tensor:
-    sigmas = self.discretization(num_steps)
+    sigmas = self.discretization(num_steps).to(x.device)
     x *= Tensor.sqrt(1.0 + sigmas[0] ** 2.0)
     num_sigmas = len(sigmas)
 
     old_denoised = None
     for i in trange(num_sigmas - 1):
       with Timing("step in ", enabled=timing, on_exit=lambda _: f", using {GlobalCounters.mem_used/1e9:.2f} GB"):
+        GlobalCounters.reset()
         x, old_denoised = self.sampler_step(
           old_denoised=old_denoised,
-          prev_sigma=(None if i==0 else sigmas[i-1].reshape(x.shape[0])),
-          sigma=sigmas[i].reshape(x.shape[0]),
-          next_sigma=sigmas[i+1].reshape(x.shape[0]),
+          prev_sigma=(None if i==0 else sigmas[i-1].expand(x.shape[0])),
+          sigma=sigmas[i].expand(x.shape[0]),
+          next_sigma=sigmas[i+1].expand(x.shape[0]),
           denoiser=denoiser,
           x=x,
           c=c,
           uc=uc,
         )
-        x.realize()
-        old_denoised.realize()
+        x.realize(old_denoised)
 
     return x
 
@@ -382,7 +384,12 @@ if __name__ == "__main__":
 
   default_weight_url = 'https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors'
   weights = args.weights if args.weights else fetch(default_weight_url, 'sd_xl_base_1.0.safetensors')
-  load_state_dict(model, safe_load(weights), strict=False)
+  loaded_weights = load_state_dict(model, safe_load(weights), strict=False, verbose=False, realize=False)
+
+  start_mem_used = GlobalCounters.mem_used
+  with Timing("loaded weights in ", lambda et_ns: f", {(B:=(GlobalCounters.mem_used-start_mem_used))/1e9:.2f} GB loaded at {B/et_ns:.2f} GB/s"):
+    Tensor.realize(*loaded_weights)
+    del loaded_weights
 
   N = 1
   C = 4
@@ -391,10 +398,9 @@ if __name__ == "__main__":
   assert args.width  % F == 0, f"img_width must be multiple of {F}, got {args.width}"
   assert args.height % F == 0, f"img_height must be multiple of {F}, got {args.height}"
 
-  c, uc = model.create_conditioning(args.prompt, args.width, args.height)
+  c, uc = model.create_conditioning([args.prompt], args.width, args.height)
   del model.conditioner
-  for v in c .values(): v.realize()
-  for v in uc.values(): v.realize()
+  Tensor.realize(*c.values(), *uc.values())
   print("created batch")
 
   # https://github.com/Stability-AI/generative-models/blob/fbdc58cab9f4ee2be7a5e1f2e2787ecd9311942f/sgm/inference/helpers.py#L101
@@ -423,6 +429,6 @@ if __name__ == "__main__":
   if args.prompt == default_prompt and args.steps == 10 and args.seed == 0 and args.guidance == 6.0 and args.width == args.height == 1024 \
     and not args.weights:
     ref_image = Tensor(np.array(Image.open(Path(__file__).parent / "sdxl_seed0.png")))
-    distance = (((x - ref_image).cast(dtypes.float) / ref_image.max())**2).mean().item()
+    distance = (((x.cast(dtypes.float) - ref_image.cast(dtypes.float)) / ref_image.max())**2).mean().item()
     assert distance < 4e-3, colored(f"validation failed with {distance=}", "red")
     print(colored(f"output validated with {distance=}", "green"))

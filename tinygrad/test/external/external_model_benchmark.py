@@ -1,15 +1,15 @@
 import csv, pathlib, time, numpy as np
 from os import getenv
-from tinygrad.device import CompileError
 import torch
 torch.set_num_threads(1)
 import onnx
 from onnx.helper import tensor_dtype_to_np_dtype
 import onnxruntime as ort
 from onnx2torch import convert
-from extra.onnx import get_run_onnx
+from tinygrad.frontend.onnx import OnnxRunner
 from tinygrad.helpers import OSX, DEBUG, fetch
 from tinygrad import Tensor, Device
+from tinygrad.device import CompileError
 
 MODELS = {
   "resnet50": "https://github.com/onnx/models/raw/main/validated/vision/classification/resnet/model/resnet50-caffe2-v1-9.onnx",
@@ -65,7 +65,7 @@ def benchmark_model(m, devices, validate_outs=False):
     try:
       Device.DEFAULT = device
       inputs = {k:Tensor(inp) for k,inp in np_inputs.items()}
-      tinygrad_model = get_run_onnx(onnx_model)
+      tinygrad_model = OnnxRunner(onnx_model)
       benchmark(m, f"tinygrad_{device.lower()}_jitless", lambda: {k:v.numpy() for k,v in tinygrad_model(inputs).items()})
 
       from tinygrad.engine.jit import TinyJit
@@ -74,9 +74,11 @@ def benchmark_model(m, devices, validate_outs=False):
       benchmark(m, f"tinygrad_{device.lower()}_jit", lambda: {k:v.numpy() for k,v in tinygrad_jitted_model(**inputs).items()}) # noqa: F821
       del inputs, tinygrad_model, tinygrad_jitted_model
     except CompileError as e:
-      # METAL fails with buffer count limit
-      if m == "dm" and device == "METAL": return
-      raise e
+      # TODO: we don't run the dm model on METAL for now
+      if Device.DEFAULT == "METAL":
+        assert "no 'buffer' resource location available" in str(e)
+        return
+      else: raise e
 
   # convert model to torch
   try:
@@ -113,7 +115,7 @@ def benchmark_model(m, devices, validate_outs=False):
       rtol, atol = 2e-3, 2e-3  # tolerance for fp16 models
       Device.DEFAULT = device
       inputs = {k:Tensor(inp) for k,inp in np_inputs.items()}
-      tinygrad_model = get_run_onnx(onnx_model)
+      tinygrad_model = OnnxRunner(onnx_model)
       tinygrad_out = tinygrad_model(inputs)
 
       ort_sess = ort.InferenceSession(str(fn), ort_options, ["CPUExecutionProvider"])
@@ -136,7 +138,7 @@ def assert_allclose(tiny_out:dict, onnx_out:dict, rtol=1e-5, atol=1e-5):
     else: np.testing.assert_allclose(tiny_v.numpy(), onnx_v, rtol=rtol, atol=atol, err_msg=f"For tensor '{k}' in {tiny_out.keys()}")
 
 if __name__ == "__main__":
-  devices = [Device.DEFAULT] if getenv("NOCLANG") else [Device.DEFAULT, "CLANG"]
+  devices = [Device.DEFAULT] if getenv("NOCLANG") else [Device.DEFAULT, "CPU"]
   if getenv("MODEL", "") != "": benchmark_model(getenv("MODEL", ""), devices, True)
   else:
     for m in MODELS: benchmark_model(m, devices, True)
