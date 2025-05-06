@@ -52,7 +52,7 @@ function main {
       # set gpu fan speeds
       if [[ "$TINYBOX_COLOR" == "green" ]]; then
         /opt/tinybox/build/venv/bin/python3 -c "
-from pynvml import *; nvmlInit(); handles = [nvmlDeviceGetHandleByIndex(i) for i in range(6)];
+from pynvml import *; nvmlInit(); handles = [nvmlDeviceGetHandleByIndex(i) for i in range(nvmlDeviceGetCount())];
 list(map(lambda h: [nvmlDeviceSetDefaultFanSpeed_v2(h, i) for i in range(nvmlDeviceGetNumFans(h))], handles))
 "
       elif [[ "$TINYBOX_COLOR" == "red" ]]; then
@@ -79,7 +79,7 @@ list(map(lambda h: [nvmlDeviceSetDefaultFanSpeed_v2(h, i) for i in range(nvmlDev
       # set gpu fan speeds
       if [[ "$TINYBOX_COLOR" == "green" ]]; then
         /opt/tinybox/build/venv/bin/python3 -c "
-from pynvml import *; nvmlInit(); handles = [nvmlDeviceGetHandleByIndex(i) for i in range(6)];
+from pynvml import *; nvmlInit(); handles = [nvmlDeviceGetHandleByIndex(i) for i in range(nvmlDeviceGetCount())];
 list(map(lambda h: [nvmlDeviceSetFanSpeed_v2(h, i, $fan_speed) for i in range(nvmlDeviceGetNumFans(h))], handles))
 "
       elif [[ "$TINYBOX_COLOR" == "red" ]]; then

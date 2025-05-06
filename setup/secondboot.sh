@@ -3,13 +3,13 @@ set -x
 
 source /etc/tinybox-release
 
+# disable this service
+systemctl disable secondboot.service
+
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
   # enable persistence mode
   nvidia-smi -pm 1
 fi
-
-# disable this service
-systemctl disable secondboot.service
 
 if [ -z "$TINYBOX_PRO" ]; then
   # generate bmc password
