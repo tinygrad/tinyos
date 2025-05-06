@@ -35,7 +35,7 @@ def _sample_tree(node:MCTSNode, best_tm:float) -> MCTSNode:
   if node.children is None or len(node.children) == 0: return node
   unexplored_children = []
   explored_children = []
-  ucb_explored_children = []
+  ucb_explored_children: List[float] = []
   for child in node.children:
     if child.n == 0: unexplored_children.append(child)
     else:
@@ -45,7 +45,8 @@ def _sample_tree(node:MCTSNode, best_tm:float) -> MCTSNode:
         ucb_explored_children.append(ucb)
   if len(unexplored_children): return random.choice(unexplored_children)
   if not len(explored_children): return node
-  ucb_exp = np.exp(np.array(ucb_explored_children)/TEMP)
+  # safe softmax
+  ucb_exp = np.exp((np.array(ucb_explored_children)-max(ucb_explored_children))/TEMP)
   return _sample_tree(explored_children[np.random.choice(len(ucb_exp), p=ucb_exp/np.sum(ucb_exp))], best_tm)
 
 # this will expand/remove sometimes
@@ -86,7 +87,7 @@ def mcts_search(lin:Kernel, rawbufs:List[Buffer], amt:int) -> Kernel:
     return ret
 
   rawbufs = _ensure_buffer_alloc(rawbufs)
-  var_vals = {k:(k.max+k.min)//2 for k in lin.ast.variables()}
+  var_vals = {k:(k.vmax+k.vmin)//2 for k in lin.ast.variables()}
   dev = Device[lin.opts.device]
   root = MCTSNode(lin)
 
@@ -148,13 +149,20 @@ def mcts_search(lin:Kernel, rawbufs:List[Buffer], amt:int) -> Kernel:
   if DEBUG>=2: print()
 
   if getenv("MCTSGRAPH"):
-    from tinygrad.engine.graph import nx, save_graph, GRAPHPATH
+    import networkx as nx
+    import os
+    GRAPHPATH = "/tmp/net"
+    def save_graph(G, fn, opt=""):
+      print("saving", G, f"to {fn}.svg")
+      nx.drawing.nx_pydot.write_dot(G, f'{fn}.dot')
+      os.system(f'dot {opt} -Tsvg {fn}.dot -o {fn}.svg')
+
     G = nx.DiGraph()
     def add_node(node:MCTSNode):
       if node.n == 0: return
       for parent in node.parents: G.add_edge(parent, node)
       gopts = node.kernel.applied_opts
-      edge_lbl = f"{str(gopts[-1].op)[7:]} {gopts[-1].axis} {gopts[-1].amt}" if len(gopts) else "ROOT"
+      edge_lbl = f"{str(gopts[-1].op)[7:]} {gopts[-1].axis} {gopts[-1].arg}" if len(gopts) else "ROOT"
       G.add_node(node, label=f"{node.i+1}\n{node.tm:.2f} us\n{edge_lbl}\nt {node.t:.2f}\nn {node.n}",
                  fillcolor="#80ff8080" if node.tm == best_tm else "#ffff8080", style='filled' if node.t == best_tm else '')
       if node.children is not None:

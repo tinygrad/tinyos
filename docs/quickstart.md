@@ -110,7 +110,7 @@ class TinyNet:
 
   def __call__(self, x):
     x = self.l1(x)
-    x = x.leakyrelu()
+    x = x.leaky_relu()
     x = self.l2(x)
     return x
 
@@ -118,7 +118,7 @@ net = TinyNet()
 ```
 
 We can see that the forward pass of our neural network is just the sequence of operations performed on the input tensor `x`.
-We can also see that functional operations like `leakyrelu` are not defined as classes and instead are just methods we can just call.
+We can also see that functional operations like `leaky_relu` are not defined as classes and instead are just methods we can just call.
 Finally, we just initialize an instance of our neural network, and we are ready to start training it.
 
 ## Training
@@ -165,7 +165,7 @@ from extra.datasets import fetch_mnist
 Now we have everything we need to start training our neural network.
 We will be training for 1000 steps with a batch size of 64.
 
-We use `with Tensor.train()` set the internal flag `Tensor.training` to `True` during training.
+We use `with Tensor.train()` to set the internal flag `Tensor.training` to `True` during training.
 Upon exit, the flag is restored to its previous value by the context manager.
 
 ```python
@@ -302,7 +302,4 @@ You can find a full list and their descriptions in [env_vars.md](env_vars.md).
 
 ### Visualizing the Computation Graph
 
-It is possible to visualize the computation graph of a neural network using [graphviz](https://graphviz.org/).
-
-This is easily done by running a single pass (forward or backward!) of the neural network with the environment variable `GRAPH` set to `1`.
-The graph will be saved to `/tmp/net.svg` by default.
+It is possible to visualize the computation graph of a neural network using VIZ=1.

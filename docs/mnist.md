@@ -17,7 +17,7 @@ from tinygrad import Device
 print(Device.DEFAULT)
 ```
 
-You will see `CUDA` here on a GPU instance, or `CLANG` here on a CPU instance.
+You will see `CUDA` here on a GPU instance, or `CPU` here on a CPU instance.
 
 ## A simple model
 
@@ -97,6 +97,14 @@ timeit.repeat(step, repeat=5, number=1)
 ```
 
 So around 75 ms on T4 colab.
+
+If you want to see a breakdown of the time by kernel:
+
+```python
+from tinygrad import GlobalCounters, Context
+GlobalCounters.reset()
+with Context(DEBUG=2): step()
+```
 
 ### Why so slow?
 

@@ -1,19 +1,21 @@
-import sys, unittest
-from typing import Optional, Set, Tuple
+import time, struct
+from typing import Any, Callable, Optional
 import numpy as np
-from tinygrad import Tensor, Device, dtypes
-from tinygrad.ops import UOp
+from tinygrad import Tensor, dtypes, Device
+from tinygrad.ops import UOp, Ops, sint
+from tinygrad.shape.shapetracker import ShapeTracker
 from tinygrad.tensor import _to_np_dtype
 from tinygrad.engine.realize import Runner
-from tinygrad.dtype import DType
+from tinygrad.dtype import ConstType, DType
 from tinygrad.nn.state import get_parameters
-from tinygrad.helpers import Context, CI, OSX, getenv
+from tinygrad.helpers import T, unwrap, CI
+from tinygrad.codegen import full_rewrite
+from tinygrad.runtime.ops_python import PythonProgram, PythonRenderer, PythonCompiler, PythonAllocator
 
 def derandomize_model(model):
-  with Context(GRAPH=0):
-    for p in get_parameters(model):
-      p.lazydata = Tensor.empty(p.shape, device=p.device, dtype=p.dtype).lazydata
-      p.realize()
+  for p in get_parameters(model):
+    p.replace(Tensor.empty(p.shape, device=p.device, dtype=p.dtype))
+    p.realize()
 
 def assert_jit_cache_len(fxn, expected_len):
   if not fxn.jit_cache:
@@ -21,29 +23,12 @@ def assert_jit_cache_len(fxn, expected_len):
     return
   # until we have a better way of typing the prg in ExecItem
   if issubclass(type(fxn.jit_cache[0].prg), Runner) and not type(fxn.jit_cache[0].prg).__name__.endswith('Graph'):
-    assert len(fxn.jit_cache) == expected_len, len(fxn.jit_cache)
+    assert len(fxn.jit_cache) == expected_len, f"expected {expected_len}, got {len(fxn.jit_cache)}"
   else:
     assert len(fxn.jit_cache) == 1, len(fxn.jit_cache)
     # until we have a better way of typing the prg in ExecItem
     assert type(fxn.jit_cache[0].prg).__name__.endswith('Graph')
     assert len(fxn.jit_cache[0].prg.jit_cache) == expected_len
-
-def is_dtype_supported(dtype: DType, device: str = Device.DEFAULT):
-  if dtype == dtypes.pyint and device != "PYTHON": return False
-  if dtype == dtypes.bfloat16:
-    # NOTE: this requires bf16 buffer support
-    return device in {"AMD"} or (device in {"CUDA", "NV"} and not CI and not getenv("PTX"))
-  if device in ["WEBGPU", "WEBGL"]: return dtype in [dtypes.float, dtypes.int32, dtypes.uint32]
-  # for CI GPU and OSX, cl_khr_fp16 isn't supported
-  # for CI LLVM, it segfaults because it can't link to the casting function
-  # CI CUDA architecture is sm_35 but we need at least sm_70 to run fp16 ALUs
-  # PYTHON supports half memoryview in 3.12+ https://github.com/python/cpython/issues/90751
-  if dtype == dtypes.half:
-    if device == "GPU": return not CI and not OSX
-    if device in ["LLVM", "CUDA", "NV"]: return not CI
-    if device == "PYTHON": return sys.version_info >= (3, 12)
-  if dtype == dtypes.float64: return device != "METAL" and not (OSX and device == "GPU")
-  return True
 
 def rand_for_dtype(dt:DType, size:int):
   if dtypes.is_unsigned(dt):
@@ -54,19 +39,30 @@ def rand_for_dtype(dt:DType, size:int):
     return np.random.choice([True, False], size=size)
   return np.random.uniform(-10, 10, size=size).astype(_to_np_dtype(dt))
 
-class TestUOps(unittest.TestCase):
-  def assert_equiv_uops(self, uop1:UOp, uop2:UOp, cache:Optional[Set[Tuple[UOp, UOp]]]=None):
-    if cache is None: cache = set()
-    if (uop1, uop2) in cache: return
-    cache.add((uop1, uop2))
-    # NOTE: direct UOps __eq__ is comparing object reference, use this function to compare two uops
-    try:
-      self.assertIs(uop1.op, uop2.op)
-      self.assertEqual(uop1.dtype, uop2.dtype)
-      self.assertEqual(uop1.arg, uop2.arg)
-      self.assertEqual(len(uop1.src), len(uop2.src))
-      for s1, s2 in zip(uop1.src, uop2.src): self.assert_equiv_uops(s1, s2, cache)
-    except AssertionError as e:
-      print(f"{uop1=}")
-      print(f"{uop2=}")
-      raise e
+def ast_const(dtype:DType, val:ConstType, shape:tuple[sint, ...]=(), st:Optional[ShapeTracker]=None, st_src:Optional[tuple[UOp]]=None) -> UOp:
+  if st_src is None:
+    st_src = (st.to_uop() if st is not None else ShapeTracker.from_shape(()).reshape((1,)*len(shape)).expand(shape).to_uop(),)
+  st = unwrap(st_src[0].st)
+  if all(v.mask is None for v in st.views): return UOp.const(dtype, val).replace(src=(st.to_uop(),))
+  return UOp.const(dtype, val).valid(st)
+
+def timeit(fxn:Callable[..., T], *args, **kwargs) -> tuple[T, float]:
+  st = time.perf_counter_ns()
+  ret = fxn(*args, **kwargs)
+  return ret, (time.perf_counter_ns()-st)*1e-6
+
+def eval_uop(uop:UOp, inputs:list[tuple[DType, list[Any]]]|None=None):
+  allocator = PythonAllocator()
+  bufs = []
+  for buf_dt, data in inputs or []:
+    bufs.append(buf:=allocator.alloc(len(data) * buf_dt.itemsize))
+    allocator._copyin(buf, memoryview(struct.pack(str(len(data)) + buf_dt.fmt, *data)))
+  g = UOp(Ops.DEFINE_GLOBAL, uop.dtype.ptr(), arg=0, src=())
+  lst = full_rewrite(UOp.store(g.index(UOp.const(dtypes.int, 0)), uop).sink(), PythonRenderer)
+  prog = PythonProgram("run", PythonCompiler().compile(PythonRenderer().render(lst)))
+  prog(out_buf:=allocator.alloc(uop.dtype.itemsize), *bufs)
+  return out_buf.cast(uop.dtype.fmt).tolist()[0]
+
+def not_support_multi_device():
+  # REMOTE doesn't support multi device anywhere, GPU, CUDA and METAL don't support multi device if in CI
+  return Device.DEFAULT == "REMOTE" or (CI and Device.DEFAULT in ("GPU", "CUDA", "METAL"))

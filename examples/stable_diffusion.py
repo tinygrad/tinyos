@@ -189,7 +189,7 @@ class StableDiffusion:
     # make image correct size and scale
     x = (x + 1.0) / 2.0
     x = x.reshape(3,512,512).permute(1,2,0).clip(0,1)*255
-    return x.cast(dtypes.uint8) if Device.DEFAULT != "WEBGPU" else x
+    return x.cast(dtypes.uint8)
 
   def __call__(self, unconditional_context, context, latent, timestep, alphas, alphas_prev, guidance):
     e_t = self.get_model_output(unconditional_context, context, latent, timestep, guidance)
@@ -218,7 +218,7 @@ class StableDiffusion:
 if __name__ == "__main__":
   default_prompt = "a horse sized cat eating a bagel"
   parser = argparse.ArgumentParser(description='Run Stable Diffusion', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument('--steps', type=int, default=5, help="Number of steps in diffusion")
+  parser.add_argument('--steps', type=int, default=6, help="Number of steps in diffusion")
   parser.add_argument('--prompt', type=str, default=default_prompt, help="Phrase to render")
   parser.add_argument('--out', type=str, default=Path(tempfile.gettempdir()) / "rendered.png", help="Output filename")
   parser.add_argument('--noshow', action='store_true', help="Don't show the image")
@@ -280,15 +280,15 @@ if __name__ == "__main__":
   print(x.shape)
 
   # save image
-  im = Image.fromarray(x.numpy().astype(np.uint8, copy=False))
+  im = Image.fromarray(x.numpy())
   print(f"saving {args.out}")
   im.save(args.out)
   # Open image.
   if not args.noshow: im.show()
 
   # validation!
-  if args.prompt == default_prompt and args.steps == 5 and args.seed == 0 and args.guidance == 7.5:
+  if args.prompt == default_prompt and args.steps == 6 and args.seed == 0 and args.guidance == 7.5:
     ref_image = Tensor(np.array(Image.open(Path(__file__).parent / "stable_diffusion_seed0.png")))
-    distance = (((x - ref_image).cast(dtypes.float) / ref_image.max())**2).mean().item()
-    assert distance < 3e-4, colored(f"validation failed with {distance=}", "red")
+    distance = (((x.cast(dtypes.float) - ref_image.cast(dtypes.float)) / ref_image.max())**2).mean().item()
+    assert distance < 3e-3, colored(f"validation failed with {distance=}", "red")  # higher distance with WINO
     print(colored(f"output validated with {distance=}", "green"))

@@ -1,7 +1,6 @@
-# TODO: move the GRAPH and DEBUG stuff to here
 import gc
 from tinygrad.helpers import prod
-from tinygrad.lazy import LazyBuffer
+from tinygrad.ops import UOp
 from tinygrad.device import Buffer
 from tinygrad import Tensor, GlobalCounters
 
@@ -9,7 +8,7 @@ def print_objects():
   #gc.collect()
   tensors = [x for x in gc.get_objects() if isinstance(x, Tensor)]
   tensor_ram_used = sum([prod(x.shape)*4 for x in tensors])
-  lazybuffers = [x for x in gc.get_objects() if isinstance(x, LazyBuffer)]
+  lazybuffers = [x for x in gc.get_objects() if isinstance(x, UOp)]
   gpubuffers = [x for x in gc.get_objects() if isinstance(x, Buffer) and hasattr(x, "_buf")]
   realized_buffers = [x.realized for x in lazybuffers if x.base == x and x.realized]
   gpubuffers_orphaned = [x for x in gpubuffers if x not in realized_buffers]
