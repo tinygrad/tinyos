@@ -64,4 +64,4 @@ image:
 	# final cleanup
 	rm -f tinyos.yaml build/tinybox-release
 
-.PHONY: setup clean red green pro blue red-dev green-dev pro-dev blue-dev image
+.PHONY: setup clean red green red-dev green-dev image
