@@ -8,12 +8,18 @@ pushd /home/tiny/tinygrad || exit
 export PYTHONPATH="."
 export MODEL="resnet"
 
-export DEFAULT_FLOAT="HALF" GPUS=6 BS=1536 EVAL_BS=192
+export DEFAULT_FLOAT="HALF"
 export LAZYCACHE=0 RESET_STEP=0
 
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
+  NUM_GPUS=$(nvidia-smi -L | wc -l)
+  export GPUS=$NUM_GPUS
+  export BS=$((256 * NUM_GPUS))
+  export EVAL_BS=$((32 * NUM_GPUS))
+
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=1500 BEAM_UPCAST_MAX=64 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=10 BEAM_PADTO=0
 elif [[ "$TINYBOX_COLOR" == "red" ]]; then
+  export GPUS=6 BS=1536 EVAL_BS=192
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=2000 BEAM_UPCAST_MAX=96 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=5 BEAM_PADTO=0
 else
   echo "Unknown tinybox color: $TINYBOX_COLOR"
