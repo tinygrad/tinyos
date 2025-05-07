@@ -58,7 +58,7 @@ image:
 	# now we can do manual customization
 	sudo ubuntu-image classic --debug -w result -r -t perform_manual_customization tinyos.yaml
 	# cleanup so that ubuntu-image can unchroot cleanly
-	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev
+	sudo umount result/chroot/proc result/chroot/sys/firmware/efi/efivars result/chroot/sys result/chroot/dev/pts result/chroot/dev
 	# now we can let ubuntu-image finish the image build
 	sudo ubuntu-image classic --debug -w result -r tinyos.yaml
 	# final cleanup
