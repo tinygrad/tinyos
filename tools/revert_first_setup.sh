@@ -14,6 +14,6 @@ if [ "$sourced" -eq 1 ]; then
   rm -f /home/tiny/.ssh/authorized_keys
 fi
 
-sudo systemctl restart displayservice
+sudo systemctl restart tinybox-display
 
 exit
