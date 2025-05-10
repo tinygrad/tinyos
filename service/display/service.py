@@ -76,7 +76,7 @@ class SleepScreen(Component):
     else: self.bmc_ip = Text(f"BMC: {bmc_ip}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
 
     # ip
-    ip = subprocess.run(["hostname", "-I"], capture_output=True).stdout.decode().strip()
+    ip = subprocess.run(["hostname", "-i"], capture_output=True).stdout.decode().strip()
     ip = ip.split(" ")[0] if ip else "N/A"
 
     self.ip = Text(f"IP: {ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_ip, Anchor.TOP_CENTER))
