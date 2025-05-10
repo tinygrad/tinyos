@@ -33,7 +33,7 @@ class StatusScreen(Component):
 
     self.line_graph = LineGraph(370 + gpu_bars_space, 190, x=610 - gpu_bars_space // 2, y=360)
 
-  def update(self, gpu_utilizations: list[float], gpu_memory_utilizations: list[float], cpu_utilizations: list[float], gpu_power_draws: list[float], cpu_power_draw: float, disk_io: tuple[int, int]):
+  def update(self, gpu_utilizations: list[float], gpu_memory_utilizations: list[float], cpu_utilizations: list[float], gpu_power_draws: list[int], cpu_power_draw: float, disk_io: tuple[int, int]):
     for i, bar in enumerate(self.gpu_bars): bar.value = gpu_utilizations[i]
     for i, bar in enumerate(self.gpu_mem_bars): bar.value = gpu_memory_utilizations[i]
     for i, bar in enumerate(self.cpu_bars): bar.value = cpu_utilizations[i]
@@ -220,7 +220,7 @@ def display_thread():
 
         # check if display should be in status state
         gpu_utilizations = stats.gpu.get_gpu_utilizations()
-        cpu_utilizations = stats.gpu.get_cpu_utilizations()
+        cpu_utilizations = stats.get_cpu_utilizations()
         logging.debug(f"GPU Utilizations: {gpu_utilizations}")
         mean_cpu_utilization = sum(cpu_utilizations) / len(cpu_utilizations)
         if (sum(gpu_utilizations) > 1 or mean_cpu_utilization > 50) and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU and display_state != DisplayState.TEXT and display_state != DisplayState.WELCOME:
