@@ -11,25 +11,27 @@ from queue import Queue
 from tinyturing.display import Display, WIDTH, HEIGHT
 from tinyturing.components import Anchor, Component, ComponentParent
 from tinyturing.components import Text, Image, MultiCollidingDVDImage, AnimatedText, Rectangle, LineGraph, VerticalProgressBar, HorizontalProgressBar
-from stats import get_gpu_utilizations, get_gpu_memory_utilizations, get_cpu_utilizations, get_gpu_power_draw, get_cpu_power_draw, get_disk_io_per_second
+from stats import Stats
 
 class StatusScreen(Component):
-  def __init__(self):
-    self.gpu_bars = [VerticalProgressBar(50, 430, x=30 + 64 * i, y=HEIGHT // 2) for i in range(6)]
-    self.gpu_mem_bars = [HorizontalProgressBar(160, 5, x=425, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(6)]
-    self.gpu_mem_bar_backgrounds = [Rectangle(160, 5, color=0x323232ff, x=425, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(6)]
+  def __init__(self, gpu_count:int):
+    gpu_bars_space = (6 - gpu_count) * 64
+    self.gpu_bars = [VerticalProgressBar(50, 430, x=30 + 64 * i, y=HEIGHT // 2) for i in range(gpu_count)]
+    self.gpu_mem_bars = [HorizontalProgressBar(160, 5, x=425 - gpu_bars_space, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(gpu_count)]
+    self.gpu_mem_bar_backgrounds = [Rectangle(160, 5, color=0x323232ff, x=425 - gpu_bars_space, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(gpu_count)]
 
-    self.vertical_separator = Rectangle(1, 280, x=WIDTH // 2, y=HEIGHT // 2)
-    self.horizontal_separator = Rectangle(280, 1, x=WIDTH // 2 + WIDTH // 4, y=HEIGHT // 2)
+    self.vertical_separator = Rectangle(1, 280, x=WIDTH // 2 - gpu_bars_space, y=HEIGHT // 2)
+    self.horizontal_separator = Rectangle(280 + gpu_bars_space, 1, x=WIDTH // 2 + WIDTH // 4  - gpu_bars_space // 2, y=HEIGHT // 2)
 
-    self.cpu_bars = [VerticalProgressBar(2, 117, x=604 + 3 * i, y=84) for i in range(64)]
+    bar_width = (6 - gpu_count) + 2
+    self.cpu_bars = [VerticalProgressBar(bar_width, 117, x=604 + (bar_width + 1) * i - gpu_bars_space, y=84) for i in range(64)]
 
     self.rolling_power_draw = 0
-    self.power_draw_text = Text("0W", style="mono", x=425, y=57, anchor=Anchor.MIDDLE_LEFT)
+    self.power_draw_text = Text("0W", style="mono", x=425 - gpu_bars_space, y=57, anchor=Anchor.MIDDLE_LEFT)
     self.rolling_disk_io = 0
     self.disk_io_text = Text("0MB/s", style="mono", x=WIDTH - 5, y=190, anchor=Anchor.MIDDLE_RIGHT)
 
-    self.line_graph = LineGraph(370, 190, x=610, y=360)
+    self.line_graph = LineGraph(370 + gpu_bars_space, 190, x=610 - gpu_bars_space // 2, y=360)
 
   def update(self, gpu_utilizations: list[float], gpu_memory_utilizations: list[float], cpu_utilizations: list[float], gpu_power_draws: list[float], cpu_power_draw: float, disk_io: tuple[int, int]):
     for i, bar in enumerate(self.gpu_bars): bar.value = gpu_utilizations[i]
@@ -160,7 +162,9 @@ def display_thread():
       to_display = AnimatedText([" .....", ". ....", ".. ...", "... ..", ".... .", "..... "], "sans", bounce=True, x=WIDTH // 2, y=HEIGHT // 2)
     display_last_active = time.monotonic()
     start_time = time.monotonic()
-    status_screen = StatusScreen()
+
+    stats = Stats()
+    status_screen = StatusScreen(stats.gpu.get_gpu_count())
 
     while display_thread_alive:
       st = time.perf_counter()
@@ -215,8 +219,8 @@ def display_thread():
           to_display = SleepScreen()
 
         # check if display should be in status state
-        gpu_utilizations = get_gpu_utilizations()
-        cpu_utilizations = get_cpu_utilizations()
+        gpu_utilizations = stats.gpu.get_gpu_utilizations()
+        cpu_utilizations = stats.gpu.get_cpu_utilizations()
         logging.debug(f"GPU Utilizations: {gpu_utilizations}")
         mean_cpu_utilization = sum(cpu_utilizations) / len(cpu_utilizations)
         if (sum(gpu_utilizations) > 1 or mean_cpu_utilization > 50) and time.monotonic() - start_time > 10 and display_state != DisplayState.MENU and display_state != DisplayState.TEXT and display_state != DisplayState.WELCOME:
@@ -240,7 +244,14 @@ def display_thread():
         elif display_state == DisplayState.MENU:
           to_display.blit(display)
         elif display_state == DisplayState.STATUS:
-          status_screen.update(gpu_utilizations, get_gpu_memory_utilizations(), cpu_utilizations, get_gpu_power_draw(), get_cpu_power_draw(), get_disk_io_per_second())
+          status_screen.update(
+            gpu_utilizations,
+            stats.gpu.get_gpu_memory_utilizations(),
+            cpu_utilizations,
+            stats.gpu.get_gpu_power_draw(),
+            stats.get_cpu_power_draw(),
+            stats.get_disk_io_per_second()
+          )
           status_screen.blit(display)
         elif display_state == DisplayState.SLEEP:
           to_display.blit(display)
