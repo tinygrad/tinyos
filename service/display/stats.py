@@ -57,6 +57,8 @@ class AMDGPUStats(GPUStats):
   def __init__(self):
     super().__init__()
     self.gpu_count = self.get_gpu_count()
+    if self.gpu_count == 0:
+      raise Exception("No AMD GPUs found")
     self.hwmon_paths = glob.glob("/sys/class/drm/card*/device/hwmon/hwmon*")
 
   def get_gpu_count(self) -> int:
