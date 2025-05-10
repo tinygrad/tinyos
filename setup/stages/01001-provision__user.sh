@@ -4,6 +4,12 @@ set -x
 source /etc/tinybox-release
 set -e
 
+# if TINYBOX_CORE is set, exit
+if [[ -n "$TINYBOX_CORE" ]]; then
+  echo "not provisioning, TINYBOX_CORE is set"
+  exit 0
+fi
+
 # ensure tinychat is up before we bring up the 100 gig interface
 sudo systemctl start tinychat
 

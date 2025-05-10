@@ -50,7 +50,7 @@ customization:
         - [ cloud-init-per, once, earlyboot, bash, /opt/tinybox/setup/earlyboot.sh ]
       users: []
       runcmd:
-        - [ cloud-init-per, once, setup, bash, /opt/tinybox/setup/setup.sh ]
+        - [ cloud-init-per, once, setup, systemctl, start, tinybox-setup ]
     meta-data: |
       dsmode: local
   extra-packages:
