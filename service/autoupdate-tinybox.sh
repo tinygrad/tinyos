@@ -52,12 +52,12 @@ done
 
 systemctl daemon-reload
 if [ $changed -eq 1 ]; then
-  systemctl stop displayservice
-  systemctl stop buttonservice
+  systemctl stop tinybox-display
+  systemctl stop tinybox-button
   systemctl stop tinychat
 fi
-systemctl start displayservice
-systemctl start buttonservice
+systemctl start tinybox-display
+systemctl start tinybox-button
 systemctl start tinychat
 
 popd || true

@@ -1,12 +1,12 @@
 [Unit]
-Description=tinybox provisioning
+Description=tinybox setup
 After=network.target autoupdate-tinybox.service
 
 [Service]
 Type=simple
-User=tiny
-Group=tiny
-ExecStart=bash /opt/tinybox/setup/provision.sh
+User=root
+Group=root
+ExecStart=bash /opt/tinybox/setup/setup.sh
 StandardOutput=journal+console
 
 [Install]

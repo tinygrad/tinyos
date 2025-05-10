@@ -87,7 +87,7 @@ async def power_button_pressed(count: int):
             update_menu()
           case 4:
             logging.info("provisioning")
-            subprocess.run(["systemctl", "start", "provision"])
+            subprocess.run(["systemctl", "start", "tinybox-provision"])
             in_menu = False
             update_menu()
           case 5:

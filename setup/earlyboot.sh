@@ -2,7 +2,7 @@
 
 source /etc/tinybox-release
 
-systemctl enable displayservice
-systemctl enable buttonservice
-systemctl start displayservice
-systemctl start buttonservice
+systemctl enable tinybox-display
+systemctl enable tinybox-button
+systemctl start tinybox-display
+systemctl start tinybox-button

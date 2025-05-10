@@ -35,7 +35,7 @@ echo "status" | nc -U /run/tinybox-screen.sock
 BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py
 
 # start temp monitor
-bash /opt/tinybox/setup/monitortemps.sh &
+bash /opt/tinybox/setup/provision/monitortemps.sh &
 
 # run
 START_TIME=$(date +%s)

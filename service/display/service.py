@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, "/opt/tinybox/tinyturing/")
-sys.path.insert(0, "/opt/tinybox/service/displayservice/")
+sys.path.insert(0, "/opt/tinybox/service/display/")
 
 from socketserver import UnixStreamServer, StreamRequestHandler
 import threading, time, signal, os, logging, math, subprocess
@@ -87,7 +87,7 @@ class SleepScreen(Component):
     # bouncing logo
     offset = -2 if hasattr(self, "bmc_password") else 62
     self.logo = MultiCollidingDVDImage([
-      "/opt/tinybox/service/logo.png",
+      "/opt/tinybox/service/display/logo.png",
     ], [
       (400, 154),
     ], width=WIDTH, height=HEIGHT - (196 - offset), y=offset)
@@ -102,7 +102,7 @@ class SleepScreen(Component):
 
 class WelcomeScreen(Component):
   def __init__(self):
-    self.qr = Image("/opt/tinybox/service/docs_qr.png", (300, 300), y=HEIGHT // 2, anchor=Anchor.MIDDLE_LEFT)
+    self.qr = Image("/opt/tinybox/service/display/docs_qr.png", (300, 300), y=HEIGHT // 2, anchor=Anchor.MIDDLE_LEFT)
     self.desc1 = Text("Scan for Docs", "sans", anchor=Anchor.TOP_LEFT, parent=ComponentParent(self.qr, Anchor.TOP_RIGHT))
 
     # read bmc password from /root/.bmc_password

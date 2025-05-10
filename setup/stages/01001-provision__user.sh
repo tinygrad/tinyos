@@ -4,11 +4,6 @@ set -x
 source /etc/tinybox-release
 set -e
 
-# start systemd-journal-gatewayd for debugging
-sudo systemctl start systemd-journal-gatewayd
-
-sleep 2
-
 # ensure tinychat is up before we bring up the 100 gig interface
 sudo systemctl start tinychat
 
@@ -81,7 +76,7 @@ sudo ip link set "$iface" mtu 9000
 set -e
 
 # populate raid
-if ! bash /opt/tinybox/setup/populateraid.sh "$ip"; then
+if ! bash /opt/tinybox/setup/provision/populateraid.sh "$ip"; then
   echo "text,$(hostname -i | xargs):19531,,Failed to populate RAID" | nc -U /run/tinybox-screen.sock
   exit 1
 fi
@@ -130,7 +125,7 @@ sleep 1
 echo "status" | nc -U /run/tinybox-screen.sock
 
 if [ ! -d "/home/tiny/stress_test/ckpts" ] || [ -f "/tmp/force_resnet_train" ]; then
-  if ! bash /opt/tinybox/setup/trainresnet.sh; then
+  if ! bash /opt/tinybox/setup/provision/trainresnet.sh; then
     exit 1
   fi
 
@@ -142,7 +137,7 @@ if [ ! -d "/home/tiny/stress_test/ckpts" ] || [ -f "/tmp/force_resnet_train" ]; 
     echo "text,$(hostname -i | xargs):19531,,No ResNet Ckpt,Retrying..." | nc -U /run/tinybox-screen.sock
     sleep 1
 
-    if ! bash /opt/tinybox/setup/trainresnet.sh; then
+    if ! bash /opt/tinybox/setup/provision/trainresnet.sh; then
       exit 1
     fi
 

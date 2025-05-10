@@ -50,12 +50,7 @@ customization:
         - [ cloud-init-per, once, earlyboot, bash, /opt/tinybox/setup/earlyboot.sh ]
       users: []
       runcmd:
-        - [ cloud-init-per, once, firstboot, bash, /opt/tinybox/setup/firstboot.sh ]
-      power_state:
-        delay: now
-        mode: reboot
-        message: Rebooting after setup
-        condition: true
+        - [ cloud-init-per, once, setup, bash, /opt/tinybox/setup/setup.sh ]
     meta-data: |
       dsmode: local
   extra-packages:

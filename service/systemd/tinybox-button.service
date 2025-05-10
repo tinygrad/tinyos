@@ -1,14 +1,14 @@
 [Unit]
 Description=tinybox Button Service
 After=local-fs.target
-Before=displayservice.service
+Before=tinybox-display.service
 DefaultDependencies=no
 
 [Service]
 Type=simple
 User=root
 Group=root
-ExecStart=/opt/tinybox/build/venv/bin/python3 /opt/tinybox/service/buttonservice.py
+ExecStart=/opt/tinybox/build/venv/bin/python3 /opt/tinybox/service/button/service.py
 Restart=always
 RestartSec=1
 
