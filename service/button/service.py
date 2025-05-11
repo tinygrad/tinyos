@@ -9,7 +9,7 @@ def find_power_button():
   raise Exception("power button not found")
 
 in_menu, menu_selection = False, 0
-MENU = ["exit", "start tinychat", "stop tinychat", "update", "provision", "force stress"]
+MENU = ["exit", "start tinychat", "stop tinychat", "update", "setup", "force stress"]
 def update_menu():
   global in_menu, menu_selection
 
@@ -86,8 +86,8 @@ async def power_button_pressed(count: int):
             in_menu = False
             update_menu()
           case 4:
-            logging.info("provisioning")
-            subprocess.run(["systemctl", "start", "tinybox-provision"])
+            logging.info("setup")
+            subprocess.run(["systemctl", "start", "tinybox-setup"])
             in_menu = False
             update_menu()
           case 5:
