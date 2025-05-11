@@ -15,6 +15,7 @@ fi
 
 # run all stages from the current stage to the latest
 ran_stage=0
+failed=0
 stage_files=$(find /opt/tinybox/setup/stages/ -type f -name "*.sh" | sort -n)
 for stage_file in $stage_files; do
   stage=$(basename "$stage_file" | cut -d'-' -f1)
@@ -35,11 +36,12 @@ for stage_file in $stage_files; do
       echo "$stage" > /etc/tinybox-setup-stage
     else
       echo "text,setup stage failed,$stage,$(hostname -i | xargs):19531" | nc -U /run/tinybox-screen.sock
+      failed=1
       break
     fi
   fi
 done
 
-if [[ $ran_stage -ne 0 ]]; then
+if [[ $ran_stage -ne 0 ]] && [[ $failed -eq 0 ]]; then
   echo "text,setup completed" | nc -U /run/tinybox-screen.sock
 fi
