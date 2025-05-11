@@ -144,7 +144,14 @@ display_thread_alive = True
 def display_thread():
   try:
     # initialize display
-    display = Display()
+    while True:
+      try:
+        display = Display()
+        break
+      except Exception as e:
+        logging.warning(f"Failed to initialize display: {e}")
+        time.sleep(1)
+
     display.clear()
     display.flip(force=True)
 
