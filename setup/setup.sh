@@ -1,20 +1,14 @@
 #!/usr/bin/env bash
 set -xeo pipefail
 
+source /opt/tinybox/service/display/api.sh
+
 # check if "/home/tiny/.before_firstsetup" doesn't exist
-if [ ! -f /home/tiny/.before_firstsetup ]; then
+if [ ! -f /home/tiny/.before_firstsetup ] || [ -f "/tmp/force_setup" ]; then
   exit 0
 fi
 
-# wait for /run/tinybox-screen.sock to be created
-while [ ! -S /run/tinybox-screen.sock ]; do
-  sleep 1
-done
-
-# wait for the display service socket to become available
-while ! nc -zU /run/tinybox-screen.sock; do
-  sleep 1
-done
+wait_for_display 10
 
 # check current setup stage and see if there are any stages to be run
 if [ -f /etc/tinybox-setup-stage ]; then
@@ -31,7 +25,7 @@ for stage_file in $stage_files; do
   stage=$(basename "$stage_file" | cut -d'-' -f1)
   if [ "$stage" -gt "$CURRENT_STAGE" ]; then
     ran_stage=1
-    echo "atext,running stage $stage.. ,running stage $stage ..,running stage $stage. ." | nc -U /run/tinybox-screen.sock
+    display_wtext "running stage $stage"
 
     # run the stage
     exit_code=1
@@ -51,7 +45,7 @@ for stage_file in $stage_files; do
       failed=1
       break
     else
-      echo "text,setup stage failed,$stage,$(hostname -i | xargs):19531" | nc -U /run/tinybox-screen.sock
+      display_text "setup stage failed,$stage,$(hostname -i | xargs):19531"
       failed=1
       break
     fi
@@ -59,5 +53,5 @@ for stage_file in $stage_files; do
 done
 
 if [[ $ran_stage -ne 0 ]] && [[ $failed -eq 0 ]]; then
-  echo "text,setup completed" | nc -U /run/tinybox-screen.sock
+  display_text "setup completed"
 fi

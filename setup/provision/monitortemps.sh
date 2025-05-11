@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 source /etc/tinybox-release
+source /opt/tinybox/service/display/api.sh
 
 LOGFILE="/home/tiny/stress_test/temps.log"
 echo "date,cpu_temp,gpu_temps" > "$LOGFILE"
@@ -23,5 +24,5 @@ while true; do
 
   echo "$(date),${cpu_temp},${gpu_temps}" >> "$LOGFILE"
   sleep 10
-  echo "status" | nc -U /run/tinybox-screen.sock
+  display "status"
 done

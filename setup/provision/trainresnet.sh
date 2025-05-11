@@ -2,6 +2,7 @@
 set -x
 
 source /etc/tinybox-release
+source /opt/tinybox/service/display/api.sh
 
 pushd /home/tiny/tinygrad || exit
 
@@ -31,7 +32,7 @@ export SEED=$RANDOM
 export EPOCHS=39
 
 # init
-echo "status" | nc -U /run/tinybox-screen.sock
+display "status"
 BENCHMARK=10 INITMLPERF=1 python3 examples/mlperf/model_train.py
 
 # start temp monitor
@@ -39,7 +40,7 @@ bash /opt/tinybox/setup/provision/monitortemps.sh &
 
 # run
 START_TIME=$(date +%s)
-echo "status" | nc -U /run/tinybox-screen.sock
+display "status"
 PARALLEL=0 RUNMLPERF=1 EVAL_START_EPOCH=3 EVAL_FREQ=4 python3 examples/mlperf/model_train.py
 END_TIME=$(date +%s)
 
@@ -58,10 +59,10 @@ fi
 
 time_taken=$((END_TIME - START_TIME))
 if [ $time_taken -gt $((EXPECTED_TIME * 105 / 100)) ]; then
-  echo "text,$(hostname -i | xargs):19531,,ResNet Train Failed,Expected time exceeded,${time_taken}s" | nc -U /run/tinybox-screen.sock
+  display_text "$(hostname -i | xargs):19531,,ResNet Train Failed,Expected time exceeded,${time_taken}s"
   exit 1
 else
-  echo "text,$(hostname -i | xargs):19531,,ResNet Train Passed,${time_taken}s" | nc -U /run/tinybox-screen.sock
+  display_text "$(hostname -i | xargs):19531,,ResNet Train Passed,${time_taken}s"
   sleep 1
 fi
 

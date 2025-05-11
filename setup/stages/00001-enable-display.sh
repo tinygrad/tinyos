@@ -3,8 +3,6 @@ set -xeo pipefail
 
 source /etc/tinybox-release
 
-echo "atext,Preparing.. ,Preparing ..,Preparing. ." | nc -U /run/tinybox-screen.sock
-
 if [[ -z "$TINYBOX_CORE" ]]; then
   systemctl enable tinybox-display
   systemctl enable tinybox-button
