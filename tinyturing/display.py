@@ -34,7 +34,10 @@ class Display:
     self.old_framebuffer = self.framebuffer.copy()
     self.update_buffer = np.zeros(self.framebuffer.size * self.framebuffer.itemsize, dtype=np.uint8)
     self.partial_update_count = 0
-  def __del__(self): self.lcd.close()
+
+  def __del__(self):
+    if hasattr(self, "lcd"):
+      self.lcd.close()
 
   def _connect(self):
     # auto detect com port
