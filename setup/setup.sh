@@ -26,9 +26,11 @@ for stage_file in $stage_files; do
     # run the stage
     exit_code=1
     if [[ $stage_file == *"__user"* ]]; then
-      exit_code=$(su tiny -c "bash $stage_file")
+      su tiny -c "bash $stage_file"
+      exit_code=$?
     else
-      exit_code=$(bash "$stage_file")
+      bash "$stage_file"
+      exit_code=$?
     fi
 
     # and if it succeeds, update the current stage
