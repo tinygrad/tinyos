@@ -6,6 +6,16 @@ if [ ! -f /home/tiny/.before_firstsetup ]; then
   exit 0
 fi
 
+# wait for /run/tinybox-screen.sock to be created
+while [ ! -S /run/tinybox-screen.sock ]; do
+  sleep 1
+done
+
+# wait for the display service socket to become available
+while ! nc -zU /run/tinybox-screen.sock; do
+  sleep 1
+done
+
 # check current setup stage and see if there are any stages to be run
 if [ -f /etc/tinybox-setup-stage ]; then
   CURRENT_STAGE=$(cat /etc/tinybox-setup-stage)
