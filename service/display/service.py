@@ -142,16 +142,16 @@ DisplayState = Enum("DisplayState", ["STARTUP", "WELCOME", "TEXT", "MENU", "STAT
 control_queue = Queue()
 display_thread_alive = True
 def display_thread():
-  try:
-    # initialize display
-    while True:
-      try:
-        display = Display()
-        break
-      except Exception as e:
-        logging.warning(f"Failed to initialize display: {e}")
-        time.sleep(1)
+  # initialize display
+  while True:
+    try:
+      display = Display()
+      break
+    except Exception as e:
+      logging.warning(f"Failed to initialize display: {e}")
+      time.sleep(1)
 
+  try:
     display.clear()
     display.flip(force=True)
 
