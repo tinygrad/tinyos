@@ -8,3 +8,5 @@ echo "00051" > /etc/tinybox-setup-stage
 sync
 
 systemctl reboot
+
+exit 75

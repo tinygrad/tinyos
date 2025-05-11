@@ -46,6 +46,10 @@ for stage_file in $stage_files; do
     # and if it succeeds, update the current stage
     if [[ $exit_code -eq 0 ]]; then
       echo "$stage" > /etc/tinybox-setup-stage
+    elif [[ $exit_code -eq 75 ]]; then
+      # 75 means we are rebooting, so just exit and wait for system to come up again
+      failed=1
+      break
     else
       echo "text,setup stage failed,$stage,$(hostname -i | xargs):19531" | nc -U /run/tinybox-screen.sock
       failed=1
