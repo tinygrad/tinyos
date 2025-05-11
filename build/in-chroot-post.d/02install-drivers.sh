@@ -3,7 +3,7 @@ set -xeo pipefail
 
 source /etc/tinybox-release
 
-if [[ -z "$TINYGRAD_CORE" ]]; then
+if [[ -z "$TINYBOX_CORE" ]]; then
   if [[ "$TINYBOX_COLOR" == "red" ]]; then
     wget -qO - https://repo.radeon.com/rocm/rocm.gpg.key | gpg --dearmor --output /etc/apt/keyrings/rocm.gpg
     echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/6.3.1/ubuntu noble main" | tee /etc/apt/sources.list.d/rocm.list

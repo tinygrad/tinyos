@@ -3,7 +3,7 @@ set -xeo pipefail
 
 source /etc/tinybox-release
 
-if [[ -z "$TINYGRAD_CORE" ]]; then
+if [[ -z "$TINYBOX_CORE" ]]; then
   pushd /opt/tinybox
 
   # build a venv to be copied to the image

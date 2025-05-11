@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -x
 
-if [[ -z "$TINYGRAD_CORE" ]]; then
+source /etc/tinybox-release
+
+if [[ -z "$TINYBOX_CORE" ]]; then
   # see if a raid array is already created, checking for anything under /dev/md/
   if [ -z "$(ls -A /dev/md/)" ]; then
     echo "No RAID array found, creating one..."

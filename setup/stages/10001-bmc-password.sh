@@ -3,7 +3,7 @@ set -x
 
 source /etc/tinybox-release
 
-if [[ -z "$TINYGRAD_CORE" ]]; then
+if [[ -z "$TINYBOX_CORE" ]]; then
   bash /opt/tinybox/setup/setbmcpass.sh "1"
 
   # set the bmc password

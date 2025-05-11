@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -xeo pipefail
 
+source /etc/tinybox-release
+
 systemctl enable autoupdate-tinybox
 systemctl enable tinybox-setup
 
-if [[ -z "$TINYGRAD_CORE" ]]; then
+if [[ -z "$TINYBOX_CORE" ]]; then
   systemctl enable tinychat
 fi

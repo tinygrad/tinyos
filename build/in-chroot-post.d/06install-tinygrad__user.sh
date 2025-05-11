@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -xeo pipefail
 
+source /etc/tinybox-release
+
 pushd /home/tiny
 
-if [[ -z "$TINYGRAD_CORE" ]]; then
+if [[ -z "$TINYBOX_CORE" ]]; then
   # clone tinygrad
   git clone https://github.com/tinygrad/tinygrad tinygrad
 
