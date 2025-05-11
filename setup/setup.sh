@@ -3,7 +3,7 @@ set -xeo pipefail
 
 # check if "/home/tiny/.before_firstsetup" doesn't exist
 if [ ! -f /home/tiny/.before_firstsetup ]; then
-  return
+  exit 0
 fi
 
 # check current setup stage and see if there are any stages to be run
