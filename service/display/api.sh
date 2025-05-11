@@ -2,7 +2,7 @@
 
 function display() {
   local command="$1"
-  echo "$command" | nc -U /run/tinybox-screen.sock || true
+  echo "$command" | nc -U /run/tinybox-screen.sock 2>/dev/null || true
 }
 
 function display_text() {
