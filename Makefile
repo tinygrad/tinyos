@@ -41,7 +41,7 @@ green: setup
 	time make image
 
 core: setup
-	sed 's/<|ARTIFACT_NAME|>/tinyos.green.img/g' tinyos.template.yaml > tinyos.yaml
+	sed 's/<|ARTIFACT_NAME|>/tinyos.core.img/g' tinyos.template.yaml > tinyos.yaml
 	sed -i 's/<|UBUNTU_SERIES|>/noble/g' tinyos.yaml
 	sed -i 's/<|UBUNTU_VERSION|>/24.04/g' tinyos.yaml
 	echo "TINYBOX_COLOR=core" | tee --append build/tinybox-release
