@@ -93,6 +93,11 @@ mkdir -p /home/tiny/stress_test
 pushd /home/tiny/tinygrad || exit
 display "status"
 
+if [[ "$TINYBOX_COLOR" == "green" ]]; then
+  NUM_GPUS=$(nvidia-smi -L | wc -l)
+  export GPUS=$NUM_GPUS
+fi
+
 # first run will detect gpu failure
 if ! python3 test/external/external_benchmark_multitensor_allreduce.py; then
   display_text "$(hostname -i | xargs):19531,,allreduce test failed,check logs for,possible gpu failure"
