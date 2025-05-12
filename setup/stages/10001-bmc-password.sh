@@ -8,5 +8,15 @@ if [[ -z "$TINYBOX_CORE" ]]; then
 
   # set the bmc password
   source /root/.bmc_password
-  ipmitool user set password 2 "$BMC_PASSWORD"
+  output=$(ipmitool user set password 2 "$BMC_PASSWORD" 2>&1)
+  if [[ $? -ne 0 ]]; then
+    # see if 0x19 is in output
+    if [[ $output == *"0x19"* ]]; then
+      # tried to set same password
+      exit 0
+    else
+      echo "Failed to set BMC password, error: $output"
+      exit 1
+    fi
+  fi
 fi
