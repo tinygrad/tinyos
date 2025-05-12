@@ -5,6 +5,7 @@ source /etc/tinybox-release
 
 if [[ -z "$TINYBOX_CORE" ]]; then
   bash /opt/tinybox/setup/setbmcpass.sh "1"
+  set -exo pipefail
 
   # set the bmc password
   source /root/.bmc_password
