@@ -48,6 +48,10 @@ for stage_file in $stage_files; do
       # 75 means we are rebooting, so just exit and wait for system to come up again
       failed=1
       break
+    elif [[ $exit_code -eq 2 ]]; then
+      # 2 means it failed but the failed process displayed a message that we want to keep
+      failed=1
+      break
     else
       display_text "setup stage failed,$stage,$(hostname -i | xargs):19531"
       failed=1

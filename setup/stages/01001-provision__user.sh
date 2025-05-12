@@ -82,7 +82,7 @@ set -e
 # populate raid
 if ! bash /opt/tinybox/setup/provision/populateraid.sh "$ip"; then
   display_text "$(hostname -i | xargs):19531,,Failed to populate RAID"
-  exit 1
+  exit 2
 fi
 sleep 1
 
@@ -101,7 +101,7 @@ fi
 # first run will detect gpu failure
 if ! python3 test/external/external_benchmark_multitensor_allreduce.py; then
   display_text "$(hostname -i | xargs):19531,,allreduce test failed,check logs for,possible gpu failure"
-  exit 1
+  exit 2
 fi
 
 python3 test/external/external_benchmark_multitensor_allreduce.py # run twice for warmup
@@ -111,7 +111,7 @@ popd || exit
 allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/stress_test/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
 if [ "$allreduce_bw" -lt 12 ]; then
   display_text "$(hostname -i | xargs):19531,,Allreduce test failed,${allreduce_bw}GB/s"
-  exit 1
+  exit 2
 fi
 
 # on red additionally run rocm-bandwidth-test
@@ -135,7 +135,7 @@ display "status"
 
 if [ ! -d "/home/tiny/stress_test/ckpts" ] || [ -f "/tmp/force_resnet_train" ]; then
   if ! bash /opt/tinybox/setup/provision/trainresnet.sh; then
-    exit 1
+    exit 2
   fi
 
   # check if we have a resnet checkpoint
@@ -147,7 +147,7 @@ if [ ! -d "/home/tiny/stress_test/ckpts" ] || [ -f "/tmp/force_resnet_train" ]; 
     sleep 1
 
     if ! bash /opt/tinybox/setup/provision/trainresnet.sh; then
-      exit 1
+      exit 2
     fi
 
     # check again if we have a resnet checkpoint
@@ -156,7 +156,7 @@ if [ ! -d "/home/tiny/stress_test/ckpts" ] || [ -f "/tmp/force_resnet_train" ]; 
       mv /home/tiny/tinygrad/ckpts /home/tiny/stress_test/
     else
       display_text "$(hostname -i | xargs):19531,,ResNet Train Failed,No Ckpt"
-      exit 1
+      exit 2
     fi
   fi
 fi
@@ -178,7 +178,7 @@ display_text "** ${cpu_max_temp} **,${gpu_max_temps1},${gpu_max_temps2}"
 # check if any of the temps are above the threshold
 if [ "$cpu_max_temp" -gt 90 ] || [ "${gpu_max_temps[0]}" -gt 95 ] || [ "${gpu_max_temps[1]}" -gt 95 ] || [ "${gpu_max_temps[2]}" -gt 95 ] || [ "${gpu_max_temps[3]}" -gt 95 ] || [ "${gpu_max_temps[4]}" -gt 95 ] || [ "${gpu_max_temps[5]}" -gt 95 ]; then
   display_text "$(hostname -i | xargs):19531,temps too high,** ${cpu_max_temp} **,${gpu_max_temps1},${gpu_max_temps2}"
-  exit 1
+  exit 2
 fi
 
 # turn fans to auto
@@ -187,7 +187,7 @@ sudo fan-control auto
 # log everything from provisioning
 if ! sudo mount -o rdma,port=20049 "${ip}1":/opt/dmi /mnt; then
   display_text "$(hostname -i | xargs):19531,,Failed to mount NFS"
-  exit 1
+  exit 2
 fi
 
 json_dmi=$(sudo dmidecode | jc --dmidecode)
@@ -195,7 +195,7 @@ serial=$(echo "$json_dmi" | jq -r '.[] | select(.description | contains("Base Bo
 # ensure there isn't already a folder with this serial
 if [ -d "/mnt/${serial}" ]; then
   display_text "$(hostname -i | xargs):19531,,Serial already exists,${serial}"
-  exit 1
+  exit 2
 fi
 mkdir -p "/mnt/${serial}"
 
