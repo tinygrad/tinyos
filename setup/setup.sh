@@ -11,7 +11,7 @@ fi
 wait_for_display 10
 
 # check current setup stage and see if there are any stages to be run
-if [ -f /etc/tinybox-setup-stage ]; then
+if [ -f /etc/tinybox-setup-stage ] && [ ! -f "/tmp/force_setup" ]; then
   CURRENT_STAGE=$(cat /etc/tinybox-setup-stage)
 else
   CURRENT_STAGE=0
@@ -23,7 +23,7 @@ failed=0
 stage_files=$(find /opt/tinybox/setup/stages/ -type f -name "*.sh" | sort -n)
 for stage_file in $stage_files; do
   stage=$(basename "$stage_file" | cut -d'-' -f1)
-  if [ "$stage" -gt "$CURRENT_STAGE" ] || [ -f "/tmp/force_setup" ]; then
+  if [ "$stage" -gt "$CURRENT_STAGE" ]; then
     ran_stage=1
     display_wtext "running stage $stage"
 
