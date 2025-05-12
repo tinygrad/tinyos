@@ -4,7 +4,7 @@ set -xeo pipefail
 source /opt/tinybox/service/display/api.sh
 
 # check if "/home/tiny/.before_firstsetup" doesn't exist
-if [ ! -f /home/tiny/.before_firstsetup ] || [ -f "/tmp/force_setup" ]; then
+if [ ! -f /home/tiny/.before_firstsetup ] && [ ! -f "/tmp/force_setup" ]; then
   exit 0
 fi
 
