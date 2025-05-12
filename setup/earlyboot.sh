@@ -2,9 +2,11 @@
 
 source /etc/tinybox-release
 
-systemctl enable tinybox-display
-systemctl enable tinybox-button
-systemctl start tinybox-display
-systemctl start tinybox-button
+if [[ -z "$TINYBOX_CORE" ]]; then
+  systemctl enable tinybox-display
+  systemctl enable tinybox-button
+  systemctl start tinybox-display
+  systemctl start tinybox-button
+fi
 
 systemctl enable tinybox-setup
