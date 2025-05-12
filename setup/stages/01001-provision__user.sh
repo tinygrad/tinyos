@@ -72,8 +72,8 @@ if [ -z "$ip" ]; then
     fi
   done
   if [ -z "$ip" ]; then
-    display_text "$(hostname -i | xargs):19531,,Failed to setup NIC"
-    exit 1
+    display_text "not provisioning,no provisioning IP found"
+    exit 0
   fi
 fi
 sudo ip link set "$iface" mtu 9000
