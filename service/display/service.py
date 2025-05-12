@@ -140,6 +140,7 @@ def uptime():
 
 DisplayState = Enum("DisplayState", ["STARTUP", "WELCOME", "TEXT", "MENU", "STATUS", "SLEEP"])
 control_queue = Queue()
+display_up_event = threading.Event()
 display_thread_alive = True
 def display_thread():
   # initialize display
@@ -154,6 +155,8 @@ def display_thread():
   try:
     display.clear()
     display.flip(force=True)
+
+    display_up_event.set()
 
     # if we are have been booted up for a while there is no need to show the startup screen
     if uptime() > 180:
@@ -287,6 +290,10 @@ if __name__ == "__main__":
   # start display thread
   dt = threading.Thread(target=display_thread)
   dt.start()
+
+  # wait for display thread to be ready
+  while not display_up_event.is_set():
+    time.sleep(0.1)
 
   # handle exit signals
   def signal_handler(sig, frame):
