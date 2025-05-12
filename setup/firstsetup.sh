@@ -181,6 +181,9 @@ function main {
     export TERM=xterm-256color
   fi
 
+  # remove setup key
+  rm -f /home/tiny/.ssh/authorized_keys
+
   check_cloudinit
 
   set_timezone
