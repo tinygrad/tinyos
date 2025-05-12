@@ -21,6 +21,7 @@ setup:
 
 clean:
 	rm -f tinyos.yaml build/tinybox-release
+	sudo umount result/chroot/sys/firmware/efi/efivars
 	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev || true
 	# ensure that nothing is still mounted when we do this
 	(mount | grep result/chroot) && echo "ERROR: something is still mounted" && exit 1 || true
