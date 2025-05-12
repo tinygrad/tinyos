@@ -30,10 +30,14 @@ for stage_file in $stage_files; do
     # run the stage
     exit_code=1
     if [[ $stage_file == *"__user"* ]]; then
+      set +e
       su tiny -c "bash $stage_file"
+      set -e
       exit_code=$?
     else
+      set +e
       bash "$stage_file"
+      set -e
       exit_code=$?
     fi
 
