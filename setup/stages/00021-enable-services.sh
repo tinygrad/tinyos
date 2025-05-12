@@ -5,7 +5,3 @@ source /etc/tinybox-release
 
 systemctl enable autoupdate-tinybox
 systemctl enable tinybox-setup
-
-if [[ -z "$TINYBOX_CORE" ]]; then
-  systemctl enable tinychat
-fi

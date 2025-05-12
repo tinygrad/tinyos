@@ -20,12 +20,6 @@ if [[ -z "$TINYBOX_CORE" ]]; then
     pip install nvidia-ml-py
   fi
 
-  # install deps for tinychat
-  pip install tiktoken blobfile bottle
-  pushd /opt/tinybox/tinygrad
-  pip install -e .
-  popd
-
   # exit venv
   deactivate
 

@@ -11,9 +11,6 @@ if [[ -n "$TINYBOX_CORE" ]]; then
   exit 0
 fi
 
-# ensure tinychat is up before we bring up the 100 gig interface
-sudo systemctl start tinychat
-
 # check if either enp65s0f0np0, ens33np0, or ens33f0np0 exists
 ip_ad=$(ip ad)
 if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -qP "ens\w+np\d" && ! echo "$ip_ad" | grep -qP "ens\dnp\d" && ! echo "$ip_ad" | grep -qP "enp\d\ds\dnp\d"; then
