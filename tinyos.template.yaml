@@ -63,6 +63,7 @@ customization:
     - name: btop
     - name: build-essential
     - name: clang
+    - name: cmake
     - name: csvtool
     - name: fd-find
     - name: file
