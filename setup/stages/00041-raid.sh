@@ -14,6 +14,14 @@ if [[ -z "$TINYBOX_CORE" ]]; then
     echo "RAID array found, skipping creation..."
   fi
 
-  # add raid array to fstab
-  echo "/dev/md/0 /raid auto defaults,noatime,nofail 0 2" >> /etc/fstab
+  # get the UUID of the RAID array, which is the uuid of the first md device which might not be md0
+  UUID=$(blkid -s UUID -o value /dev/md* | head -n 1)
+
+  # check if we already have a /raid mountpoint in fstab
+  if ! grep -q "/raid" /etc/fstab; then
+    # if not, add it
+    echo "UUID=$UUID /raid ext4 defaults,nofail 0 0" >> /etc/fstab
+  else
+    echo "/raid mountpoint already exists in fstab, skipping..."
+  fi
 fi
