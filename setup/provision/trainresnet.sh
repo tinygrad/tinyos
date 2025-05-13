@@ -29,7 +29,7 @@ fi
 
 # set seed
 export SEED=$RANDOM
-export EPOCHS=39
+export EPOCHS=50
 
 # init
 display "status"
