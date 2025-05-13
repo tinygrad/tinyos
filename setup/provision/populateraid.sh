@@ -34,7 +34,7 @@ rclone copy -P --auto-confirm --links --check-first --checkers 32 --multi-thread
   case "$line" in
     *ETA*)
       # extract transfer speed
-      speed=$(echo "$line" | grep -oP ', \d+\.\d+ [kMG]Bytes/s,' | grep -oP '\d+\.\d+ [kMG]Bytes/s')
+      speed=$(echo "$line" | grep -oP ', \d+\.\d+ [MG]iB/s,' | grep -oP '\d+\.\d+ [MG]iB/s')
       # extract percentage
       percentage=$(echo "$line" | grep -oP '\d+%,' | grep -oP '\d+')
       # extract ETA
