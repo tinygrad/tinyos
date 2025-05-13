@@ -12,7 +12,7 @@ if [[ -z "$TINYBOX_CORE" ]]; then
   output=$(ipmitool user set password 2 "$BMC_PASSWORD" 2>&1)
   set -e
   # see if 0x19 is in output
-  if [[ $output == *"Success"* ]]; then
+  if [[ $output == *"success"* ]]; then
     exit 0
   elif [[ $output == *"0x19"* ]]; then
     # tried to set same password

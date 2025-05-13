@@ -3,7 +3,6 @@ set -x
 
 source /etc/tinybox-release
 source /opt/tinybox/service/display/api.sh
-set -e
 
 # if TINYBOX_CORE is set, exit
 if [[ -n "$TINYBOX_CORE" ]]; then
@@ -11,73 +10,45 @@ if [[ -n "$TINYBOX_CORE" ]]; then
   exit 0
 fi
 
-# check if either enp65s0f0np0, ens33np0, or ens33f0np0 exists
-ip_ad=$(ip ad)
-if ! echo "$ip_ad" | grep -q "enp65s0f0np0" && ! echo "$ip_ad" | grep -qP "ens\w+np\d" && ! echo "$ip_ad" | grep -qP "ens\dnp\d" && ! echo "$ip_ad" | grep -qP "enp\d\ds\dnp\d"; then
-  echo "not provisioning, no NICs found"
+# determine NIC
+iface=""
+for iface_path in /sys/class/net/*; do
+  vendor_file="${iface_path}/device/vendor"
+  if [ -r "$vendor_file" ]; then
+    current_vendor_id=$(cat "$vendor_file" 2>/dev/null)
+    if [ "$current_vendor_id" = "0x15b3" ]; then
+      iface=$(basename "$iface_path")
+    fi
+  fi
+done
+if [ -z "$iface" ]; then
+  display_text "not provisioning, no NIC found"
+  echo "not provisioning,no NIC found"
   exit 0
 fi
 
-display_text "found NIC"
-
-# determine NIC
-set +e
-interfaces=$(ip ad | grep -oP 'ens\w+np\d' | sort | uniq)
 ip=""
-iface=""
-for interface in $interfaces; do
-  sudo ip ad add 10.0.0.2/24 dev "$interface"
-  sudo ip link set "$interface" up
-  if ping -c 1 10.0.0.1; then
-    display_text "using $interface,10.0.0.2"
-    ip="10.0.0."
-    iface="$interface"
-    break
-  else
-    sudo ip ad del 10.0.0.2/24 dev "$interface"
-  fi
-  sudo ip ad add 10.0.1.2/24 dev "$interface"
-  sudo ip link set "$interface" up
+sudo ip ad add 10.0.0.2/24 dev "$iface"
+sudo ip link set "$iface" up
+if ping -c 1 10.0.0.1; then
+  display_text "using $iface,10.0.0.2"
+  ip="10.0.0."
+else
+  sudo ip ad del 10.0.0.2/24 dev "$iface"
+  sudo ip ad add 10.0.1.2/24 dev "$iface"
+  sudo ip link set "$iface" up
   if ping -c 1 10.0.1.1; then
-    display_text "using $interface,10.0.1.2"
+    display_text "using $iface,10.0.1.2"
     ip="10.0.1."
-    iface="$interface"
-    break
   else
-    sudo ip ad del 10.0.1.2/24 dev "$interface"
-  fi
-done
-if [ -z "$ip" ]; then
-  interfaces=$(ip ad | grep -oP 'enp\d\ds\dnp\d' | sort | uniq)
-  for interface in $interfaces; do
-    sudo ip ad add 10.0.0.2/24 dev "$interface"
-    sudo ip link set "$interface" up
-    if ping -c 1 10.0.0.1; then
-      display_text "using $interface,10.0.0.2"
-      ip="10.0.0."
-      iface="$interface"
-      break
-    else
-      sudo ip ad del 10.0.0.2/24 dev "$interface"
-    fi
-    sudo ip ad add 10.0.1.2/24 dev "$interface"
-    sudo ip link set "$interface" up
-    if ping -c 1 10.0.1.1; then
-      display_text "using $interface,10.0.1.2"
-      ip="10.0.1."
-      iface="$interface"
-      break
-    else
-      sudo ip ad del 10.0.1.2/24 dev "$interface"
-    fi
-  done
-  if [ -z "$ip" ]; then
-    display_text "not provisioning,no provisioning IP found"
-    exit 0
+    sudo ip ad del 10.0.1.2/24 dev "$iface"
   fi
 fi
+if [ -z "$ip" ]; then
+  display_text "not provisioning,no provisioning IP found"
+  exit 0
+fi
 sudo ip link set "$iface" mtu 9000
-set -e
 
 # populate raid
 if ! bash /opt/tinybox/setup/provision/populateraid.sh "$ip"; then
