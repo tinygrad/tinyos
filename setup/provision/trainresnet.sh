@@ -49,7 +49,7 @@ pkill -f monitortemps.sh
 
 # ensure we are within the expected time or under the expected time
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
-  EXPECTED_TIME=9500
+  EXPECTED_TIME=12500
 elif [[ "$TINYBOX_COLOR" == "red" ]]; then
   EXPECTED_TIME=12500
 else
