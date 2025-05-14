@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -x
+set -eo pipefail
 
 source /etc/tinybox-release
 source /opt/tinybox/service/display/api.sh
