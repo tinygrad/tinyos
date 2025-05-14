@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -o pipefail
 
 source /etc/tinybox-release
 source /opt/tinybox/service/display/api.sh
@@ -198,7 +198,10 @@ function check_disk() {
 if [[ -z $TINYBOX_CORE ]]; then
   system_info="$(lshw -json)"
 
-  gpu_pcie_id=$(check_gpu "$system_info" || exit 2)
+  gpu_pcie_id=$(check_gpu "$system_info")
+  if [ $? -ne 0 ]; then
+    exit 2
+  fi
   if ! check_ram "$system_info" "$gpu_pcie_id"; then
     exit 2
   fi
