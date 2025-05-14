@@ -7,6 +7,8 @@ help:
 	@echo "       build tinyos.green.img for tinybox green"
 	@echo "make core"
 	@echo "       build tinyos.core.img for tinybox core"
+	@echo "make all"
+	@echo "       build all images"
 	@echo "make red-dev"
 	@echo "       build tinyos.red.img development image for tinybox red"
 	@echo "make green-dev"
@@ -26,6 +28,7 @@ clean:
 	# ensure that nothing is still mounted when we do this
 	(mount | grep result/chroot) && echo "ERROR: something is still mounted" && exit 1 || true
 	sudo rm -rf result
+	rm -rf outputs
 
 red: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.red.img/g' tinyos.template.yaml > tinyos.yaml
@@ -48,6 +51,18 @@ core: setup
 	echo "TINYBOX_COLOR=core" | tee --append build/tinybox-release
 	echo "TINYBOX_CORE=1" | tee --append build/tinybox-release
 	time make image
+
+all:
+	mkdir outputs
+	make red
+	cp result/tinyos.red.img outputs/tinyos.red.img
+	make clean
+	make green
+	cp result/tinyos.green.img outputs/tinyos.green.img
+	make clean
+	make core
+	cp result/tinyos.core.img outputs/tinyos.core.img
+	make clean
 
 red-dev: setup
 	echo "TINYBOX_DEV=1" | tee --append build/tinybox-release
@@ -82,4 +97,4 @@ image:
 	# final cleanup
 	rm -f tinyos.yaml build/tinybox-release
 
-.PHONY: setup clean red green red-dev green-dev image
+.PHONY: setup clean red green core all red-dev green-dev core-dev image
