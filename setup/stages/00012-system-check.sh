@@ -73,7 +73,7 @@ function check_gpu() {
     i=$((i + 1))
   done
 
-  echo "gpu_pcie_id"
+  echo "$gpu_pcie_id"
 }
 
 function check_ram() {
