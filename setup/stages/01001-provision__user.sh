@@ -45,8 +45,15 @@ else
   fi
 fi
 if [ -z "$ip" ]; then
-  display_text "not provisioning,no provisioning IP found"
-  exit 0
+  # see if we can reach a gateway server
+  if ! ping -c 5 192.168.52.180; then
+    display_text "not provisioning,no provisioning IP found"
+    exit 0
+  else
+    # we have a gateway which means provisioning has failed
+    display_text "can't reach provisioning box"
+    exit 2
+  fi
 fi
 sudo ip link set "$iface" mtu 9000
 
