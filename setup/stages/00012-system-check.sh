@@ -72,4 +72,6 @@ if [[ -z $TINYBOX_CORE ]]; then
 
     i=$((i + 1))
   done
+
+  display_text "system check passed"
 fi
