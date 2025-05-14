@@ -32,7 +32,7 @@ class Display:
     self.font_mono = np.load(Path(__file__).parent / "font_mono.npy")
     self.framebuffer = np.full((WIDTH, HEIGHT), 0xff, dtype=np.uint32)
     self.old_framebuffer = self.framebuffer.copy()
-    self.update_buffer = np.zeros(self.framebuffer.size * self.framebuffer.itemsize, dtype=np.uint8)
+    self.update_buffer = np.zeros(self.framebuffer.size * self.framebuffer.itemsize * 2, dtype=np.uint8)
     self.partial_update_count = 0
 
   def __del__(self):
@@ -184,7 +184,6 @@ def _build_update(dirty:np.ndarray, fb, update):
     if not np.any(dirty[y]): continue
 
     # find all dirty segments
-    segments = []
     i = 0
     while i < WIDTH:
       if dirty[y][i]:
@@ -194,23 +193,32 @@ def _build_update(dirty:np.ndarray, fb, update):
           segment_length += 1
           j += 1
         i = j
-        segments.append((segment_start, segment_length))
-      i += 1
 
-    for segment in segments:
-      if segment[1] > 1:
-        update[write:write+3] = np.array([y * WIDTH + segment[0]]).view(np.uint8)[::-1][-3:]
-        write += 3
-        update[write:write+2] = np.array([segment[1]]).view(np.uint8)[::-1][-2:]
-        write += 2
-        for x in range(segment[0], segment[0] + segment[1]):
-          update[write:write+3] = np.array([fb[x, y]]).view(np.uint8)[-3:]
-          write += 3
-      else:
-        update[write:write+3] = np.array([y * WIDTH + segment[0] + 0x800000]).view(np.uint8)[::-1][-3:]
-        write += 3
-        update[write:write+3] = np.array([fb[segment[0], y]]).view(np.uint8)[-3:]
-        write += 3
+        if segment_length > 1:
+          pos = y * WIDTH + segment_start
+          update[write] = (pos >> 16) & 0xff
+          update[write + 1] = (pos >> 8) & 0xff
+          update[write + 2] = pos & 0xff
+          update[write + 3] = (segment_length >> 8) & 0xff
+          update[write + 4] = segment_length & 0xff
+          write += 5
+          for x in range(segment_length):
+            px = fb[segment_start + x, y]
+            update[write] = (px >> 8) & 0xff
+            update[write + 1] = (px >> 16) & 0xff
+            update[write + 2] = (px >> 24) & 0xff
+            write += 3
+        else:
+          pos = y * WIDTH + segment_start + 0x800000
+          update[write] = (pos >> 16) & 0xff
+          update[write + 1] = (pos >> 8) & 0xff
+          update[write + 2] = pos & 0xff
+          px = fb[segment_start, y]
+          update[write + 3] = (px >> 8) & 0xff
+          update[write + 4] = (px >> 16) & 0xff
+          update[write + 5] = (px >> 24) & 0xff
+          write += 6
+      i += 1
   return update[:write]
 
 def _update_payload(dirty:np.ndarray, fb, update_buffer, partial_update_count):
