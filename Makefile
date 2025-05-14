@@ -28,7 +28,6 @@ clean:
 	# ensure that nothing is still mounted when we do this
 	(mount | grep result/chroot) && echo "ERROR: something is still mounted" && exit 1 || true
 	sudo rm -rf result
-	rm -rf outputs
 
 red: setup
 	sed 's/<|ARTIFACT_NAME|>/tinyos.red.img/g' tinyos.template.yaml > tinyos.yaml
