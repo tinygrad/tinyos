@@ -198,10 +198,16 @@ function check_disk() {
 if [[ -z $TINYBOX_CORE ]]; then
   system_info="$(lshw -json)"
 
-  gpu_pcie_id=$(check_gpu "$system_info")
-  check_ram "$system_info" "$gpu_pcie_id"
-  check_cpu "$system_info" "$gpu_pcie_id"
-  check_disk "$system_info" "$gpu_pcie_id"
+  gpu_pcie_id=$(check_gpu "$system_info" || exit 2)
+  if ! check_ram "$system_info" "$gpu_pcie_id"; then
+    exit 2
+  fi
+  if ! check_cpu "$system_info" "$gpu_pcie_id"; then
+    exit 2
+  fi
+  if ! check_disk "$system_info" "$gpu_pcie_id"; then
+    exit 2
+  fi
 
   display_text "system check passed"
 fi
