@@ -45,7 +45,7 @@ function check_gpu() {
   esac
 
   if [ "$gpu_count" -ne $EXPECTED_GPU_COUNT ]; then
-    display_text "gpu count mismatch,$gpu_count,$EXPECTED_GPU_COUNT"
+    display_text "gpu count mismatch,$gpu_count != $EXPECTED_GPU_COUNT,$gpu_busids"
     exit 2
   fi
 
@@ -132,7 +132,7 @@ function check_cpu() {
   display_text "found $core_count cores"
 
   if [ "$core_count" -ne "$EXPECTED_CORE_COUNT" ]; then
-    display_text "core count mismatch,$core_count,$EXPECTED_CORE_COUNT"
+    display_text "core count mismatch,$core_count != $EXPECTED_CORE_COUNT"
     exit 2
   fi
 }
@@ -169,7 +169,7 @@ function check_disk() {
   display_text "found $drive_count drives"
 
   if [ "$drive_count" -ne "$EXPECTED_DRIVE_COUNT" ]; then
-    display_text "drive count mismatch,$drive_count,$EXPECTED_DRIVE_COUNT"
+    display_text "drive count mismatch,$drive_count != $EXPECTED_DRIVE_COUNT"
     exit 2
   fi
 
