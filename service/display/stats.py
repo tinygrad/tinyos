@@ -116,19 +116,28 @@ class AMGPUStats(GPUStats):
 
     gpu_utilizations = []
     for dev, metrics in self.metrics.items():
-      gpu_utilizations.append(self.ctx.get_gfx_activity(dev, metrics))
+      if dev.pci_state != "D0":
+        gpu_utilizations.append(0)
+      else:
+        gpu_utilizations.append(self.ctx.get_gfx_activity(dev, metrics))
     return gpu_utilizations
 
   def get_gpu_memory_utilizations(self) -> list[float]:
     gpu_memory_utilizations = []
     for dev, metrics in self.metrics.items():
-      gpu_memory_utilizations.append(self.ctx.get_mem_activity(dev, metrics))
+      if dev.pci_state != "D0":
+        gpu_memory_utilizations.append(0)
+      else:
+        gpu_memory_utilizations.append(self.ctx.get_mem_activity(dev, metrics))
     return gpu_memory_utilizations
 
   def get_gpu_power_draw(self) -> list[int]:
     gpu_power_draws = []
     for dev, metrics in self.metrics.items():
-      gpu_power_draws.append(self.ctx.get_power(dev, metrics)[0])
+      if dev.pci_state != "D0":
+        gpu_power_draws.append(0)
+      else:
+        gpu_power_draws.append(self.ctx.get_power(dev, metrics)[0])
     return gpu_power_draws
 
 class NULLGPUStats(GPUStats):
