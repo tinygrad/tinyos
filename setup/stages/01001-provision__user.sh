@@ -82,6 +82,8 @@ if ! python3 test/external/external_benchmark_multitensor_allreduce.py; then
   exit 2
 fi
 
+display "status"
+
 python3 test/external/external_benchmark_multitensor_allreduce.py # run twice for warmup
 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
 popd || exit
