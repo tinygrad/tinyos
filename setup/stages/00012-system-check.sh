@@ -195,6 +195,17 @@ function check_disk() {
   done
 }
 
+function check_boot() {
+  local system_info="$1"
+  local gpu_pcie_id="$2"
+
+  speed=$(echo "$system_info" | jq -r '.. | objects | select(.class? == "storage" and (.businfo? | startswith("usb@")) and .configuration.speed?) | .configuration.speed')
+  if [ "$speed" != "5000Mbit/s" ]; then
+    display_text "usb drive not at 5Gb/s,at $speed"
+    exit 2
+  fi
+}
+
 if [[ -z $TINYBOX_CORE ]]; then
   system_info="$(lshw -json)"
 
@@ -209,6 +220,9 @@ if [[ -z $TINYBOX_CORE ]]; then
     exit 2
   fi
   if ! check_disk "$system_info" "$gpu_pcie_id"; then
+    exit 2
+  fi
+  if ! check_boot "$system_info" "$gpu_pcie_id"; then
     exit 2
   fi
 
