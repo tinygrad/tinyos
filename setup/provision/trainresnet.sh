@@ -27,7 +27,6 @@ elif [[ "$TINYBOX_COLOR" == "red" ]]; then
   # switch to am driver
   display_wtext "unloading amdgpu"
   sleep 10 && sudo modprobe -r amdgpu
-  sudo modprobe vfio-pci
 
   # restart display to use am_smi
   sudo systemctl restart tinybox-display
