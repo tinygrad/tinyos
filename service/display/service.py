@@ -15,6 +15,7 @@ from stats import Stats
 
 class StatusScreen(Component):
   def __init__(self, gpu_count:int):
+    self.gpu_count = gpu_count
     gpu_bars_space = (6 - gpu_count) * 64
     self.gpu_bars = [VerticalProgressBar(50, 430, x=30 + 64 * i, y=HEIGHT // 2) for i in range(gpu_count)]
     self.gpu_mem_bars = [HorizontalProgressBar(160, 5, x=425 - gpu_bars_space, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(gpu_count)]
@@ -254,6 +255,9 @@ def display_thread():
         elif display_state == DisplayState.MENU:
           to_display.blit(display)
         elif display_state == DisplayState.STATUS:
+          if stats.gpu.get_gpu_count() != status_screen.gpu_count:
+            status_screen = StatusScreen(stats.gpu.get_gpu_count())
+
           status_screen.update(
             gpu_utilizations,
             stats.gpu.get_gpu_memory_utilizations(),
