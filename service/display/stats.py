@@ -109,7 +109,7 @@ class AMGPUStats(GPUStats):
     self.metrics = self.ctx.collect()
 
   def get_gpu_count(self) -> int:
-    return len(self.ctx.metrics)
+    return len(self.metrics)
 
   def get_gpu_utilizations(self) -> list[float]:
     self._refresh()
