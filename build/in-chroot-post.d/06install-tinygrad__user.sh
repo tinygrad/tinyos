@@ -20,7 +20,7 @@ if [[ -z "$TINYBOX_CORE" ]]; then
   ln -s /raid/weights ./
 
   # setup pci
-  sudo bash tinygrad/extra/amdpci/setup_python_cap.sh
+  sudo bash extra/amdpci/setup_python_cap.sh
 
   popd
 
