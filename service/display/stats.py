@@ -1,4 +1,4 @@
-import glob, time, importlib
+import glob, time, importlib, sys
 import psutil
 from abc import ABC, abstractmethod
 
@@ -95,6 +95,40 @@ class AMDGPUStats(GPUStats):
         gpu_power_draws.append(int(f.read().strip()) // 1000000)
     return gpu_power_draws
 
+class AMGPUStats(GPUStats):
+  def __init__(self):
+    sys.path.insert(0, "/opt/tinybox/tinygrad/extra/amdpci/")
+    sys.path.insert(0, "/opt/tinybox/tinygrad/")
+    from am_smi import SMICtx
+
+    self.ctx = SMICtx()
+    self.ctx.rescan_devs()
+
+  def _refresh(self):
+    self.ctx.rescan_devs()
+    self.metrics = self.ctx.collect()
+
+  def get_gpu_count(self) -> int:
+    return len(self.ctx.devs)
+
+  def get_gpu_utilizations(self) -> list[float]:
+    gpu_utilizations = []
+    for dev, metrics in self.ctx.metrics:
+      gpu_utilizations.append(self.ctx.get_gfx_activity(dev, metrics))
+    return gpu_utilizations
+
+  def get_gpu_memory_utilizations(self) -> list[float]:
+    gpu_memory_utilizations = []
+    for dev, metrics in self.ctx.metrics:
+      gpu_memory_utilizations.append(self.ctx.get_mem_activity(dev, metrics))
+    return gpu_memory_utilizations
+
+  def get_gpu_power_draw(self) -> list[int]:
+    gpu_power_draws = []
+    for dev, metrics in self.ctx.metrics:
+      gpu_power_draws.append(self.ctx.get_power(dev, metrics)[0])
+    return gpu_power_draws
+
 class NULLGPUStats(GPUStats):
   def __init__(self):
     super().__init__()
@@ -126,6 +160,11 @@ class Stats:
     if self.gpu.get_gpu_count() != 0: return
     try:
       self.gpu = AMDGPUStats()
+    except:
+      pass
+    if self.gpu.get_gpu_count() != 0: return
+    try:
+      self.gpu = AMGPUStats()
     except:
       pass
     if self.gpu.get_gpu_count() != 0: return
