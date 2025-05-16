@@ -102,7 +102,7 @@ class AMGPUStats(GPUStats):
     from am_smi import SMICtx
 
     self.ctx = SMICtx()
-    self.ctx.rescan_devs()
+    self._refresh()
 
   def _refresh(self):
     self.ctx.rescan_devs()
@@ -112,6 +112,8 @@ class AMGPUStats(GPUStats):
     return len(self.ctx.devs)
 
   def get_gpu_utilizations(self) -> list[float]:
+    self._refresh()
+
     gpu_utilizations = []
     for dev, metrics in self.metrics:
       gpu_utilizations.append(self.ctx.get_gfx_activity(dev, metrics))
