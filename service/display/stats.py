@@ -154,7 +154,6 @@ class Stats:
     self.last_disk_read, self.last_disk_write, self.last_disk_time = 0, 0, time.monotonic()
 
   def _init_gpu(self):
-    self.gpu = NULLGPUStats()
     try:
       self.gpu = NVGPUStats()
     except:
@@ -170,6 +169,7 @@ class Stats:
     except:
       pass
     if self.gpu.get_gpu_count() != 0: return
+    self.gpu = NULLGPUStats()
 
   def get_cpu_utilizations(self) -> list[float]:
     return psutil.cpu_percent(percpu=True)
