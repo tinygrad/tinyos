@@ -19,6 +19,9 @@ if [[ -z "$TINYBOX_CORE" ]]; then
   ln -s /raid/datasets/imagenet extra/datasets/
   ln -s /raid/weights ./
 
+  # setup pci
+  sudo bash tinygrad/extra/amdpci/setup_python_cap.sh
+
   popd
 
   popd
