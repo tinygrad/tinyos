@@ -13,8 +13,6 @@ export DEFAULT_FLOAT="HALF"
 export LAZYCACHE=0 RESET_STEP=0
 
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
-  export NV=1
-
   NUM_GPUS=$(nvidia-smi -L | wc -l)
   export GPUS=$NUM_GPUS
   export BS=$((256 * NUM_GPUS))
