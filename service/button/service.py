@@ -9,7 +9,7 @@ def find_power_button():
   raise Exception("power button not found")
 
 in_menu, menu_selection = False, 0
-MENU = ["exit", "update", "setup", "force setup", "force stress"]
+MENU = ["exit", "update", "setup", "force setup", "force stress", "skip provision"]
 def update_menu():
   global in_menu, menu_selection
 
@@ -77,13 +77,21 @@ async def power_button_pressed(count: int):
             in_menu = False
             update_menu()
           case 3:
-            logging.info("forcing stress")
+            logging.info("forcing setup")
             Path("/tmp/force_setup").touch()
+            subprocess.run(["systemctl", "start", "tinybox-setup"])
             in_menu = False
             update_menu()
           case 4:
             logging.info("forcing stress")
             Path("/tmp/force_resnet_train").touch()
+            in_menu = False
+            update_menu()
+          case 5:
+            logging.info("skipping provision")
+            with open("/etc/tinybox-setup-stage", "w") as f:
+              f.write("01001")
+            subprocess.run(["systemctl", "start", "tinybox-setup"])
             in_menu = False
             update_menu()
     case 3:
