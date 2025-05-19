@@ -46,7 +46,7 @@ else
 fi
 if [ -z "$ip" ]; then
   # see if we can reach a gateway server
-  if ! ping -c 5 192.168.52.180; then
+  if ! ping -c 5 192.168.52.11; then
     display_text "not provisioning,no provisioning IP found"
     exit 0
   else
