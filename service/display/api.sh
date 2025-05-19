@@ -20,6 +20,17 @@ function display_wtext() {
   display_atext "$text.. ,$text ..,$text. ."
 }
 
+function display_sleep() {
+  local DELAY=$1
+
+  for i in $(seq "$DELAY" -1 1); do
+    for s in / - \\ \|; do
+      display "text,$s = $i"
+      sleep 0.25
+    done
+  done
+}
+
 # wait for display socket with timeout
 function wait_for_display() {
   local timeout="$1"
