@@ -14,10 +14,12 @@ def update_menu():
   global in_menu, menu_selection
 
   if in_menu:
+    hostname = subprocess.run(["hostname"], capture_output=True).stdout.decode().strip()
+
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
       s.connect("/run/tinybox-screen.sock")
       # build menu text
-      menu = MENU
+      menu = [f"{item}" if item != "exit" else f"{item} ({hostname})" for item in MENU]
       # add selection marker
       menu = ",".join(f"{'> ' if i == menu_selection else ''}{item}" for i, item in enumerate(menu))
       s.sendall(f"menu,{menu}".encode())
