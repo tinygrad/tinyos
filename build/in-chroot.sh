@@ -5,6 +5,9 @@ set -xeo pipefail
 mkdir -p /run/systemd/resolve
 echo "nameserver 1.1.1.1" > /run/systemd/resolve/stub-resolv.conf
 
+# force dpkg noninteractive
+export DEBIAN_FRONTEND=noninteractive
+
 # run in-chroot-pre scripts
 scripts=$(find /opt/tinybox/build/in-chroot-pre.d/ -type f -name "*.sh" | sort)
 for script in $scripts; do
