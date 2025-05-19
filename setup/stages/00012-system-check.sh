@@ -192,12 +192,12 @@ function check_disk() {
 
     link_speed=$(lspci -vv -s "$busid" | grep "LnkCap:" | grep -oP 'Speed \d+GT/s' | grep -oP '\d+GT/s')
     if [ "$link_speed" != "$EXPECTED_DRIVE_LINK_SPEED" ]; then
-      display_text "gpu $i,$busid,not at $EXPECTED_DRIVE_LINK_SPEED,at $link_speed"
+      display_text "nvme $i,$busid,not at $EXPECTED_DRIVE_LINK_SPEED,at $link_speed"
       exit 2
     fi
     link_width=$(lspci -vv -s "$busid" | grep "LnkCap:" | grep -oP 'Width x\d+' | grep -oP 'x\d+')
     if [ "$link_width" != "$EXPECTED_DRIVE_LINK_WIDTH" ]; then
-      display_text "gpu $i,$busid,not at $EXPECTED_DRIVE_LINK_WIDTH,at $link_width"
+      display_text "nvme $i,$busid,not at $EXPECTED_DRIVE_LINK_WIDTH,at $link_width"
       exit 2
     fi
 
