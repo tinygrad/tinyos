@@ -50,7 +50,7 @@ function check_gpu() {
   fi
 
   # run program in background to load gpus
-  su tiny -c "python3 /opt/tinybox/tinygrad/test/external/external_benchmark_multitensor_allreduce.py" > /dev/null 2>&1 &
+  su tiny -c "GPUS=$gpu_count python3 /opt/tinybox/tinygrad/test/external/external_benchmark_multitensor_allreduce.py" > /dev/null 2>&1 &
 
   sleep 2
 
