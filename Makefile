@@ -52,7 +52,7 @@ core: setup
 	time make image
 
 all:
-	mkdir outputs
+	mkdir -p outputs
 	make red
 	cp result/tinyos.red.img outputs/tinyos.red.img
 	make clean
