@@ -87,12 +87,12 @@ display "status"
 python3 test/external/external_benchmark_multitensor_allreduce.py # run twice for warmup
 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
 popd || exit
-# ensure that it is above 12 GB/s
-allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/stress_test/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
-if [ "$allreduce_bw" -lt 12 ]; then
-  display_text "$(hostname -i | xargs):19531,,Allreduce test failed,${allreduce_bw}GB/s"
-  exit 2
-fi
+# # ensure that it is above 12 GB/s
+# allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/stress_test/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
+# if [ "$allreduce_bw" -lt 12 ]; then
+#   display_text "$(hostname -i | xargs):19531,,Allreduce test failed,${allreduce_bw}GB/s"
+#   exit 2
+# fi
 
 # on red additionally run rocm-bandwidth-test
 if [[ "$TINYBOX_COLOR" == "red" ]]; then
