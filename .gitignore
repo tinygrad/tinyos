@@ -1,3 +1,4 @@
 tinyos.yaml
 build/tinybox-release
 result/
+outputs/
