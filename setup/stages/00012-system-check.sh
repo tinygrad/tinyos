@@ -80,7 +80,7 @@ function check_gpu() {
 
   # wait for the program to finish
   while pgrep -u tiny python3 > /dev/null; do
-    sleep 1
+    display_sleep 1
   done
 
   echo "$gpu_pcie_id"
