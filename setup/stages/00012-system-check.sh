@@ -52,6 +52,8 @@ function check_gpu() {
   # run program in background to load gpus
   su tiny -c "python3 /opt/tinybox/tinygrad/test/external/external_benchmark_multitensor_allreduce.py" > /dev/null 2>&1 &
 
+  sleep 2
+
   i=0
   for busid in $gpu_busids; do
     display_text "checking gpu $i,$busid"
