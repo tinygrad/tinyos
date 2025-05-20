@@ -15,8 +15,9 @@ def update_menu():
 
   if in_menu:
     hostname = subprocess.run(["hostname"], capture_output=True).stdout.decode().strip()
-    ip = subprocess.run(["hostname", "-i"], capture_output=True).stdout.decode().strip()
-    ip = ip.split(" ")[0] if ip else "N/A"
+    so = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    so.connect(("10.254.254.254", 1))
+    ip = so.getsockname()[0]
 
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
       s.connect("/run/tinybox-screen.sock")
