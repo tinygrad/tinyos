@@ -17,6 +17,9 @@ else
   CURRENT_STAGE=0
 fi
 
+# start journal gatewayd
+systemctl start systemd-journal-gatewayd
+
 # run all stages from the current stage to the latest
 ran_stage=0
 failed=0
