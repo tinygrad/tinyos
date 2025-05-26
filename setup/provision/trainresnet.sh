@@ -6,6 +6,10 @@ source /opt/tinybox/service/display/api.sh
 
 pushd /home/tiny/tinygrad || exit
 
+git worktree add -d /tmp/tinygrad 9faf20560
+
+pushd /tmp/tinygrad || exit
+
 export PYTHONPATH="."
 export MODEL="resnet"
 
@@ -32,6 +36,7 @@ elif [[ "$TINYBOX_COLOR" == "red" ]]; then
   wait_for_display 10
   display status
 
+  export AM_RESET=1
   export GPUS=6 BS=1536 EVAL_BS=192
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=2000 BEAM_UPCAST_MAX=96 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=5 BEAM_PADTO=0
 else
@@ -77,5 +82,10 @@ else
   display_text "$(hostname -i | xargs):19531,,ResNet Train Passed,${time_taken}s"
   sleep 1
 fi
+
+popd || exit
+
+rm -rf /tmp/tinygrad
+git worktree prune
 
 popd || exit
