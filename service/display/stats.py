@@ -1,4 +1,4 @@
-import glob, time, importlib, sys
+import glob, time, importlib, sys, logging
 import psutil
 from abc import ABC, abstractmethod
 
@@ -164,6 +164,7 @@ class Stats:
     self.last_gpu_init = time.monotonic()
 
   def _init_gpu(self):
+    logging.info("initializing gpu stats")
     self.last_gpu_init = time.monotonic()
     self._gpu = NULLGPUStats()
     try:
