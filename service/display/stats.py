@@ -161,25 +161,34 @@ class Stats:
     self._init_gpu()
     self.last_energy, self.last_energy_time = 0, time.monotonic()
     self.last_disk_read, self.last_disk_write, self.last_disk_time = 0, 0, time.monotonic()
+    self.last_gpu_init = time.monotonic()
 
   def _init_gpu(self):
-    self.gpu = NULLGPUStats()
+    self.last_gpu_init = time.monotonic()
+    self._gpu = NULLGPUStats()
     try:
-      self.gpu = NVGPUStats()
+      self._gpu = NVGPUStats()
     except:
       pass
-    if self.gpu.get_gpu_count() != 0: return
+    if self._gpu.get_gpu_count() != 0: return
     try:
-      self.gpu = AMDGPUStats()
+      self._gpu = AMDGPUStats()
     except:
       pass
-    if self.gpu.get_gpu_count() != 0: return
+    if self._gpu.get_gpu_count() != 0: return
     try:
-      self.gpu = AMGPUStats()
+      self._gpu = AMGPUStats()
     except:
       pass
-    if self.gpu.get_gpu_count() != 0: return
-    self.gpu = NULLGPUStats()
+    if self._gpu.get_gpu_count() != 0: return
+    self._gpu = NULLGPUStats()
+
+  @property
+  def gpu(self) -> GPUStats:
+    if isinstance(self._gpu, NULLGPUStats):
+      if time.monotonic() - self.last_gpu_init > 10:
+        self._init_gpu()
+    return self._gpu
 
   def get_cpu_utilizations(self) -> list[float]:
     return psutil.cpu_percent(percpu=True)
