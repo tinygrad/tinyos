@@ -185,7 +185,7 @@ class Stats:
 
   @property
   def gpu(self) -> GPUStats:
-    if isinstance(self._gpu, NULLGPUStats):
+    if isinstance(self._gpu, NULLGPUStats) or self._gpu.get_gpu_count() == 0:
       if time.monotonic() - self.last_gpu_init > 10:
         self._init_gpu()
     return self._gpu
