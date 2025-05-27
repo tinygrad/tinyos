@@ -208,18 +208,25 @@ class Stats:
       self._gpu = NVGPUStats()
     except:
       pass
-    if self._gpu.get_gpu_count() != 0: return
+    if self._gpu.get_gpu_count() != 0:
+      logging.info(f"found {self._gpu.get_gpu_count()} NVIDIA GPUs")
+      return
     try:
       self._gpu = AMDGPUStats()
     except:
       pass
-    if self._gpu.get_gpu_count() != 0: return
+    if self._gpu.get_gpu_count() != 0:
+      logging.info(f"found {self._gpu.get_gpu_count()} AMD GPUs")
+      return
     try:
       self._gpu = AMGPUStats()
     except:
       pass
-    if self._gpu.get_gpu_count() != 0: return
+    if self._gpu.get_gpu_count() != 0:
+      logging.info(f"found {self._gpu.get_gpu_count()} AMD GPUs")
+      return
     self._gpu = NULLGPUStats()
+    logging.warning("no GPU found, using NULLGPUStats")
 
   @property
   def gpu(self) -> GPUStats:
