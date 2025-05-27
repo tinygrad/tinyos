@@ -5,11 +5,9 @@ from abc import ABC, abstractmethod
 class GPUStats(ABC):
   def __init__(self, interval:float=0):
     self.interval = interval
-    self.last_gpu_count = 0
     self.last_gpu_utilizations = []
     self.last_gpu_memory_utilizations = []
     self.last_gpu_power_draw = []
-    self.last_gpu_count_time = time.monotonic()
     self.last_gpu_utilizations_time = time.monotonic()
     self.last_gpu_memory_utilizations_time = time.monotonic()
     self.last_gpu_power_draw_time = time.monotonic()
@@ -31,11 +29,7 @@ class GPUStats(ABC):
     pass
 
   def get_gpu_count(self) -> int:
-    if self.interval > 0 and time.monotonic() - self.last_gpu_count_time < self.interval:
-      return self.last_gpu_count
-    self.last_gpu_count = self._get_gpu_count()
-    self.last_gpu_count_time = time.monotonic()
-    return self.last_gpu_count
+    return self._get_gpu_count()
 
   def get_gpu_utilizations(self) -> list[float]:
     if self.interval > 0 and time.monotonic() - self.last_gpu_utilizations_time < self.interval:
