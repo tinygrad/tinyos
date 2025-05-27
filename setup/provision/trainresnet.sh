@@ -9,6 +9,7 @@ pushd /home/tiny/tinygrad || exit
 git worktree add -d /tmp/tinygrad 51dc7eedb0c30479adfa8cdc692e94bbd04d3570
 
 pushd /tmp/tinygrad || exit
+ln -s /raid/datasets/imagenet extra/datasets/
 
 export PYTHONPATH="."
 export MODEL="resnet"
@@ -85,6 +86,7 @@ fi
 
 popd || exit
 
+unlink /tmp/tinygrad/extra/datasets/imagenet
 rm -rf /tmp/tinygrad
 git worktree prune
 
