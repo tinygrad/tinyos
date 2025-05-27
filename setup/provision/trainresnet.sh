@@ -6,6 +6,7 @@ source /opt/tinybox/service/display/api.sh
 
 pushd /home/tiny/tinygrad || exit
 
+git worktree prune
 git worktree add -d /tmp/tinygrad 51dc7eedb0c30479adfa8cdc692e94bbd04d3570
 
 pushd /tmp/tinygrad || exit
