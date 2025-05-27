@@ -3,24 +3,60 @@ import psutil
 from abc import ABC, abstractmethod
 
 class GPUStats(ABC):
-  def __init__(self):
+  def __init__(self, interval:float=0):
+    self.interval = interval
+    self.last_gpu_count = 0
+    self.last_gpu_utilizations = []
+    self.last_gpu_memory_utilizations = []
+    self.last_gpu_power_draw = []
+    self.last_gpu_count_time = time.monotonic()
+    self.last_gpu_utilizations_time = time.monotonic()
+    self.last_gpu_memory_utilizations_time = time.monotonic()
+    self.last_gpu_power_draw_time = time.monotonic()
+
+  @abstractmethod
+  def _get_gpu_count(self) -> int:
     pass
 
   @abstractmethod
+  def _get_gpu_utilizations(self) -> list[float]:
+    pass
+
+  @abstractmethod
+  def _get_gpu_memory_utilizations(self) -> list[float]:
+    pass
+
+  @abstractmethod
+  def _get_gpu_power_draw(self) -> list[int]:
+    pass
+
   def get_gpu_count(self) -> int:
-    pass
+    if self.interval > 0 and time.monotonic() - self.last_gpu_count_time < self.interval:
+      return self.last_gpu_count
+    self.last_gpu_count = self._get_gpu_count()
+    self.last_gpu_count_time = time.monotonic()
+    return self.last_gpu_count
 
-  @abstractmethod
   def get_gpu_utilizations(self) -> list[float]:
-    pass
+    if self.interval > 0 and time.monotonic() - self.last_gpu_utilizations_time < self.interval:
+      return self.last_gpu_utilizations
+    self.last_gpu_utilizations = self._get_gpu_utilizations()
+    self.last_gpu_utilizations_time = time.monotonic()
+    return self.last_gpu_utilizations
 
-  @abstractmethod
   def get_gpu_memory_utilizations(self) -> list[float]:
-    pass
+    if self.interval > 0 and time.monotonic() - self.last_gpu_memory_utilizations_time < self.interval:
+      return self.last_gpu_memory_utilizations
+    self.last_gpu_memory_utilizations = self._get_gpu_memory_utilizations()
+    self.last_gpu_memory_utilizations_time = time.monotonic()
+    return self.last_gpu_memory_utilizations
 
-  @abstractmethod
   def get_gpu_power_draw(self) -> list[int]:
-    pass
+    if self.interval > 0 and time.monotonic() - self.last_gpu_power_draw_time < self.interval:
+      return self.last_gpu_power_draw
+    self.last_gpu_power_draw = self._get_gpu_power_draw()
+    self.last_gpu_power_draw_time = time.monotonic()
+    return self.last_gpu_power_draw
 
 class NVGPUStats(GPUStats):
   def __init__(self):
@@ -29,24 +65,24 @@ class NVGPUStats(GPUStats):
     self.N.nvmlInit()
     self.handles = [self.N.nvmlDeviceGetHandleByIndex(i) for i in range(self.get_gpu_count())]
 
-  def get_gpu_count(self) -> int:
+  def _get_gpu_count(self) -> int:
     return self.N.nvmlDeviceGetCount()
 
-  def get_gpu_utilizations(self) -> list[float]:
+  def _get_gpu_utilizations(self) -> list[float]:
     gpu_utilizations = []
     for handle in self.handles:
       utilization = self.N.nvmlDeviceGetUtilizationRates(handle)
       gpu_utilizations.append(utilization.gpu)
     return gpu_utilizations
 
-  def get_gpu_memory_utilizations(self) -> list[float]:
+  def _get_gpu_memory_utilizations(self) -> list[float]:
     gpu_memory_utilizations = []
     for handle in self.handles:
       memory = self.N.nvmlDeviceGetMemoryInfo(handle)
       gpu_memory_utilizations.append(memory.used / memory.total * 100)
     return gpu_memory_utilizations
 
-  def get_gpu_power_draw(self) -> list[int]:
+  def _get_gpu_power_draw(self) -> list[int]:
     gpu_power_draws = []
     for handle in self.handles:
       power = self.N.nvmlDeviceGetPowerUsage(handle)
@@ -55,13 +91,13 @@ class NVGPUStats(GPUStats):
 
 class AMDGPUStats(GPUStats):
   def __init__(self):
-    super().__init__()
+    super().__init__(interval=1)
     self.gpu_count = self.get_gpu_count()
     if self.gpu_count == 0:
       raise Exception("No AMD GPUs found")
     self.hwmon_paths = glob.glob("/sys/class/drm/card*/device/hwmon/hwmon*")
 
-  def get_gpu_count(self) -> int:
+  def _get_gpu_count(self) -> int:
     gpus = 0
     for i in range(1, 7):
       try:
@@ -71,14 +107,14 @@ class AMDGPUStats(GPUStats):
         pass
     return gpus
 
-  def get_gpu_utilizations(self) -> list[float]:
+  def _get_gpu_utilizations(self) -> list[float]:
     gpu_utilizations = []
     for i in range(1, self.gpu_count + 1):
       with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
         gpu_utilizations.append(int(f.read().strip()))
     return gpu_utilizations
 
-  def get_gpu_memory_utilizations(self) -> list[float]:
+  def _get_gpu_memory_utilizations(self) -> list[float]:
     gpu_memory_utilizations = []
     for i in range(1, self.gpu_count + 1):
       with open(f"/sys/class/drm/card{i}/device/mem_info_vram_used", "r") as f:
@@ -88,7 +124,7 @@ class AMDGPUStats(GPUStats):
       gpu_memory_utilizations.append(used / total * 100)
     return gpu_memory_utilizations
 
-  def get_gpu_power_draw(self) -> list[int]:
+  def _get_gpu_power_draw(self) -> list[int]:
     gpu_power_draws = []
     for path in self.hwmon_paths:
       with open(f"{path}/power1_average", "r") as f:
@@ -108,10 +144,10 @@ class AMGPUStats(GPUStats):
     self.ctx.rescan_devs()
     self.metrics = self.ctx.collect()
 
-  def get_gpu_count(self) -> int:
+  def _get_gpu_count(self) -> int:
     return len(self.metrics)
 
-  def get_gpu_utilizations(self) -> list[float]:
+  def _get_gpu_utilizations(self) -> list[float]:
     self._refresh()
 
     gpu_utilizations = []
@@ -122,7 +158,7 @@ class AMGPUStats(GPUStats):
         gpu_utilizations.append(self.ctx.get_gfx_activity(dev, metrics))
     return gpu_utilizations
 
-  def get_gpu_memory_utilizations(self) -> list[float]:
+  def _get_gpu_memory_utilizations(self) -> list[float]:
     gpu_memory_utilizations = []
     for dev, metrics in self.metrics.items():
       if dev.pci_state != "D0":
@@ -131,7 +167,7 @@ class AMGPUStats(GPUStats):
         gpu_memory_utilizations.append(self.ctx.get_mem_activity(dev, metrics))
     return gpu_memory_utilizations
 
-  def get_gpu_power_draw(self) -> list[int]:
+  def _get_gpu_power_draw(self) -> list[int]:
     gpu_power_draws = []
     for dev, metrics in self.metrics.items():
       if dev.pci_state != "D0":
@@ -144,16 +180,16 @@ class NULLGPUStats(GPUStats):
   def __init__(self):
     super().__init__()
 
-  def get_gpu_count(self) -> int:
+  def _get_gpu_count(self) -> int:
     return 0
 
-  def get_gpu_utilizations(self) -> list[float]:
+  def _get_gpu_utilizations(self) -> list[float]:
     return []
 
-  def get_gpu_memory_utilizations(self) -> list[float]:
+  def _get_gpu_memory_utilizations(self) -> list[float]:
     return []
 
-  def get_gpu_power_draw(self) -> list[int]:
+  def _get_gpu_power_draw(self) -> list[int]:
     return []
 
 class Stats:
