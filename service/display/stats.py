@@ -133,6 +133,7 @@ class AMDGPUStats(GPUStats):
 
 class AMGPUStats(GPUStats):
   def __init__(self):
+    super().__init__()
     sys.path.insert(0, "/opt/tinybox/tinygrad/extra/amdpci/")
     sys.path.insert(0, "/opt/tinybox/tinygrad/")
     from am_smi import SMICtx
