@@ -23,8 +23,8 @@ setup:
 
 clean:
 	rm -f tinyos.yaml build/tinybox-release
-	sudo umount result/chroot/sys/firmware/efi/efivars || true
-	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev || true
+	sudo umount -f result/chroot/sys/firmware/efi/efivars || true
+	sudo umount -f result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev || true
 	# ensure that nothing is still mounted when we do this
 	(mount | grep result/chroot) && echo "ERROR: something is still mounted" && exit 1 || true
 	sudo rm -rf result
@@ -89,8 +89,8 @@ image:
 	# now we can do manual customization
 	sudo ubuntu-image classic --debug -w result -r -t perform_manual_customization tinyos.yaml
 	# cleanup so that ubuntu-image can unchroot cleanly
-	sudo umount result/chroot/sys/firmware/efi/efivars
-	sudo umount result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev
+	sudo umount -f result/chroot/sys/firmware/efi/efivars
+	sudo umount -f result/chroot/proc result/chroot/sys result/chroot/dev/pts result/chroot/dev
 	# now we can let ubuntu-image finish the image build
 	sudo ubuntu-image classic --debug -w result -r tinyos.yaml
 	# final cleanup
