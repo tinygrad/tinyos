@@ -78,6 +78,8 @@ pushd /tmp/tinygrad || exit
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
   NUM_GPUS=$(nvidia-smi -L | wc -l)
   export GPUS=$NUM_GPUS
+elif [[ "$TINYBOX_COLOR" == "red" ]]; then
+  export AMD_LLVM=1
 fi
 
 # first run will detect gpu failure

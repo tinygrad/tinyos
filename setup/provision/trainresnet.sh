@@ -26,7 +26,7 @@ if [[ "$TINYBOX_COLOR" == "green" ]]; then
 
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=1500 BEAM_UPCAST_MAX=64 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=10 BEAM_PADTO=0
 elif [[ "$TINYBOX_COLOR" == "red" ]]; then
-  export AMD=1 AM_RESET=1 AMD_IFACE=pci
+  export AMD=1 AM_RESET=1 AMD_IFACE=pci AMD_LLVM=1
 
   # switch to am driver
   sudo systemctl stop tinybox-display
