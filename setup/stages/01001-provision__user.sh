@@ -69,7 +69,11 @@ mkdir -p /home/tiny/stress_test
 
 # run allreduce bandwidth test
 pushd /home/tiny/tinygrad || exit
-display "status"
+
+git worktree prune
+git worktree add -d /tmp/tinygrad e1a40e8040c20dd8af15251af096f901219a5aae
+
+pushd /tmp/tinygrad || exit
 
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
   NUM_GPUS=$(nvidia-smi -L | wc -l)
@@ -86,6 +90,12 @@ display "status"
 
 python3 test/external/external_benchmark_multitensor_allreduce.py # run twice for warmup
 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
+
+popd || exit
+
+rm -rf /tmp/tinygrad
+git worktree prune
+
 popd || exit
 # ensure that it is above 12 GB/s
 allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/stress_test/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
