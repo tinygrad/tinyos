@@ -69,6 +69,7 @@ mkdir -p /home/tiny/stress_test
 
 # run allreduce bandwidth test
 pushd /home/tiny/tinygrad || exit
+git pull
 
 git worktree prune
 git worktree add -d /tmp/tinygrad e1a40e8040c20dd8af15251af096f901219a5aae
