@@ -87,6 +87,11 @@ else
   sleep 1
 fi
 
+if [ -d /tmp/tinygrad/ckpts ]; then
+  # copy checkpoints to main tinygrad dir
+  cp -r /tmp/tinygrad/ckpts /home/tiny/tinygrad/ckpts
+fi
+
 popd || exit
 
 unlink /tmp/tinygrad/extra/datasets/imagenet
