@@ -4,9 +4,13 @@ set -o pipefail
 source /etc/tinybox-release
 
 function determine_tinybox_version() {
+  # remove existing TINYBOX_VERSION lines
+  sed -i '/^TINYBOX_VERSION=/d' /etc/tinybox-release
+
   # tinybox cores are not versioned
-  if [[ -z "$TINYBOX_CORE" ]]; then
+  if [[ -n "$TINYBOX_CORE" ]]; then
     echo "TINYBOX_VERSION=1" | tee -a /etc/tinybox-release
+    return
   fi
 
   system_info="$(lshw -json)"

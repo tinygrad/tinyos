@@ -246,8 +246,10 @@ if [[ -z $TINYBOX_CORE ]]; then
       exit 2
     fi
   fi
-  if ! check_boot "$system_info" "$gpu_pcie_id"; then
-    exit 2
+  if has_usbboot; then
+    if ! check_boot "$system_info" "$gpu_pcie_id"; then
+      exit 2
+    fi
   fi
 
   display_text "system check passed"
