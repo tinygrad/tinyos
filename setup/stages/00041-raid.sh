@@ -2,8 +2,9 @@
 set -x
 
 source /etc/tinybox-release
+source /opt/tinybox/setup/common.sh
 
-if [[ -z "$TINYBOX_CORE" ]]; then
+if has_raid; then
   # see if a raid array is already created, checking if there are any /dev/md*
   if ! ls /dev/md* 1> /dev/null 2>&1; then
     echo "No RAID array found, creating one..."
