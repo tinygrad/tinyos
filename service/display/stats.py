@@ -150,7 +150,9 @@ class AMGPUStats(GPUStats):
       if dev.pci_state != "D0":
         gpu_utilizations.append(0)
       else:
-        gpu_utilizations.append(self.ctx.get_gfx_activity(dev, metrics))
+        util = self.ctx.get_gfx_activity(dev, metrics)
+        # remap util from 5-100 to 0-100
+        gpu_utilizations.append((util - 5) / (100 - 5) * 100)
     return gpu_utilizations
 
   def _get_gpu_memory_utilizations(self) -> list[float]:
