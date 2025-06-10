@@ -1,4 +1,4 @@
-import os, time, math, functools, random
+import os, time, math, functools, random, contextlib
 from pathlib import Path
 import multiprocessing
 
@@ -368,6 +368,9 @@ def train_retinanet():
   INITMLPERF = getenv("INITMLPERF")
   RUNMLPERF = getenv("RUNMLPERF")
 
+  if INITMLPERF:
+    diskcache_clear()
+
   if getenv("LOGMLPERF"):
     from mlperf_logging import mllog
     import mlperf_logging.mllog.constants as mllog_constants
@@ -386,7 +389,6 @@ def train_retinanet():
 
       MLLOGGER.event(key=mllog_constants.SUBMISSION_BENCHMARK, value=mllog_constants.RETINANET)
 
-      diskcache_clear()
       MLLOGGER.event(key=mllog_constants.CACHE_CLEAR, value=True)
       MLLOGGER.start(key=mllog_constants.INIT_START)
 
@@ -789,7 +791,6 @@ def train_unet3d():
     return loss.realize()
 
   @Tensor.train(mode=False)
-  @Tensor.test()
   def eval_step(model, x, y):
     y_hat, y = sliding_window_inference(model, x, y, gpus=GPUS)
     y_hat, y = Tensor(y_hat), Tensor(y, requires_grad=False)
@@ -1279,9 +1280,15 @@ def train_maskrcnn():
 
 if __name__ == "__main__":
   multiprocessing.set_start_method('spawn')
+
+  if getenv("INITMLPERF"): bench_log_manager = WallTimeEvent(BenchEvent.MLPERF_INIT)
+  elif getenv("RUNMLPERF"): bench_log_manager = WallTimeEvent(BenchEvent.MLPERF_RUN)
+  else: bench_log_manager = contextlib.nullcontext()
+
   with Tensor.train():
     for m in getenv("MODEL", "resnet,retinanet,unet3d,rnnt,bert,maskrcnn").split(","):
       nm = f"train_{m}"
       if nm in globals():
         print(f"training {m}")
-        with Profiling(enabled=getenv("PYPROFILE")): globals()[nm]()
+        with bench_log_manager:
+          with Profiling(enabled=getenv("PYPROFILE")): globals()[nm]()
