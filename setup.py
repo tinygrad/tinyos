@@ -26,8 +26,8 @@ setup(name='tinygrad',
       long_description_content_type='text/markdown',
       packages = ['tinygrad', 'tinygrad.runtime.autogen', 'tinygrad.runtime.autogen.am', 'tinygrad.codegen', 'tinygrad.nn',
                   'tinygrad.renderer', 'tinygrad.engine', 'tinygrad.viz', 'tinygrad.runtime', 'tinygrad.runtime.support',
-                  'tinygrad.runtime.support.am', 'tinygrad.runtime.graph', 'tinygrad.shape'],
-      package_data = {'tinygrad': ['py.typed'], 'tinygrad.viz': ['index.html', 'perfetto.html', 'assets/**/*', 'lib/**/*']},
+                  'tinygrad.runtime.support.am', 'tinygrad.runtime.graph', 'tinygrad.shape', 'tinygrad.uop'],
+      package_data = {'tinygrad': ['py.typed'], 'tinygrad.viz': ['index.html', 'perfetto.html', 'assets/**/*', 'js/*']},
       classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License"
@@ -84,10 +84,6 @@ setup(name='tinygrad',
             "markdown-exec[ansi]",
             "black",
             "numpy",
-        ],
-        'testing_tf': [
-            "tensorflow==2.15.1",
-            "tensorflow_addons",
         ],
       },
       include_package_data=True)

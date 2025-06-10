@@ -163,6 +163,25 @@ class TestTorchBackend(unittest.TestCase):
       a = torch.randn(10, 10, device=device, dtype=torch_dtype)
       self.assertEqual(a.dtype, torch_dtype)
 
+  def test_equal(self):
+    tensor_a = torch.tensor([[1, 2], [3, 4]], device=device)
+    tensor_b = torch.tensor([[1, 2], [3, 4]], device=device)
+    tensor_c = torch.tensor([[1, 2], [1, 2]], device=device)
+    assert torch.equal(tensor_a, tensor_b)
+    assert not torch.equal(tensor_a, tensor_c)
+
+  def test_linalg_eigh(self):
+    a = torch.tensor([[1, 2], [2, 1]], dtype=torch.float32, device=device)
+    w, v = torch.linalg.eigh(a)
+    np.testing.assert_equal(w.cpu().numpy(), [-1, 3])
+    recon = (v @ torch.diag(w) @ v.T).cpu().numpy()
+    np.testing.assert_allclose(recon, a.cpu().numpy(), atol=1e-6)
+
+  def test_scalar_assign(self):
+    a = torch.tensor([1, 2, 3], device=device)
+    a[1] = 4
+    np.testing.assert_equal(a.cpu().numpy(), [1, 4, 3])
+
   @unittest.skip("meh")
   def test_str(self):
     a = torch.ones(4, device=device)

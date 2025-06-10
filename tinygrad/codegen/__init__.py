@@ -2,7 +2,7 @@ from typing import Any, Callable
 import functools
 from dataclasses import dataclass
 from tinygrad.helpers import QUANTIZE, DEVECTORIZE, TRANSCENDENTAL
-from tinygrad.ops import PatternMatcher, graph_rewrite, UOp
+from tinygrad.uop.ops import PatternMatcher, graph_rewrite, UOp
 from tinygrad.renderer import Renderer
 
 # import all pattern matchers here
@@ -23,6 +23,12 @@ class RewriteStep:
     return graph_rewrite(sink, self.pm, ctx=self.ctx(sink) if self.ctx is not None else None, name=self.name, bottom_up=self.bottom_up)
 
 def apply_rewrites(sink:UOp, rewrites:list[RewriteStep]): return functools.reduce(lambda x,f: f(x), rewrites, sink)
+
+rewrites_for_linearizer = [
+  RewriteStep(block_create, ctx=BlockContext.from_sink, name="Linearizer: Create Blocks", bottom_up=True),
+  RewriteStep(pm_blockend_merge, name="Linearizer: Merge Blockends"),
+  RewriteStep(block_merge, name="Linearizer: Merge Blocks"),
+  RewriteStep(pm_finalize, name="Linearizer: Finalize")]
 
 def get_rewrites_for_renderer(opts:Renderer, linearizer:bool=True) -> list[RewriteStep]:
   # cache with the values of the context vars
@@ -65,13 +71,8 @@ def _get_rewrites_for_renderer(opts:Renderer, linearizer:bool, _QUANTIZE, _DEVEC
   pm_final_rewrite = symbolic_simple+get_late_rewrite_patterns(supported_ops, _TRANSCENDENTAL>=2)+pm_render+extra_matcher
   ret.append(RewriteStep(pm_final_rewrite, lambda _: opts, name="final rewrite"))
 
-  # ** linearizer **
-  if linearizer:
-    ret.append(RewriteStep(block_create, ctx=BlockContext.from_sink, name="Linearizer: Create Blocks", bottom_up=True))
-    ret.append(RewriteStep(pm_blockend_merge, name="Linearizer: Merge Blockends"))
-    ret.append(RewriteStep(block_merge, name="Linearizer: Merge Blocks"))
-    ret.append(RewriteStep(pm_finalize, name="Linearizer: Finalize"))
-  return ret
+  # return the list (with optional linearizer)
+  return ret + (rewrites_for_linearizer if linearizer else [])
 
 def full_rewrite_to_sink(sink:UOp, opts:Renderer|None=None, linearizer:bool=False) -> UOp:
   return apply_rewrites(sink, get_rewrites_for_renderer(opts if opts is not None else Renderer(), linearizer))
