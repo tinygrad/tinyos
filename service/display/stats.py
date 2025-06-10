@@ -152,7 +152,7 @@ class AMGPUStats(GPUStats):
       else:
         util = self.ctx.get_gfx_activity(dev, metrics)
         # remap util from 5-100 to 0-100
-        gpu_utilizations.append((util - 5) / (100 - 5) * 100)
+        gpu_utilizations.append((max(util - 5, 0) / (100 - 5)) * 100)
     return gpu_utilizations
 
   def _get_gpu_memory_utilizations(self) -> list[float]:
