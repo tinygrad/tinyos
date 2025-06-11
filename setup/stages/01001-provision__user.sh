@@ -72,7 +72,7 @@ pushd /home/tiny/tinygrad || exit
 git pull
 
 git worktree prune
-git worktree add -d /tmp/tinygrad e1a40e8040c20dd8af15251af096f901219a5aae
+git worktree add -d /tmp/tinygrad 25304c3dd0d2dbf7c20a67a761508f4c885f33ed
 
 pushd /tmp/tinygrad || exit
 
