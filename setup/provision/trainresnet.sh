@@ -7,7 +7,7 @@ source /opt/tinybox/service/display/api.sh
 pushd /home/tiny/tinygrad || exit
 
 git worktree prune
-git worktree add -d /tmp/tinygrad 51dc7eedb0c30479adfa8cdc692e94bbd04d3570
+git worktree add -d /tmp/tinygrad 25304c3dd0d2dbf7c20a67a761508f4c885f33ed
 
 pushd /tmp/tinygrad || exit
 ln -s /raid/datasets/imagenet extra/datasets/
