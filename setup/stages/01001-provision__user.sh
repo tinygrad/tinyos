@@ -91,8 +91,7 @@ fi
 
 display "status"
 
-python3 test/external/external_benchmark_multitensor_allreduce.py # run twice for warmup
-python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
+ONLY_RING=1 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
 
 popd || exit
 
