@@ -16,7 +16,7 @@ export PYTHONPATH="."
 export MODEL="resnet"
 
 export DEFAULT_FLOAT="HALF"
-export LAZYCACHE=0 RESET_STEP=0
+export LAZYCACHE=0 RESET_STEP=0 IGNORE_OOB=1
 export TARGET=0.757
 
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
