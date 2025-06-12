@@ -72,6 +72,7 @@ customization:
     - name: ipmitool
     - name: jc
     - name: jq
+    - name: kitty-terminfo
     - name: linux-tools-generic-hwe-<|UBUNTU_VERSION|>
     - name: lm-sensors
     - name: locales
