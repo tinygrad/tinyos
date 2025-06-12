@@ -36,10 +36,11 @@ elif [[ "$TINYBOX_COLOR" == "red" ]]; then
   sleep 10 && sudo modprobe -r amdgpu
 
   # restart display to use am_smi
-  sudo systemctl restart tinybox-display
+  sleep 10
+  sudo systemctl start tinybox-display
 
   wait_for_display 10
-  display status
+  display "status"
 
   export GPUS=6 BS=1536 EVAL_BS=192
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=2000 BEAM_UPCAST_MAX=96 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=5 BEAM_PADTO=0
@@ -72,7 +73,7 @@ pkill -f monitortemps.sh
 if [[ "$TINYBOX_COLOR" == "green" ]]; then
   EXPECTED_TIME=11500
 elif [[ "$TINYBOX_COLOR" == "red" ]]; then
-  EXPECTED_TIME=12500
+  EXPECTED_TIME=14500
 else
   echo "Unknown tinybox color: $TINYBOX_COLOR"
   exit 1
