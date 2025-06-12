@@ -3,6 +3,7 @@ set -o pipefail
 
 source /etc/tinybox-release
 source /opt/tinybox/service/display/api.sh
+source /opt/tinybox/setup/common.sh
 
 function check_gpu() {
   local system_info="$1"
@@ -23,19 +24,24 @@ function check_gpu() {
 
   # switch on the GPU
   case "$gpu_pcie_id" in
-    10de:2b85) # 5090
-      EXPECTED_GPU_COUNT=4
-      EXPECTED_GPU_LINK_SPEED="32GT/s"
-      EXPECTED_GPU_LINK_WIDTH="x16"
-      ;;
     10de:2684) # 4090
       EXPECTED_GPU_COUNT=6
       EXPECTED_GPU_LINK_SPEED="16GT/s"
       EXPECTED_GPU_LINK_WIDTH="x16"
       ;;
+    10de:2b85) # 5090
+      EXPECTED_GPU_COUNT=4
+      EXPECTED_GPU_LINK_SPEED="32GT/s"
+      EXPECTED_GPU_LINK_WIDTH="x16"
+      ;;
     1002:744c) # 7900 XTX
       EXPECTED_GPU_COUNT=6
       EXPECTED_GPU_LINK_SPEED="16GT/s"
+      EXPECTED_GPU_LINK_WIDTH="x16"
+      ;;
+    1002:7550) # 9070 XT
+      EXPECTED_GPU_COUNT=6
+      EXPECTED_GPU_LINK_SPEED="32GT/s"
       EXPECTED_GPU_LINK_WIDTH="x16"
       ;;
     *)
@@ -52,7 +58,7 @@ function check_gpu() {
   # run program in background to load gpus
   su tiny -c "GPUS=$gpu_count python3 /opt/tinybox/tinygrad/test/external/external_benchmark_multitensor_allreduce.py" > /dev/null 2>&1 &
 
-  display_sleep 5
+  display_sleep 8
 
   i=0
   for busid in $gpu_busids; do
@@ -92,13 +98,16 @@ function check_ram() {
 
   # switch on the GPU
   case "$gpu_pcie_id" in
-    10de:2b85) # 5090
-      EXPECTED_MEMORY_SIZE_GB=192
-      ;;
     10de:2684) # 4090
       EXPECTED_MEMORY_SIZE_GB=128
       ;;
+    10de:2b85) # 5090
+      EXPECTED_MEMORY_SIZE_GB=192
+      ;;
     1002:744c) # 7900 XTX
+      EXPECTED_MEMORY_SIZE_GB=128
+      ;;
+    1002:7550) # 9070 XT
       EXPECTED_MEMORY_SIZE_GB=128
       ;;
     *)
@@ -123,13 +132,16 @@ function check_cpu() {
 
   # switch on the GPU
   case "$gpu_pcie_id" in
-    10de:2b85) # 5090
-      EXPECTED_CORE_COUNT=32
-      ;;
     10de:2684) # 4090
       EXPECTED_CORE_COUNT=32
       ;;
+    10de:2b85) # 5090
+      EXPECTED_CORE_COUNT=32
+      ;;
     1002:744c) # 7900 XTX
+      EXPECTED_CORE_COUNT=32
+      ;;
+    1002:7550) # 9070 XT
       EXPECTED_CORE_COUNT=32
       ;;
     *)
@@ -229,11 +241,15 @@ if [[ -z $TINYBOX_CORE ]]; then
   if ! check_cpu "$system_info" "$gpu_pcie_id"; then
     exit 2
   fi
-  if ! check_disk "$system_info" "$gpu_pcie_id"; then
-    exit 2
+  if has_raid; then
+    if ! check_disk "$system_info" "$gpu_pcie_id"; then
+      exit 2
+    fi
   fi
-  if ! check_boot "$system_info" "$gpu_pcie_id"; then
-    exit 2
+  if has_usbboot; then
+    if ! check_boot "$system_info" "$gpu_pcie_id"; then
+      exit 2
+    fi
   fi
 
   display_text "system check passed"

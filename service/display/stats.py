@@ -150,7 +150,9 @@ class AMGPUStats(GPUStats):
       if dev.pci_state != "D0":
         gpu_utilizations.append(0)
       else:
-        gpu_utilizations.append(self.ctx.get_gfx_activity(dev, metrics))
+        util = self.ctx.get_gfx_activity(dev, metrics)
+        # remap util from 5-100 to 0-100
+        gpu_utilizations.append((max(util - 5, 0) / (100 - 5)) * 100)
     return gpu_utilizations
 
   def _get_gpu_memory_utilizations(self) -> list[float]:
@@ -159,7 +161,9 @@ class AMGPUStats(GPUStats):
       if dev.pci_state != "D0":
         gpu_memory_utilizations.append(0)
       else:
-        gpu_memory_utilizations.append(self.ctx.get_mem_activity(dev, metrics))
+        mem_used = self.ctx.get_mem_usage(dev)
+        mem_total = dev.vram_size
+        gpu_memory_utilizations.append(mem_used / mem_total * 100)
     return gpu_memory_utilizations
 
   def _get_gpu_power_draw(self) -> list[int]:
