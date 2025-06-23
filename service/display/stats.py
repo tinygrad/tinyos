@@ -216,13 +216,13 @@ class Stats:
     if self._gpu.get_gpu_count() != 0:
       logging.info(f"found {self._gpu.get_gpu_count()} AMD GPUs")
       return
-    try:
-      self._gpu = AMGPUStats()
-    except:
-      pass
-    if self._gpu.get_gpu_count() != 0:
-      logging.info(f"found {self._gpu.get_gpu_count()} AMD GPUs")
-      return
+    # try:
+    #   self._gpu = AMGPUStats()
+    # except:
+    #   pass
+    # if self._gpu.get_gpu_count() != 0:
+    #   logging.info(f"found {self._gpu.get_gpu_count()} AMD GPUs")
+    #   return
     self._gpu = NULLGPUStats()
     logging.warning("no GPU found, using NULLGPUStats")
 
