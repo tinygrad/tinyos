@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -x
 
+source /etc/tinybox-release
+
 pushd /opt/tinybox || true
 
 # get the git branch
@@ -51,11 +53,13 @@ for stage_file in $stage_files; do
 done
 
 systemctl daemon-reload
-if [ $changed -eq 1 ]; then
-  systemctl stop tinybox-display
-  systemctl stop tinybox-button
+if [[ -z "$TINYBOX_CORE" ]]; then
+  if [ $changed -eq 1 ]; then
+    systemctl stop tinybox-display
+    systemctl stop tinybox-button
+  fi
+  systemctl start tinybox-display
+  systemctl start tinybox-button
 fi
-systemctl start tinybox-display
-systemctl start tinybox-button
 
 popd || true
