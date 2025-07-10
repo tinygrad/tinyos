@@ -1,4 +1,6 @@
 tinyos.yaml
 build/tinybox-release
+build/venv/
 result/
 outputs/
+__pycache__/
