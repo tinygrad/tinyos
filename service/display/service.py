@@ -3,7 +3,7 @@ sys.path.insert(0, "/opt/tinybox/tinyturing/")
 sys.path.insert(0, "/opt/tinybox/service/display/")
 
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal, os, logging, math, subprocess
+import threading, time, signal, os, logging, math, subprocess, socket
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] <%(filename)s:%(lineno)d::%(funcName)s> - %(message)s")
 from enum import Enum
 from queue import Queue
@@ -77,8 +77,13 @@ class SleepScreen(Component):
     else: self.bmc_ip = Text(f"BMC: {bmc_ip}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
 
     # ip
-    ip = subprocess.run(["hostname", "-i"], capture_output=True).stdout.decode().strip()
-    ip = ip.split(" ")[0] if ip else "N/A"
+    try:
+      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+      s.connect(("10.254.254.254", 1))
+      ip = s.getsockname()[0]
+    except:
+      logging.warning("Failed to get local IP address")
+      ip = "N/A"
 
     self.ip = Text(f"IP: {ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_ip, Anchor.TOP_CENTER))
 
