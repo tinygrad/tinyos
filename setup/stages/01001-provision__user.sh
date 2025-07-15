@@ -71,8 +71,9 @@ mkdir -p /home/tiny/stress_test
 pushd /home/tiny/tinygrad || exit
 git pull
 
+rm -rf /tmp/tinygrad
 git worktree prune
-git worktree add -d /tmp/tinygrad 25304c3dd0d2dbf7c20a67a761508f4c885f33ed
+git worktree add -d /tmp/tinygrad 9f79079cbe5c1df81583c841d566f7609718cad0
 
 pushd /tmp/tinygrad || exit
 
