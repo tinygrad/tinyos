@@ -12,6 +12,7 @@ if [[ -z "$TINYBOX_CORE" ]]; then
     sudo apt remove --purge -y nvidia-driver-570-open
     sudo apt remove --purge -y nvidia-compute-utils-570
     sudo apt remove --purge -y nvidia-persistenced
+    sudo apt remove --purge -y libnvidia-cfg1-570
 
     sudo apt-mark unhold nvidia-kernel-source-570-open
     sudo apt remove --purge -y nvidia-kernel-source-570-open
