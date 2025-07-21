@@ -16,7 +16,7 @@ if [[ -z "$TINYBOX_CORE" ]]; then
     pushd /tmp
 
     curl -o keyring.deb -L "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb"
-    curl -o driver.deb -L "https://github.com/wozeparrot/open-gpu-kernel-modules/releases/download/570.148.08-p2p/nvidia-kernel-source-570-open-1ubuntu1_amd64.deb"
+    curl -o driver.deb -L "https://github.com/wozeparrot/open-gpu-kernel-modules/releases/download/570.172.08-p2p/nvidia-kernel-source-570-open-0ubuntu1_amd64.deb"
 
     dpkg -i keyring.deb
     dpkg -i driver.deb
@@ -24,8 +24,6 @@ if [[ -z "$TINYBOX_CORE" ]]; then
     apt-mark hold nvidia-kernel-source-570-open
 
     apt update -y
-    apt install nvidia-persistenced=570.148.08-1ubuntu1 -y
-    apt install nvidia-compute-utils-570 -y
     apt install nvidia-driver-570-open -y
     apt install cuda-toolkit-12-8 cuda-drivers-570 -y
     apt-mark hold nvidia-driver-570-open nvidia-dkms-570-open nvidia-kernel-common-570 cuda-drivers-570 cuda-toolkit-12-8 libnvidia-common-570
