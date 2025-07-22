@@ -104,25 +104,34 @@ class AMDGPUStats(GPUStats):
   def _get_gpu_utilizations(self) -> list[float]:
     gpu_utilizations = []
     for i in range(1, self.gpu_count + 1):
-      with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
-        gpu_utilizations.append(int(f.read().strip()))
+      try:
+        with open(f"/sys/class/drm/card{i}/device/gpu_busy_percent", "r") as f:
+          gpu_utilizations.append(int(f.read().strip()))
+      except:
+        gpu_utilizations.append(0)
     return gpu_utilizations
 
   def _get_gpu_memory_utilizations(self) -> list[float]:
     gpu_memory_utilizations = []
     for i in range(1, self.gpu_count + 1):
-      with open(f"/sys/class/drm/card{i}/device/mem_info_vram_used", "r") as f:
-        used = int(f.read().strip())
-      with open(f"/sys/class/drm/card{i}/device/mem_info_vram_total", "r") as f:
-        total = int(f.read().strip())
-      gpu_memory_utilizations.append(used / total * 100)
+      try:
+        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_used", "r") as f:
+          used = int(f.read().strip())
+        with open(f"/sys/class/drm/card{i}/device/mem_info_vram_total", "r") as f:
+          total = int(f.read().strip())
+        gpu_memory_utilizations.append(used / total * 100)
+      except:
+        gpu_memory_utilizations.append(0)
     return gpu_memory_utilizations
 
   def _get_gpu_power_draw(self) -> list[int]:
     gpu_power_draws = []
     for path in self.hwmon_paths:
-      with open(f"{path}/power1_average", "r") as f:
-        gpu_power_draws.append(int(f.read().strip()) // 1000000)
+      try:
+        with open(f"{path}/power1_average", "r") as f:
+          gpu_power_draws.append(int(f.read().strip()) // 1000000)
+      except:
+        gpu_power_draws.append(0)
     return gpu_power_draws
 
 class AMGPUStats(GPUStats):
