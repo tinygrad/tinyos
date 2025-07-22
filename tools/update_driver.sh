@@ -2,6 +2,7 @@
 set -xeo pipefail
 
 source /etc/tinybox-release
+export DEBIAN_FRONTEND=noninteractive
 
 if [[ -z "$TINYBOX_CORE" ]]; then
   if [[ "$TINYBOX_COLOR" == "red" ]]; then
