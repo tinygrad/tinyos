@@ -62,9 +62,8 @@ function check_gpu() {
       # remove the leading 0000: and trailing :00.0
       missing_busids=$(echo "$missing_busids" | grep -oP '^\d{4}:\d{2}:\d{2}\.\d' | sed 's/0000://g' | sed 's/:00\.0$//g')
       missing_busids=$(echo "$missing_busids" | tr '\n' ' ' | sed 's/ $//')
-      if [ -n "$missing_busids" ]; then
-        display_text "gpu count mismatch,$gpu_count != $EXPECTED_GPU_COUNT,$missing_busids"
-      fi
+      display_text "gpu count mismatch,$gpu_count != $EXPECTED_GPU_COUNT,$missing_busids"
+      exit 2
     else
       display_text "gpu count mismatch,$gpu_count != $EXPECTED_GPU_COUNT"
       exit 2
