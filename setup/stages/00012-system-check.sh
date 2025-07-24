@@ -33,6 +33,10 @@ function check_gpu() {
       EXPECTED_GPU_COUNT=4
       EXPECTED_GPU_LINK_SPEED="32GT/s"
       EXPECTED_GPU_LINK_WIDTH="x16"
+
+      # 03 43 01
+      #      41
+      EXPECTED_GPU_BUSIDS="0000:01:00.0 0000:03:00.0 0000:41:00.0 0000:43:00.0"
       ;;
     1002:744c) # 7900 XTX
       EXPECTED_GPU_COUNT=6
@@ -51,8 +55,20 @@ function check_gpu() {
   esac
 
   if [ "$gpu_count" -ne $EXPECTED_GPU_COUNT ]; then
-    display_text "gpu count mismatch,$gpu_count != $EXPECTED_GPU_COUNT,$gpu_busids"
-    exit 2
+    # if we have EXPECTED_GPU_BUSIDS, check which busids are missing
+    # if we don't have EXPECTED_GPU_BUSIDS, just display the mismatch
+    if [ -n "$EXPECTED_GPU_BUSIDS" ]; then
+      missing_busids=$(echo "$EXPECTED_GPU_BUSIDS" | tr ' ' '\n' | grep -v -x -f <(echo "$gpu_busids"))
+      # remove the leading 0000: and trailing :00.0
+      missing_busids=$(echo "$missing_busids" | grep -oP '^\d{4}:\d{2}:\d{2}\.\d' | sed 's/0000://g' | sed 's/:00\.0$//g')
+      missing_busids=$(echo "$missing_busids" | tr '\n' ' ' | sed 's/ $//')
+      if [ -n "$missing_busids" ]; then
+        display_text "gpu count mismatch,$gpu_count != $EXPECTED_GPU_COUNT,$missing_busids"
+      fi
+    else
+      display_text "gpu count mismatch,$gpu_count != $EXPECTED_GPU_COUNT"
+      exit 2
+    fi
   fi
 
   # run program in background to load gpus
