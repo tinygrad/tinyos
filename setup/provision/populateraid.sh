@@ -10,11 +10,25 @@ git worktree add /tmp/tinyfs-tinygrad pr-10799
 pushd /tmp/tinyfs-tinygrad || exit
 
 iface="$1"
-echo "using interface ${iface}"
+echo "using interface $iface"
 
 sudo ip link set "$iface" up
 sudo ip link set "$iface" mtu 9000
-sudo dhclient -v "$iface"
+
+cat <<EOF | sudo tee /etc/systemd/network/20-fast.network
+[Match]
+Name=$iface
+
+[Network]
+DHCP=yes
+EOF
+sudo systemctl restart systemd-networkd
+
+# wait for IP address
+while ! ip addr show "$iface" | grep -q "inet "; do
+  echo "waiting for IP address on $iface"
+  sleep 1
+done
 
 # TCP/IP performance tuning
 sudo sysctl net.ipv4.tcp_timestamps=0
