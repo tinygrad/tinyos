@@ -5,6 +5,8 @@ source /opt/tinybox/service/display/api.sh
 pushd /home/tiny/tinygrad || exit
 
 git fetch origin pull/10799/head:pr-10799
+rm -rf /tmp/tinyfs-tinygrad
+git worktree prune
 git worktree add /tmp/tinyfs-tinygrad pr-10799
 
 pushd /tmp/tinyfs-tinygrad || exit
