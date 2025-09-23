@@ -27,38 +27,14 @@ if [ -z "$iface" ]; then
   exit 0
 fi
 
-ip=""
-sudo ip ad add 10.0.0.2/24 dev "$iface"
-sudo ip link set "$iface" up
-if ping -c 1 10.0.0.1; then
-  display_text "using $iface,10.0.0.2"
-  ip="10.0.0."
-else
-  sudo ip ad del 10.0.0.2/24 dev "$iface"
-  sudo ip ad add 10.0.1.2/24 dev "$iface"
-  sudo ip link set "$iface" up
-  if ping -c 1 10.0.1.1; then
-    display_text "using $iface,10.0.1.2"
-    ip="10.0.1."
-  else
-    sudo ip ad del 10.0.1.2/24 dev "$iface"
-  fi
+# see if we can reach a gateway server
+if ! ping -c 5 192.168.52.11; then
+  display_text "not provisioning,no provisioning IP found"
+  exit 0
 fi
-if [ -z "$ip" ]; then
-  # see if we can reach a gateway server
-  if ! ping -c 5 192.168.52.11; then
-    display_text "not provisioning,no provisioning IP found"
-    exit 0
-  else
-    # we have a gateway which means provisioning has failed
-    display_text "can't reach provisioning box"
-    exit 2
-  fi
-fi
-sudo ip link set "$iface" mtu 9000
 
 # populate raid
-if ! bash /opt/tinybox/setup/provision/populateraid.sh "$ip"; then
+if ! bash /opt/tinybox/setup/provision/populateraid.sh "$iface"; then
   display_text "$(hostname -i | xargs):19531,,Failed to populate RAID"
   exit 2
 fi
@@ -177,38 +153,38 @@ fi
 # turn fans to auto
 sudo fan-control auto
 
-# log everything from provisioning
-if ! sudo mount -o rdma,port=20049 "${ip}1":/opt/dmi /mnt; then
-  display_text "$(hostname -i | xargs):19531,,Failed to mount NFS"
-  exit 2
-fi
-
+# # log everything from provisioning
+# if ! sudo mount -o rdma,port=20049 "${ip}1":/opt/dmi /mnt; then
+#   display_text "$(hostname -i | xargs):19531,,Failed to mount NFS"
+#   exit 2
+# fi
+#
 json_dmi=$(sudo dmidecode | jc --dmidecode)
 serial=$(echo "$json_dmi" | jq -r '.[] | select(.description | contains("Base Board Information")) | .values.serial_number' | tr -d '[:space:]')
-# ensure there isn't already a folder with this serial
-if [ -d "/mnt/${serial}" ]; then
-  display_text "$(hostname -i | xargs):19531,,Serial already exists,${serial}"
-  exit 2
-fi
-mkdir -p "/mnt/${serial}"
-
-# log dmidecode
-echo "$json_dmi" > "/mnt/${serial}/dmidecode.json"
-
-# log lshw
-sudo lshw -json > "/mnt/${serial}/lshw.json"
-
-# log bmc info
-sudo ipmitool bmc info | tee "/mnt/${serial}/bmc_info.log"
-
-cp /var/log/cloud-init-output.log "/mnt/${serial}/cloud-init-output.log"
-cp -r /home/tiny/stress_test "/mnt/${serial}/stress_test"
-
-# log provisioning logs
-sudo journalctl -o export --unit=provision > "/mnt/${serial}/provision.log"
-
-sudo umount /mnt
-sudo ip ad del "${ip}2/24" dev "$iface"
+# # ensure there isn't already a folder with this serial
+# if [ -d "/mnt/${serial}" ]; then
+#   display_text "$(hostname -i | xargs):19531,,Serial already exists,${serial}"
+#   exit 2
+# fi
+# mkdir -p "/mnt/${serial}"
+#
+# # log dmidecode
+# echo "$json_dmi" > "/mnt/${serial}/dmidecode.json"
+#
+# # log lshw
+# sudo lshw -json > "/mnt/${serial}/lshw.json"
+#
+# # log bmc info
+# sudo ipmitool bmc info | tee "/mnt/${serial}/bmc_info.log"
+#
+# cp /var/log/cloud-init-output.log "/mnt/${serial}/cloud-init-output.log"
+# cp -r /home/tiny/stress_test "/mnt/${serial}/stress_test"
+#
+# # log provisioning logs
+# sudo journalctl -o export --unit=provision > "/mnt/${serial}/provision.log"
+#
+# sudo umount /mnt
+# sudo ip ad del "${ip}2/24" dev "$iface"
 
 sleep 1
 display_text "$(hostname -i | xargs):19531,,Provisioning Complete,${serial}"

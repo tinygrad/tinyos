@@ -2,10 +2,19 @@
 
 source /opt/tinybox/service/display/api.sh
 
-ip="$1"
-echo "connecting to ${ip}1"
+pushd /home/tiny/tinygrad || exit
 
-sleep 1
+git fetch origin pull/10799/head:pr-10799
+git worktree add /tmp/tinyfs-tinygrad pr-10799
+
+pushd /tmp/tinyfs-tinygrad || exit
+
+iface="$1"
+echo "using interface ${iface}"
+
+sudo ip link set "$iface" up
+sudo ip link set "$iface" mtu 9000
+sudo dhclient -v "$iface"
 
 # TCP/IP performance tuning
 sudo sysctl net.ipv4.tcp_timestamps=0
@@ -21,30 +30,8 @@ sudo sysctl net.ipv4.tcp_wmem="4096 65536 4194304"
 sudo sysctl net.ipv4.tcp_low_latency=1
 sudo sysctl net.ipv4.tcp_congestion_control=bbr
 
-# mount NFS
-if ! sudo mount -o rdma,port=20049 "${ip}1":/raid /mnt; then
-  display_text "$(hostname -i | xargs):19531,,Failed to mount NFS"
-  sleep 1
-  exit 1
-fi
-
-sudo chown -R tiny:tiny /raid
-rclone copy -P --auto-confirm --links --check-first --checkers 32 --multi-thread-streams 8 --transfers 32 /mnt/ /raid/ | while read -r line; do
-  echo "$line"
-  case "$line" in
-    *ETA*)
-      # extract transfer speed
-      speed=$(echo "$line" | grep -oP ', \d+\.\d+ [MG]iB/s,' | grep -oP '\d+\.\d+ [MG]iB/s')
-      # extract percentage
-      percentage=$(echo "$line" | grep -oP '\d+%,' | grep -oP '\d+')
-      # extract ETA
-      eta=$(echo "$line" | grep -oP 'ETA (\d+h\d+m\d+s)|(\d+m\d+s)|(\d+s)')
-      display_text "$(hostname -i | xargs):19531,,Populating RAID,${speed},${percentage}% - ${eta}"
-      ;;
-  esac
-done
 sudo chown -R tiny:tiny /raid
 
-sudo umount /mnt
+TINYFS_ENDPOINT=10.0.52.11:6767 PYTHONPATH=. python extra/tinyfs/fetch_raid.py
 
-display "sleep"
+sudo chown -R tiny:tiny /raid
