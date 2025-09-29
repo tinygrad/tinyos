@@ -65,6 +65,7 @@ customization:
     - name: clang
     - name: cmake
     - name: csvtool
+    - name: direnv
     - name: fd-find
     - name: file
     - name: git
