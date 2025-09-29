@@ -16,7 +16,6 @@ iface="$1"
 echo "using interface $iface"
 
 sudo ip link set "$iface" up
-sudo ip link set "$iface" mtu 9000
 
 cat <<EOF | sudo tee /etc/systemd/network/20-fast.network
 [Match]
@@ -24,6 +23,9 @@ Name=$iface
 
 [Network]
 DHCP=yes
+
+[Link]
+MTUBytes=9000
 EOF
 sudo systemctl restart systemd-networkd
 
