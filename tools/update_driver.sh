@@ -26,6 +26,7 @@ EOF
     sudo sed -i 's/30.10.2/30.20/g' /etc/apt/sources.list.d/rocm.list
 
     sudo apt update -y
+    sudo apt autoremove rocm -y
     sudo apt install rocm amdgpu-dkms -y
   elif [[ "$TINYBOX_COLOR" == "green" ]]; then
     echo "Unsupported Currently"
