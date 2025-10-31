@@ -22,6 +22,9 @@ EOF
     sudo sed -i 's/7.0.1/7.0.2/g' /etc/apt/sources.list.d/rocm.list
     sudo sed -i 's/30.10.1/30.10.2/g' /etc/apt/sources.list.d/rocm.list
 
+    sudo sed -i 's/7.0.2/7.1/g' /etc/apt/sources.list.d/rocm.list
+    sudo sed -i 's/30.10.2/30.20/g' /etc/apt/sources.list.d/rocm.list
+
     sudo apt update -y
     sudo apt install rocm amdgpu-dkms -y
   elif [[ "$TINYBOX_COLOR" == "green" ]]; then
