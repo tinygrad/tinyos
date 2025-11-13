@@ -44,7 +44,7 @@ function check_gpu() {
       EXPECTED_GPU_LINK_WIDTH="x16"
       ;;
     1002:7550) # 9070 XT
-      EXPECTED_GPU_COUNT=6
+      EXPECTED_GPU_COUNT=4
       EXPECTED_GPU_LINK_SPEED="32GT/s"
       EXPECTED_GPU_LINK_WIDTH="x16"
       ;;
