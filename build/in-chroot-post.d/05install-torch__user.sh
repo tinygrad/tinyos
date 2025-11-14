@@ -10,7 +10,7 @@ if [[ -z "$TINYBOX_CORE" ]]; then
   if [[ "$TINYBOX_COLOR" == "red" ]]; then
     pip install --user --break-system-packages --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm7.0
   elif [[ "$TINYBOX_COLOR" == "green" ]]; then
-    pip install --user --break-system-packages torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+    pip install --user --break-system-packages torch torchvision --index-url https://download.pytorch.org/whl/cu128
   fi
 
   popd
