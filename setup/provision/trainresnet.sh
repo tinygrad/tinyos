@@ -43,7 +43,7 @@ elif [[ "$TINYBOX_COLOR" == "red" ]]; then
   wait_for_display 10
   display "status"
 
-  export GPUS=6 BS=1536 EVAL_BS=192
+  export GPUS=4 BS=768 EVAL_BS=128
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=2000 BEAM_UPCAST_MAX=96 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=5 BEAM_PADTO=0
 else
   display_text "unknown tinybox color,$TINYBOX_COLOR"
