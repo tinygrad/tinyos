@@ -28,11 +28,13 @@ function check_gpu() {
       EXPECTED_GPU_COUNT=6
       EXPECTED_GPU_LINK_SPEED="16GT/s"
       EXPECTED_GPU_LINK_WIDTH="x16"
+      EXPECTED_GPU_ALLREDUCE_BW=12
       ;;
     10de:2b85) # 5090
       EXPECTED_GPU_COUNT=4
       EXPECTED_GPU_LINK_SPEED="32GT/s"
       EXPECTED_GPU_LINK_WIDTH="x16"
+      EXPECTED_GPU_ALLREDUCE_BW=30
 
       # 03 43 01
       #      41
@@ -42,11 +44,13 @@ function check_gpu() {
       EXPECTED_GPU_COUNT=6
       EXPECTED_GPU_LINK_SPEED="16GT/s"
       EXPECTED_GPU_LINK_WIDTH="x16"
+      EXPECTED_GPU_ALLREDUCE_BW=12
       ;;
     1002:7550) # 9070 XT
       EXPECTED_GPU_COUNT=4
       EXPECTED_GPU_LINK_SPEED="32GT/s"
       EXPECTED_GPU_LINK_WIDTH="x16"
+      EXPECTED_GPU_ALLREDUCE_BW=12
       ;;
     *)
       display_text "unknown gpu,$gpu_pcie_id"
@@ -103,6 +107,17 @@ function check_gpu() {
   while pgrep -u tiny python3 > /dev/null; do
     display_sleep 1
   done
+
+  # run allreduce test
+  su tiny -c "GPUS=$gpu_count ONLY_RING=1 python3 /opt/tinybox/tinygrad/test/external/external_benchmark_multitensor_allreduce.py" | tee /tmp/allreduce.log
+
+  # assert allreduce speed
+  allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /tmp/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
+  display_text "allreduce bw,$allreduce_bw GB/s"
+  if [ "$allreduce_bw" -lt "$EXPECTED_GPU_ALLREDUCE_BW" ]; then
+    display_text "allreduce bw too low,${allreduce_bw}GB/s < ${EXPECTED_GPU_ALLREDUCE_BW}GB/s"
+    exit 2
+  fi
 
   echo "$gpu_pcie_id"
 }

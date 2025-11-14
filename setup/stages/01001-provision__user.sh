@@ -43,55 +43,6 @@ sleep 1
 # start stress testing
 mkdir -p /home/tiny/stress_test
 
-# run allreduce bandwidth test
-pushd /home/tiny/tinygrad || exit
-git pull
-
-rm -rf /tmp/tinygrad
-git worktree prune
-git worktree add -d /tmp/tinygrad 9f79079cbe5c1df81583c841d566f7609718cad0
-
-pushd /tmp/tinygrad || exit
-
-if [[ "$TINYBOX_COLOR" == "green" ]]; then
-  NUM_GPUS=$(nvidia-smi -L | wc -l)
-  export GPUS=$NUM_GPUS
-elif [[ "$TINYBOX_COLOR" == "red" ]]; then
-  export AMD_LLVM=1
-fi
-
-# first run will detect gpu failure
-if ! python3 test/external/external_benchmark_multitensor_allreduce.py; then
-  display_text "$(hostname -i | xargs):19531,,allreduce test failed,check logs for,possible gpu failure"
-  exit 2
-fi
-
-display "status"
-
-ONLY_RING=1 python3 test/external/external_benchmark_multitensor_allreduce.py | tee /home/tiny/stress_test/allreduce.log
-
-popd || exit
-
-rm -rf /tmp/tinygrad
-git worktree prune
-
-popd || exit
-# ensure that it is above 12 GB/s
-allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /home/tiny/stress_test/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
-if [ "$allreduce_bw" -lt 12 ]; then
-  display_text "$(hostname -i | xargs):19531,,Allreduce test failed,${allreduce_bw}GB/s"
-  exit 2
-fi
-
-# on red additionally run rocm-bandwidth-test
-if [[ "$TINYBOX_COLOR" == "red" ]]; then
-  # run p2p bandwidth test
-  display "status"
-  /opt/rocm/bin/rocm-bandwidth-test | tee /home/tiny/stress_test/p2p.log
-  /opt/rocm/bin/rocm-bandwidth-test | tee -a /home/tiny/stress_test/p2p.log
-  /opt/rocm/bin/rocm-bandwidth-test | tee -a /home/tiny/stress_test/p2p.log
-fi
-
 # run pytorch test
 pushd /home/tiny/tinygrad || exit
 display "status"
