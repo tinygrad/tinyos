@@ -11,5 +11,5 @@ reset
 # install uv
 su tiny -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
 
-# install llvm 20
-apt install llvm-20 -y
+# install llvm 21
+apt install llvm-21 -y
