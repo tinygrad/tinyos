@@ -7,7 +7,7 @@ pushd /home/tiny/tinygrad || exit
 
 rm -rf /tmp/tinyfs-tinygrad
 git worktree prune
-git branch -D pr-10799
+git branch -D pr-10799 || true
 git fetch https://github.com/wozeparrot/tinygrad.git tinyfs_device:pr-10799
 git worktree add /tmp/tinyfs-tinygrad pr-10799
 
