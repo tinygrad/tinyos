@@ -20,6 +20,9 @@ fi
 # start journal gatewayd
 systemctl start systemd-journal-gatewayd
 
+# start autoupdate
+systemctl start autoupdate-tinybox
+
 # run all stages from the current stage to the latest
 ran_stage=0
 failed=0
