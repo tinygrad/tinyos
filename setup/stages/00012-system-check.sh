@@ -109,7 +109,7 @@ function check_gpu() {
   done
 
   # run allreduce test
-  su tiny -c "GPUS=$gpu_count ONLY_RING=1 python3 /opt/tinybox/tinygrad/test/external/external_benchmark_multitensor_allreduce.py" | tee /tmp/allreduce.log
+  su tiny -c "GPUS=$gpu_count ONLY_RING=1 python3 /opt/tinybox/tinygrad/test/external/external_benchmark_multitensor_allreduce.py" > /tmp/allreduce.log
 
   # assert allreduce speed
   allreduce_bw=$(grep -oP '  \d+.\d+ GB/s' < /tmp/allreduce.log | head -n1 | grep -oP '\d+.\d+' | cut -d. -f1)
