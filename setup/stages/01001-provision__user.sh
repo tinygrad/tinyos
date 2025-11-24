@@ -14,9 +14,13 @@ fi
 iface=""
 for iface_path in /sys/class/net/*; do
   vendor_file="${iface_path}/device/vendor"
-  if [ -r "$vendor_file" ]; then
+  prod_file="${iface_path}/device/device"
+  if [ -r "$vendor_file" ] && [ -r "$prod_file" ]; then
     current_vendor_id=$(cat "$vendor_file" 2>/dev/null)
+    current_product_id=$(cat "$prod_file" 2>/dev/null)
     if [ "$current_vendor_id" = "0x15b3" ]; then
+      iface=$(basename "$iface_path")
+    elif [ "$current_vendor_id" = "0x8086" ] && [ "$current_product_id" = "0x1521" ]; then
       iface=$(basename "$iface_path")
     fi
   fi
