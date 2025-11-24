@@ -20,8 +20,6 @@ for iface_path in /sys/class/net/*; do
     current_product_id=$(cat "$prod_file" 2>/dev/null)
     if [ "$current_vendor_id" = "0x15b3" ]; then
       iface=$(basename "$iface_path")
-    elif [ "$current_vendor_id" = "0x8086" ] && [ "$current_product_id" = "0x1521" ]; then
-      iface=$(basename "$iface_path")
     fi
   fi
 done
