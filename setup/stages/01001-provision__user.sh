@@ -45,6 +45,18 @@ sleep 1
 # start stress testing
 mkdir -p /home/tiny/stress_test
 
+# switch to amd driver
+sudo systemctl stop tinybox-display
+
+sudo modprobe amdgpu
+
+# restart display
+sleep 10
+sudo systemctl start tinybox-display
+
+wait_for_display 10
+display "status"
+
 # run pytorch test
 pushd /home/tiny/tinygrad || exit
 display "status"

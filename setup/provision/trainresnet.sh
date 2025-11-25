@@ -30,18 +30,7 @@ if [[ "$TINYBOX_COLOR" == "green" ]]; then
 
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=1500 BEAM_UPCAST_MAX=64 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=10 BEAM_PADTO=0
 elif [[ "$TINYBOX_COLOR" == "red" ]]; then
-  export AMD=1 AM_RESET=1 AMD_IFACE=pci AMD_LLVM=0
-
-  # switch to am driver
-  sudo systemctl stop tinybox-display
-  sleep 10 && sudo modprobe -r amdgpu
-
-  # restart display to use am_smi
-  sleep 10
-  sudo systemctl start tinybox-display
-
-  wait_for_display 10
-  display "status"
+  export AMD=1 AMD_IFACE=kfd AMD_LLVM=0
 
   export GPUS=4 BS=768 EVAL_BS=128
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=2000 BEAM_UPCAST_MAX=96 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=5 BEAM_PADTO=0
