@@ -2,14 +2,14 @@
 set -xe
 
 source /opt/tinybox/service/display/api.sh
+source /opt/tinybox/setup/common.sh
 
 pushd /home/tiny/tinygrad || exit
+git fetch
 
 rm -rf /tmp/tinyfs-tinygrad
 git worktree prune
-git branch -D pr-10799 || true
-git fetch https://github.com/wozeparrot/tinygrad.git tinyfs_device:pr-10799
-git worktree add /tmp/tinyfs-tinygrad pr-10799
+git worktree add /tmp/tinyfs-tinygrad 249553a1190191e032e15bef051b25aa26c4bfa0
 
 pushd /tmp/tinyfs-tinygrad || exit
 
@@ -52,6 +52,10 @@ sudo sysctl net.ipv4.tcp_congestion_control=bbr
 
 sudo chown -R tiny:tiny /raid
 
-TINYFS_ENDPOINT=10.0.52.11:6767 PYTHONPATH=. python extra/tinyfs/fetch_raid.py
+if has_raid; then
+  TINYFS_ENDPOINT=10.0.52.11:6767 PYTHONPATH=. python extra/tinyfs/fetch_raid.py
+else
+  TINYFS_ENDPOINT=10.0.52.11:6767 PYTHONPATH=. HASH=6314a042a0850129fb94bd35e901a6e5 LENGTH=158537020 python extra/tinyfs/fetch_raid.py
+fi
 
 sudo chown -R tiny:tiny /raid
