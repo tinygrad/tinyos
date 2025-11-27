@@ -85,7 +85,7 @@ class NVGPUStats(GPUStats):
 
 class AMDGPUStats(GPUStats):
   def __init__(self):
-    super().__init__(interval=1)
+    super().__init__(interval=0.25)
     self.gpu_count = self.get_gpu_count()
     if self.gpu_count == 0:
       raise Exception("No AMD GPUs found")
