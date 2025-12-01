@@ -1,0 +1,14 @@
+[Unit]
+Description=tinybox power-limit service
+After=systemd-modules-load.service
+ConditionPathExists=/dev/kfd
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/opt/rocm/bin/amd-smi -o 304
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
