@@ -9,7 +9,7 @@ git fetch
 
 rm -rf /tmp/tinyfs-tinygrad
 git worktree prune
-git worktree add /tmp/tinyfs-tinygrad 249553a1190191e032e15bef051b25aa26c4bfa0
+git worktree add /tmp/tinyfs-tinygrad 18640f57b282863052291eeac1fe6daadc78c086
 
 pushd /tmp/tinyfs-tinygrad || exit
 
