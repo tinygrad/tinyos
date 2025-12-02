@@ -3,6 +3,7 @@ set -x
 
 source /etc/tinybox-release
 source /opt/tinybox/service/display/api.sh
+source /opt/tinybox/setup/common.sh
 
 # if TINYBOX_CORE is set, exit
 if [[ -n "$TINYBOX_CORE" ]]; then
@@ -11,18 +12,7 @@ if [[ -n "$TINYBOX_CORE" ]]; then
 fi
 
 # determine NIC
-iface=""
-for iface_path in /sys/class/net/*; do
-  vendor_file="${iface_path}/device/vendor"
-  prod_file="${iface_path}/device/device"
-  if [ -r "$vendor_file" ] && [ -r "$prod_file" ]; then
-    current_vendor_id=$(cat "$vendor_file" 2>/dev/null)
-    current_product_id=$(cat "$prod_file" 2>/dev/null)
-    if [ "$current_vendor_id" = "0x15b3" ]; then
-      iface=$(basename "$iface_path")
-    fi
-  fi
-done
+iface=$(get_fast_nic)
 if [ -z "$iface" ]; then
   display_text "not provisioning, no NIC found"
   echo "not provisioning,no NIC found"
@@ -36,7 +26,7 @@ if ! ping -c 5 192.168.52.11; then
 fi
 
 # populate raid
-if ! bash /opt/tinybox/setup/provision/populateraid.sh "$iface"; then
+if ! bash /opt/tinybox/setup/provision/populateraid.sh; then
   display_text "$(hostname -i | xargs):19531,,Failed to populate RAID"
   exit 2
 fi

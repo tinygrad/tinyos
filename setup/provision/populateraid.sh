@@ -13,7 +13,11 @@ git worktree add /tmp/tinyfs-tinygrad 18640f57b282863052291eeac1fe6daadc78c086
 
 pushd /tmp/tinyfs-tinygrad || exit
 
-iface="$1"
+iface=$(get_fast_nic)
+if [ -z "$iface" ]; then
+  echo "no fast NIC found"
+  exit 1
+fi
 echo "using interface $iface"
 
 sudo ip link set "$iface" up
