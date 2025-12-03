@@ -15,5 +15,8 @@ if [ "$sourced" -eq 1 ]; then
 fi
 
 sudo systemctl restart tinybox-display
+sleep 5
+
+sudo systemctl start tinybox-setup
 
 exit
