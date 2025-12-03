@@ -47,6 +47,9 @@ function determine_tinybox_version() {
       10de:2b85) # 5090
         echo "TINYBOX_VERSION=2" | tee -a /etc/tinybox-release
         ;;
+      10de:2bb1) # rtx pro 6000 blackwell
+        echo "TINYBOX_VERSION=2b" | tee -a /etc/tinybox-release
+        ;;
       *)
         display_text "unknown gpu,$gpu_pcie_id,for $TINYBOX_COLOR"
         exit 2

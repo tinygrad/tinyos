@@ -40,6 +40,12 @@ function check_gpu() {
       #      41
       EXPECTED_GPU_BUSIDS="0000:01:00.0 0000:03:00.0 0000:41:00.0 0000:43:00.0"
       ;;
+    10de:2bb1) # rtx pro 6000 blackwell
+      EXPECTED_GPU_COUNT=4
+      EXPECTED_GPU_LINK_SPEED="32GT/s"
+      EXPECTED_GPU_LINK_WIDTH="x16"
+      EXPECTED_GPU_ALLREDUCE_BW=30
+      ;;
     1002:744c) # 7900 XTX
       EXPECTED_GPU_COUNT=6
       EXPECTED_GPU_LINK_SPEED="16GT/s"
