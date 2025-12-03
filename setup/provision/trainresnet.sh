@@ -27,13 +27,17 @@ if [[ "$TINYBOX_COLOR" == "green" ]]; then
   export BS=$((256 * NUM_GPUS))
   export EVAL_BS=$((32 * NUM_GPUS))
 
-  export CUDA=1
+  export NV=1
 
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=1500 BEAM_UPCAST_MAX=64 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=10 BEAM_PADTO=0
 elif [[ "$TINYBOX_COLOR" == "red" ]]; then
+  NUM_GPUS=$(amd-smi list --json | jq -r 'length')
+  export GPUS=$NUM_GPUS
+  export BS=$((192 * NUM_GPUS))
+  export EVAL_BS=$((32 * NUM_GPUS))
+
   export AMD=1 AMD_IFACE=kfd AMD_LLVM=0
 
-  export GPUS=4 BS=768 EVAL_BS=128
   export TRAIN_BEAM=4 IGNORE_JIT_FIRST_BEAM=1 BEAM_UOPS_MAX=2000 BEAM_UPCAST_MAX=96 BEAM_LOCAL_MAX=1024 BEAM_MIN_PROGRESS=5 BEAM_PADTO=0
 else
   display_text "unknown tinybox color,$TINYBOX_COLOR"
