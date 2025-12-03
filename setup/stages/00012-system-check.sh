@@ -140,6 +140,9 @@ function check_ram() {
     10de:2b85) # 5090
       EXPECTED_MEMORY_SIZE_GB=192
       ;;
+    10de:2bb1) # rtx pro 6000 blackwell
+      EXPECTED_MEMORY_SIZE_GB=192
+      ;;
     1002:744c) # 7900 XTX
       EXPECTED_MEMORY_SIZE_GB=128
       ;;
@@ -174,6 +177,9 @@ function check_cpu() {
     10de:2b85) # 5090
       EXPECTED_CORE_COUNT=32
       ;;
+    10de:2bb1) # rtx pro 6000 blackwell
+      EXPECTED_CORE_COUNT=32
+      ;;
     1002:744c) # 7900 XTX
       EXPECTED_CORE_COUNT=32
       ;;
@@ -202,6 +208,11 @@ function check_disk() {
   # switch on the GPU
   case "$gpu_pcie_id" in
     10de:2b85) # 5090
+      EXPECTED_DRIVE_COUNT=4
+      EXPECTED_DRIVE_LINK_SPEED="16GT/s"
+      EXPECTED_DRIVE_LINK_WIDTH="x4"
+      ;;
+    10de:2bb1) # rtx pro 6000 blackwell
       EXPECTED_DRIVE_COUNT=4
       EXPECTED_DRIVE_LINK_SPEED="16GT/s"
       EXPECTED_DRIVE_LINK_WIDTH="x4"
