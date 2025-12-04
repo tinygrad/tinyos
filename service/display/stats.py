@@ -262,7 +262,7 @@ class Stats:
       return 0, 0
 
     # valid raid disks
-    valid_disks = ["/dev/nvme0n1", "/dev/nvme1n1", "/dev/nvme2n1", "/dev/nvme3n1"]
+    valid_disks = ["nvme0n1", "nvme1n1", "nvme2n1", "nvme3n1"]
 
     # accumulate read and write bytes for valid disks
     total_read_bytes = 0
