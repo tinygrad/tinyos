@@ -214,7 +214,7 @@ function check_disk() {
       ;;
     10de:2bb1) # rtx pro 6000 blackwell
       EXPECTED_DRIVE_COUNT=4
-      EXPECTED_DRIVE_LINK_SPEED="16GT/s"
+      EXPECTED_DRIVE_LINK_SPEED="32GT/s"
       EXPECTED_DRIVE_LINK_WIDTH="x4"
       ;;
     10de:2684) # 4090
