@@ -257,11 +257,23 @@ class Stats:
     return int(power_draw)
 
   def get_disk_io_per_second(self) -> tuple[int, int]:
-    counter = psutil.disk_io_counters()
+    counter = psutil.disk_io_counters(True)
     if counter is None:
       return 0, 0
+
+    # valid raid disks
+    valid_disks = ["/dev/nvme0n1", "/dev/nvme1n1", "/dev/nvme2n1", "/dev/nvme3n1"]
+
+    # accumulate read and write bytes for valid disks
+    total_read_bytes = 0
+    total_write_bytes = 0
+    for disk, stats in counter.items():
+      if disk in valid_disks:
+        total_read_bytes += stats.read_bytes
+        total_write_bytes += stats.write_bytes
+
     current_time = time.monotonic()
-    disk_read = (counter.read_bytes - self.last_disk_read) / (current_time - self.last_disk_time)
-    disk_write = (counter.write_bytes - self.last_disk_write) / (current_time - self.last_disk_time)
-    self.last_disk_read, self.last_disk_write, self.last_disk_time = counter.read_bytes, counter.write_bytes, current_time
+    disk_read = (total_read_bytes - self.last_disk_read) / (current_time - self.last_disk_time)
+    disk_write = (total_write_bytes - self.last_disk_write) / (current_time - self.last_disk_time)
+    self.last_disk_read, self.last_disk_write, self.last_disk_time = total_read_bytes, total_write_bytes, current_time
     return int(disk_read / 1e6), int(disk_write / 1e6)
