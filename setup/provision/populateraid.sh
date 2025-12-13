@@ -56,10 +56,27 @@ sudo sysctl net.ipv4.tcp_congestion_control=bbr
 
 sudo chown -R tiny:tiny /raid
 
-if has_raid; then
-  TINYFS_ENDPOINT=10.0.52.11:6767 PYTHONPATH=. python extra/tinyfs/fetch_raid.py
-else
-  TINYFS_ENDPOINT=10.0.52.11:6767 PYTHONPATH=. HASH=6314a042a0850129fb94bd35e901a6e5 LENGTH=158537020 python extra/tinyfs/fetch_raid.py
-fi
+function fetch_raid() {
+  if has_raid; then
+    TINYFS_ENDPOINT=10.0.52.11:6767 PYTHONPATH=. python extra/tinyfs/fetch_raid.py
+  else
+    TINYFS_ENDPOINT=10.0.52.11:6767 PYTHONPATH=. HASH=6314a042a0850129fb94bd35e901a6e5 LENGTH=158537020 python extra/tinyfs/fetch_raid.py
+  fi
+}
+
+for i in {1..3}; do
+  if fetch_raid; then
+    echo "raid fetch succeeded"
+    break
+  else
+    echo "raid fetch failed, retrying..."
+    sleep 5
+  fi
+
+  if [ "$i" -eq 3 ]; then
+    echo "raid fetch failed after 3 attempts, exiting"
+    exit 1
+  fi
+done
 
 sudo chown -R tiny:tiny /raid
