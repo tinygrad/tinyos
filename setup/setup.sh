@@ -63,5 +63,5 @@ for stage_file in $stage_files; do
 done
 
 if [[ $ran_stage -ne 0 ]] && [[ $failed -eq 0 ]]; then
-  display_text "setup completed"
+  display_text "setup completed,$(hostname -i | xargs)"
 fi
