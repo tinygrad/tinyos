@@ -5,47 +5,28 @@ source /etc/tinybox-release
 source /opt/tinybox/service/display/api.sh
 source /opt/tinybox/setup/common.sh
 
-# if TINYBOX_CORE is set, exit
-if [[ -n "$TINYBOX_CORE" ]]; then
-  echo "not provisioning, TINYBOX_CORE is set"
+if ! should_provision; then
+  display_text "skipping provisioning"
   exit 0
 fi
-
-# determine NIC
-iface=$(get_fast_nic)
-if [ -z "$iface" ]; then
-  display_text "not provisioning, no NIC found"
-  echo "not provisioning,no NIC found"
-  exit 0
-fi
-
-# see if we can reach a gateway server
-if ! ping -c 5 192.168.52.11; then
-  display_text "not provisioning,no provisioning IP found"
-  exit 0
-fi
-
-# populate raid
-if ! bash /opt/tinybox/setup/provision/populateraid.sh; then
-  display_text "$(hostname -i | xargs):19531,,Failed to populate RAID"
-  exit 2
-fi
-sleep 1
 
 # start stress testing
 mkdir -p /home/tiny/stress_test
 
-# switch to amd driver
-sudo systemctl stop tinybox-display
+# if red box
+if [[ "$TINYBOX_COLOR" == "red" ]]; then
+  # switch to amd driver
+  sudo systemctl stop tinybox-display
 
-sudo modprobe amdgpu
+  sudo modprobe amdgpu
 
-# restart display
-sleep 10
-sudo systemctl start tinybox-display
+  # restart display
+  sleep 10
+  sudo systemctl start tinybox-display
 
-wait_for_display 10
-display "status"
+  wait_for_display 10
+  display "status"
+fi
 
 # run pytorch test
 pushd /home/tiny/tinygrad || exit

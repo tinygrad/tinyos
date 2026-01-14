@@ -44,3 +44,23 @@ function get_fast_nic() {
 
   echo "$iface"
 }
+
+function should_provision() {
+  # if TINYBOX_CORE is set, exit
+  if [[ -n "$TINYBOX_CORE" ]]; then
+    return 1
+  fi
+
+  # determine NIC
+  iface=$(get_fast_nic)
+  if [ -z "$iface" ]; then
+    return 1
+  fi
+
+  # see if we can reach a gateway server
+  if ! ping -c 5 192.168.52.11; then
+    return 1
+  fi
+
+  return 0
+}
