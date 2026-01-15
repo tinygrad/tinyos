@@ -9,7 +9,7 @@ pushd /home/tiny/tinygrad || exit
 rm -rf /tmp/tinygrad
 git worktree prune
 git fetch
-git worktree add -d /tmp/tinygrad 249553a1190191e032e15bef051b25aa26c4bfa0
+git worktree add -d /tmp/tinygrad a0dd9d21461dc80142a62943e32c772f59d1a344
 
 pushd /tmp/tinygrad || exit
 ln -s /raid/datasets/imagenet extra/datasets/
