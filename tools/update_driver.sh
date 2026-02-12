@@ -28,6 +28,9 @@ EOF
     sudo sed -i 's/7.1 /7.1.1 /g' /etc/apt/sources.list.d/rocm.list
     sudo sed -i 's/30.20 /30.20.1 /g' /etc/apt/sources.list.d/rocm.list
 
+    sudo sed -i 's/7.1.1 /7.2 /g' /etc/apt/sources.list.d/rocm.list
+    sudo sed -i 's/30.20.1 /30.30 /g' /etc/apt/sources.list.d/rocm.list
+
     sudo apt update -y
     sudo apt autoremove rocm rocm-core amdgpu-dkms -y
     sudo apt install rocm amdgpu-dkms amdgpu-dkms-firmware -y

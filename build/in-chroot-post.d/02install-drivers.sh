@@ -7,9 +7,9 @@ if [[ -z "$TINYBOX_CORE" ]]; then
   if [[ "$TINYBOX_COLOR" == "red" ]]; then
     rm -f /etc/apt/keyrings/rocm.gpg
     wget -qO - https://repo.radeon.com/rocm/rocm.gpg.key | gpg --dearmor --output /etc/apt/keyrings/rocm.gpg
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/graphics/7.1.1/ubuntu noble main" | sudo tee /etc/apt/sources.list.d/rocm.list
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/7.1.1 noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/30.20.1/ubuntu noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/graphics/7.2/ubuntu noble main" | sudo tee /etc/apt/sources.list.d/rocm.list
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/7.2 noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/30.30/ubuntu noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
     echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600
 
     apt update -y
@@ -18,7 +18,7 @@ if [[ -z "$TINYBOX_CORE" ]]; then
     pushd /tmp
 
     curl -o keyring.deb -L "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb"
-    curl -o driver.deb -L "https://github.com/wozeparrot/open-gpu-kernel-modules/releases/download/570.195.03-p2p/nvidia-kernel-source-570-open-0ubuntu1_amd64.deb"
+    curl -o driver.deb -L "https://github.com/wozeparrot/open-gpu-kernel-modules/releases/download/570.211.01-p2p/nvidia-kernel-source-570-open-0ubuntu1_amd64.deb"
 
     dpkg -i keyring.deb
     dpkg -i driver.deb
