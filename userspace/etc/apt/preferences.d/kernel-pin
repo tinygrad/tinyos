@@ -1,0 +1,3 @@
+Package: linux-generic linux-image-generic linux-headers-generic linux-generic-hwe-* linux-image-generic-hwe-* linux-headers-generic-hwe-*
+Pin: version 6.17.*
+Pin-Priority: 1001
