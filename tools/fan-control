@@ -66,8 +66,8 @@ list(map(lambda h: [nvmlDeviceSetDefaultFanSpeed_v2(h, i) for i in range(nvmlDev
 "
       elif [[ "$TINYBOX_COLOR" == "red" ]]; then
         ercho "warn: requires amdgpu.ppfeaturemask=0xffffffff"
-        echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/hwmon/hwmon*/fan_ctrl/fan_minimum_pwm > /dev/null
-        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/hwmon/hwmon*/fan_ctrl/fan_minimum_pwm > /dev/null
+        echo r | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
+        echo c | tee /sys/class/drm/card*/device/hwmon/hwmon*/device/gpu_od/fan_ctrl/fan_minimum_pwm
       else
         echo "Unknown tinybox color: $TINYBOX_COLOR"
         exit 1
