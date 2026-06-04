@@ -121,7 +121,3 @@ serial=$(echo "$json_dmi" | jq -r '.[] | select(.description | contains("Base Bo
 #
 # sudo umount /mnt
 # sudo ip ad del "${ip}2/24" dev "$iface"
-
-sleep 1
-display_text "$(hostname -i | xargs):19531,,Provisioning Complete,${serial}"
-sleep 1
