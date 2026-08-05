@@ -99,7 +99,8 @@ fi
 # download and extract the firmware
 # download.asrock.com is hotlink protected, so send a referer, and fall back to the china mirror
 workdir="$(mktemp -d)"
-trap 'rm -rf "$workdir"' EXIT
+http_pid=""
+trap 'rm -rf "$workdir"; if [[ -n "$http_pid" ]]; then kill "$http_pid" 2>/dev/null; fi' EXIT
 downloaded=0
 for url in \
   "https://download.asrock.com/BIOS/Server/$zip_name" \
@@ -122,14 +123,67 @@ if [[ -z "$ima" ]]; then
 fi
 echo "flashing $ima"
 
-# push the image over redfish
-# the bmc web server rejects Expect: 100-continue, which curl sends on large multipart posts
-resp="$(curl -sk -H "Expect:" -u "admin:$password" \
-  -F 'UpdateParameters={"Targets":[],"@Redfish.OperationApplyTime":"Immediate"};type=application/json' \
-  -F "UpdateFile=@${ima};type=application/octet-stream" \
-  "https://$bmc_ip/redfish/v1/UpdateService/update-multipart")"
-echo "$resp"
-task="$(echo "$resp" | grep -o '/redfish/v1/TaskService/Tasks/[A-Za-z0-9_-]*' | head -n1)"
+# figure out which update mechanism this bmc supports
+usvc="$(curl -skm 10 -u "admin:$password" "https://$bmc_ip/redfish/v1/UpdateService")"
+push_uri="$(echo "$usvc" | jq -r '.MultipartHttpPushUri // empty')"
+simple_uri="$(echo "$usvc" | jq -r '.Actions["#UpdateService.SimpleUpdate"].target // empty')"
+
+task=""
+if [[ -n "$push_uri" ]]; then
+  # push the image over redfish
+  # the bmc web server rejects Expect: 100-continue, which curl sends on large multipart posts
+  echo "using redfish multipart push"
+  resp="$(curl -sk -H "Expect:" -u "admin:$password" \
+    -F 'UpdateParameters={"Targets":[],"@Redfish.OperationApplyTime":"Immediate"};type=application/json' \
+    -F "UpdateFile=@${ima};type=application/octet-stream" \
+    "https://$bmc_ip$push_uri")"
+  echo "$resp"
+  task="$(echo "$resp" | grep -o '/redfish/v1/TaskService/Tasks/[A-Za-z0-9_-]*' | head -n1)"
+elif [[ -n "$simple_uri" ]]; then
+  # serve the image over http on the host and have the bmc pull it
+  echo "using redfish simpleupdate"
+  if [[ "$bmc_ip" == "169.254.0.17" ]]; then
+    host_ip="169.254.0.18"
+  else
+    host_ip="$(ip route get "$bmc_ip" | grep -oP 'src \K\S+' | head -n1)"
+  fi
+  port=8471
+  python3 -m http.server "$port" --bind "$host_ip" --directory "$(dirname "$ima")" >/dev/null 2>&1 &
+  http_pid="$!"
+  sleep 1
+  resp="$(curl -sk -H "Content-Type: application/json" -u "admin:$password" \
+    -X POST "https://$bmc_ip$simple_uri" \
+    -d "{\"ImageURI\":\"http://$host_ip:$port/$(basename "$ima")\",\"TransferProtocol\":\"HTTP\"}")"
+  echo "$resp"
+  task="$(echo "$resp" | grep -o '/redfish/v1/TaskService/Tasks/[A-Za-z0-9_-]*' | head -n1)"
+else
+  # fall back to the proprietary ami web api that the bmc web ui uses
+  echo "using ami web api"
+  login="$(curl -sk -D - -H "Content-Type: application/json" -X POST "https://$bmc_ip/api/session" \
+    -d "{\"username\":\"admin\",\"password\":\"$password\"}")"
+  cookie="$(echo "$login" | grep -io '^Set-Cookie: *[^;]*' | cut -d' ' -f2- | head -n1)"
+  csrf="$(echo "$login" | grep -io '^X-CSRFTOKEN: *\S*' | cut -d' ' -f2- | tr -d '\r')"
+  if [[ -z "$cookie" ]]; then
+    echo "could not log in to the bmc web api; update service reported:"
+    echo "$usvc" | head -c 1000
+    exit 1
+  fi
+  resp="$(curl -sk -X PUT -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" -F "fwimage=@${ima}" \
+    "https://$bmc_ip/api/maintenance/firmware")"
+  echo "$resp"
+  for _ in $(seq 1 120); do
+    prog="$(curl -skm 10 -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" \
+      "https://$bmc_ip/api/maintenance/firmware/flash-progress" 2>/dev/null)"
+    pstate="$(echo "$prog" | jq -r '.state // empty' 2>/dev/null)"
+    pprog="$(echo "$prog" | jq -r '.progress // empty' 2>/dev/null)"
+    if [[ "$pstate" == "2" || "$pprog" == *"100%"* ]]; then
+      break
+    fi
+    sleep 10
+  done
+  # reboot the bmc to apply the new firmware
+  curl -sk -X POST -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" "https://$bmc_ip/api/maintenance/reset"
+fi
 
 # wait for the flash to finish
 if [[ -n "$task" ]]; then
