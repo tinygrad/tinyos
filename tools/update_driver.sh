@@ -35,7 +35,10 @@ EOF
     sudo apt autoremove rocm rocm-core amdgpu-dkms -y
     sudo apt install rocm amdgpu-dkms amdgpu-dkms-firmware -y
   elif [[ "$TINYBOX_COLOR" == "green" ]]; then
-    sudo apt autoremove nvidia-driver-570-open nvidia-dkms-570-open nvidia-kernel-common-570 cuda-drivers-570 cuda-toolkit-12-8 libnvidia-common-570 -y --allow-change-held-packages
+    sudo apt-mark unhold nvidia-driver-570-open nvidia-dkms-570-open nvidia-kernel-common-570 nvidia-kernel-source-570-open cuda-drivers-570 cuda-toolkit-12-8 libnvidia-common-570 \
+      nvidia-driver-580-open nvidia-dkms-580-open nvidia-kernel-common-580 nvidia-kernel-source-580-open cuda-drivers-580 libnvidia-common-580
+    sudo apt autoremove --purge -y cuda-toolkit-12-8 cuda-drivers-570 nvidia-driver-570-open nvidia-compute-utils-570 nvidia-persistenced libnvidia-cfg1-570 nvidia-kernel-source-570-open \
+      cuda-drivers-580 nvidia-driver-580-open nvidia-compute-utils-580 libnvidia-cfg1-580 nvidia-kernel-source-580-open
     sudo bash /opt/tinybox/build/in-chroot-post.d/02install-drivers.sh
   fi
 fi
