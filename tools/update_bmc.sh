@@ -134,7 +134,8 @@ if [[ -n "$push_uri" ]]; then
   # the bmc web server rejects Expect: 100-continue, which curl sends on large multipart posts
   echo "using redfish multipart push"
   resp="$(curl -sk -H "Expect:" -u "admin:$password" \
-    -F 'UpdateParameters={"Targets":[],"OemParameters":{}};type=application/json' \
+    -F 'UpdateParameters={"Targets":[]};type=application/json' \
+    -F 'OemParameters={};type=application/json' \
     -F "UpdateFile=@${ima};type=application/octet-stream" \
     "https://$bmc_ip$push_uri")"
   echo "$resp"
