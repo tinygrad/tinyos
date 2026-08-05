@@ -81,14 +81,18 @@ if [[ -f /root/.bmc_password ]]; then
 fi
 candidates+=("admin")
 for candidate in "${candidates[@]}"; do
-  code=$(curl -skm 5 -o /dev/null -w "%{http_code}" -u "admin:$candidate" "https://$bmc_ip/redfish/v1/Managers/1")
+  code=$(curl -skm 5 -o /dev/null -w "%{http_code}" -u "admin:$candidate" "https://$bmc_ip/redfish/v1/Managers")
   if [[ "$code" == "200" ]]; then
     password="$candidate"
     break
+  else
+    echo "credential candidate failed with http $code"
   fi
 done
 if [[ -z "$password" ]]; then
-  echo "no working bmc credentials"
+  echo "no working bmc credentials, response was:"
+  curl -skm 5 -i -u "admin:admin" "https://$bmc_ip/redfish/v1/Managers" | head -c 1000
+  echo
   exit 1
 fi
 
