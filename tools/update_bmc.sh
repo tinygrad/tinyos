@@ -123,7 +123,8 @@ fi
 echo "flashing $ima"
 
 # push the image over redfish
-resp="$(curl -sk -u "admin:$password" \
+# the bmc web server rejects Expect: 100-continue, which curl sends on large multipart posts
+resp="$(curl -sk -H "Expect:" -u "admin:$password" \
   -F 'UpdateParameters={"Targets":[],"@Redfish.OperationApplyTime":"Immediate"};type=application/json' \
   -F "UpdateFile=@${ima};type=application/octet-stream" \
   "https://$bmc_ip/redfish/v1/UpdateService/update-multipart")"
