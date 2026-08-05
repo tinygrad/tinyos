@@ -80,7 +80,6 @@ customization:
     - name: lshw
     - name: lsof
     - name: man-db
-    - name: nfs-common
     - name: parallel
     - name: rclone
     - name: rdma-core
