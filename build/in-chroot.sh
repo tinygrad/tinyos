@@ -25,6 +25,9 @@ if [[ -n "$TINYBOX_DEV" ]]; then
   popd
 fi
 
+# сheckout the tinygrad revision
+git -C /opt/tinybox submodule update --init --recursive
+
 # merge /opt/tinybox/userspace into /
 rsync -ah --info=progress2 /opt/tinybox/userspace/ /
 chown -R tiny:tiny /home/tiny/

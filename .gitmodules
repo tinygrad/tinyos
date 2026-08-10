@@ -1,0 +1,6 @@
+[submodule "tinygrad"]
+  path = tinygrad
+  url = ../../tinygrad/tinygrad
+[submodule "tinyturing"]
+  path = tinyturing
+  url = ../../tinygrad/tinyturing
