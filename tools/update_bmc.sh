@@ -3,12 +3,6 @@ set -o pipefail
 
 source /etc/tinybox-release
 
-# tinybox cores have no motherboard BMC to update
-if [[ -n "$TINYBOX_CORE" ]]; then
-  echo "tinybox core, skipping bmc update"
-  exit 0
-fi
-
 # map the baseboard to the CVE-2024-54085 patched BMC firmware
 board="$(dmidecode -s baseboard-product-name | tr -d '[:space:]')"
 case "$board" in

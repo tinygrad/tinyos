@@ -4,12 +4,8 @@ set -exo pipefail
 source /etc/tinybox-release
 source /opt/tinybox/service/display/api.sh
 
-if [[ -n "$TINYBOX_CORE" ]]; then
-  exit 0
-fi
-
-# only autoupdate v2 motherboards for now, and skip red v2s
-if [[ "$TINYBOX_VERSION" != 2* || "$TINYBOX_COLOR" == "red" ]]; then
+# only autoupdate v2 motherboards (red v2s and v1s skip, cores with a v2 board update)
+if [[ "$(dmidecode -s baseboard-product-name)" != "GENOAD24QM32-2L2T/BCM" ]]; then
   exit 0
 fi
 
