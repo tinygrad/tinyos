@@ -6,14 +6,13 @@ source /etc/tinybox-release
 if [[ -z "$TINYBOX_CORE" ]]; then
   if [[ "$TINYBOX_COLOR" == "red" ]]; then
     rm -f /etc/apt/keyrings/rocm.gpg
+    wget -qO - https://repo.amd.com/rocm/packages-multi-arch/gpg/rocm.gpg | gpg --dearmor --output /etc/apt/keyrings/amdrocm.gpg
     wget -qO - https://repo.radeon.com/rocm/rocm.gpg.key | gpg --dearmor --output /etc/apt/keyrings/rocm.gpg
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/graphics/7.2/ubuntu noble main" | sudo tee /etc/apt/sources.list.d/rocm.list
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/7.2 noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/30.30/ubuntu noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
-    echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/amdrocm.gpg] https://repo.amd.com/rocm/packages-multi-arch/ubuntu2404 stable main" | sudo tee /etc/apt/sources.list.d/rocm.list
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/31.40.1/ubuntu noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
 
     apt update -y
-    apt install amdgpu-dkms rocm rocm-bandwidth-test -y
+    apt install amdgpu-dkms amdrocm-core-sdk7.14 rocm-bandwidth-test -y
   elif [[ "$TINYBOX_COLOR" == "green" ]]; then
     pushd /tmp
 
