@@ -12,7 +12,7 @@ if [[ -z "$TINYBOX_CORE" ]]; then
     echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/31.40.1/ubuntu noble main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
 
     apt update -y
-    apt install amdgpu-dkms amdrocm-core-sdk7.14 rocm-bandwidth-test -y
+    apt install amdgpu-dkms amdrocm-core-sdk7.14 -y
   elif [[ "$TINYBOX_COLOR" == "green" ]]; then
     pushd /tmp
 
