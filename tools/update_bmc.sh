@@ -134,6 +134,10 @@ if [[ -n "$push_uri" ]]; then
     "https://$bmc_ip$push_uri")"
   echo "$resp"
   task="$(echo "$resp" | grep -o '/redfish/v1/TaskService/Tasks/[A-Za-z0-9_-]*' | head -n1)"
+  if [[ -z "$task" ]]; then
+    echo "bmc did not accept the update"
+    exit 2
+  fi
 elif [[ -n "$simple_uri" ]]; then
   # serve the image over http on the host and have the bmc pull it
   echo "using redfish simpleupdate"
@@ -151,6 +155,10 @@ elif [[ -n "$simple_uri" ]]; then
     -d "{\"ImageURI\":\"http://$host_ip:$port/$(basename "$ima")\",\"TransferProtocol\":\"HTTP\"}")"
   echo "$resp"
   task="$(echo "$resp" | grep -o '/redfish/v1/TaskService/Tasks/[A-Za-z0-9_-]*' | head -n1)"
+  if [[ -z "$task" ]]; then
+    echo "bmc did not accept the update"
+    exit 2
+  fi
 else
   # fall back to the proprietary ami web api that the bmc web ui uses
   echo "using ami web api"
