@@ -38,32 +38,43 @@ if [[ "$current_norm" == "$target_norm" ]] || [[ "$(printf '%s\n%s\n' "$target_n
   exit 0
 fi
 
-# find the bmc's usb host interface (cdc-ether/rndis gadget) and bring up the point to point link
+# find a route to the bmc, retrying while it comes up. the bmc web service can
+# take minutes to start after a bmc flash in an earlier stage
 bmc_ip=""
-for iface_path in /sys/class/net/*; do
-  iface="${iface_path##*/}"
-  driver="$(ethtool -i "$iface" 2>/dev/null | awk '/^driver:/{print $2}')"
-  if [[ "$driver" == "cdc_ether" || "$driver" == "rndis_host" ]]; then
-    ip link set dev "$iface" up || true
-    ip addr replace 169.254.0.18/16 dev "$iface"
-    if curl -skm 5 -o /dev/null "https://169.254.0.17/redfish/v1"; then
-      bmc_ip="169.254.0.17"
-      echo "using usb host interface $iface"
-      break
+for _ in $(seq 1 40); do
+  # the bmc's usb host interface (cdc-ether/rndis gadget) gives a point to point link
+  for iface_path in /sys/class/net/*; do
+    iface="${iface_path##*/}"
+    driver="$(ethtool -i "$iface" 2>/dev/null | awk '/^driver:/{print $2}')"
+    if [[ "$driver" == "cdc_ether" || "$driver" == "rndis_host" ]]; then
+      ip link set dev "$iface" up || true
+      ip addr replace 169.254.0.18/16 dev "$iface"
+      if curl -skm 5 -o /dev/null "https://169.254.0.17/redfish/v1"; then
+        bmc_ip="169.254.0.17"
+        echo "using usb host interface $iface"
+        break
+      fi
+    fi
+  done
+
+  # fall back to the bmc lan ip
+  if [[ -z "$bmc_ip" ]]; then
+    lan_ip="$(ipmitool lan print 2>/dev/null | awk -F: '/^IP Address[ ]+/{gsub(/ /, "", $2); print $2; exit}')"
+    if [[ -n "$lan_ip" && "$lan_ip" != "0.0.0.0" ]] && curl -skm 5 -o /dev/null "https://$lan_ip/redfish/v1"; then
+      bmc_ip="$lan_ip"
+      echo "using bmc lan ip $bmc_ip"
     fi
   fi
+
+  if [[ -n "$bmc_ip" ]]; then
+    break
+  fi
+  sleep 15
 done
 
-# fall back to the bmc lan ip
 if [[ -z "$bmc_ip" ]]; then
-  lan_ip="$(ipmitool lan print 2>/dev/null | awk -F: '/^IP Address[ ]+/{gsub(/ /, "", $2); print $2; exit}')"
-  if [[ -n "$lan_ip" && "$lan_ip" != "0.0.0.0" ]] && curl -skm 5 -o /dev/null "https://$lan_ip/redfish/v1"; then
-    bmc_ip="$lan_ip"
-    echo "using bmc lan ip $bmc_ip"
-  else
-    echo "bmc is not reachable from the host"
-    exit 1
-  fi
+  echo "bmc is not reachable from the host"
+  exit 1
 fi
 
 # pick working credentials
