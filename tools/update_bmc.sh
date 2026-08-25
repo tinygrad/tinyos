@@ -71,9 +71,13 @@ password=""
 candidates=()
 if [[ -f /root/.bmc_password ]]; then
   source /root/.bmc_password
+  # make sure the stored password is actually applied, in case the bmc
+  # was reset to defaults (default admin/admin gets 403 from everything)
+  ipmitool user set password 2 "$BMC_PASSWORD" || true
   candidates+=("$BMC_PASSWORD")
+else
+  candidates+=("admin")
 fi
-candidates+=("admin")
 for candidate in "${candidates[@]}"; do
   code=$(curl -skm 5 -o /dev/null -w "%{http_code}" -u "admin:$candidate" "https://$bmc_ip/redfish/v1/Managers")
   if [[ "$code" == "200" ]]; then
@@ -213,6 +217,11 @@ done
 
 if [[ "$(norm_ver "$new_version")" == "$target_norm" ]]; then
   echo "bmc updated to $new_version"
+  # the flash may have reset the bmc accounts, re-apply the password if we have one
+  if [[ -f /root/.bmc_password ]]; then
+    source /root/.bmc_password
+    ipmitool user set password 2 "$BMC_PASSWORD" || true
+  fi
   exit 0
 else
   echo "bmc came back at '$new_version', expected '$target'"
