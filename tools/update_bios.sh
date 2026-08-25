@@ -186,10 +186,10 @@ if [[ -n "$push_uri" ]]; then
   if [[ -n "$bios_target" ]]; then
     targets_json="[\"$bios_target\"]"
   fi
-  # OnReset stages the image and applies it the next time the host powers off,
-  # so the flash never interrupts a running machine
+  # this ami build rejects @Redfish.OperationApplyTime on upload. without it the
+  # bmc flashes the bios spi now, and the new bios only runs on the next host reboot
   resp="$(curl -sk -H "Expect:" -u "admin:$password" \
-    -F "UpdateParameters={\"Targets\":$targets_json,\"@Redfish.OperationApplyTime\":\"OnReset\"};type=application/json" \
+    -F "UpdateParameters={\"Targets\":$targets_json};type=application/json" \
     -F 'OemParameters={"ImageType":"BIOS"};type=application/json' \
     -F "UpdateFile=@${ima};type=application/octet-stream" \
     "https://$bmc_ip$push_uri")"
@@ -214,7 +214,7 @@ elif [[ -n "$simple_uri" ]]; then
   sleep 1
   resp="$(curl -sk -H "Content-Type: application/json" -u "admin:$password" \
     -X POST "https://$bmc_ip$simple_uri" \
-    -d "{\"ImageURI\":\"http://$host_ip:$port/$(basename "$ima")\",\"TransferProtocol\":\"HTTP\",\"@Redfish.OperationApplyTime\":\"OnReset\"}")"
+    -d "{\"ImageURI\":\"http://$host_ip:$port/$(basename "$ima")\",\"TransferProtocol\":\"HTTP\"}")"
   echo "$resp"
   task="$(echo "$resp" | grep -o '/redfish/v1/TaskService/Tasks/[A-Za-z0-9_-]*' | head -n1)"
   if [[ -z "$task" ]]; then

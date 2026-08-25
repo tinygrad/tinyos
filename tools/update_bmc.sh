@@ -233,6 +233,42 @@ if [[ "$(norm_ver "$new_version")" == "$target_norm" ]]; then
     source /root/.bmc_password
     ipmitool user set password 2 "$BMC_PASSWORD" || true
   fi
+
+  # the bmc web service comes up minutes after ipmi. later stages flash the bios
+  # through it, and with the new bmc the box does not boot on the old bios, so
+  # do not return until redfish answers with working credentials
+  web_ip=""
+  for _ in $(seq 1 40); do
+    # the usb host interface may have flapped when the bmc rebooted
+    for iface_path in /sys/class/net/*; do
+      iface="${iface_path##*/}"
+      driver="$(ethtool -i "$iface" 2>/dev/null | awk '/^driver:/{print $2}')"
+      if [[ "$driver" == "cdc_ether" || "$driver" == "rndis_host" ]]; then
+        ip link set dev "$iface" up || true
+        ip addr replace 169.254.0.18/16 dev "$iface" || true
+      fi
+    done
+
+    # the lan ip may have changed too if the flash reset it to dhcp
+    ips=("169.254.0.17")
+    lan_ip="$(ipmitool lan print 2>/dev/null | awk -F: '/^IP Address[ ]+/{gsub(/ /, "", $2); print $2; exit}')"
+    if [[ -n "$lan_ip" && "$lan_ip" != "0.0.0.0" ]]; then
+      ips+=("$lan_ip")
+    fi
+
+    for ip_addr in "${ips[@]}"; do
+      code=$(curl -skm 5 -o /dev/null -w "%{http_code}" -u "admin:$password" "https://$ip_addr/redfish/v1/Managers" 2>/dev/null)
+      if [[ "$code" == "200" ]]; then
+        web_ip="$ip_addr"
+        break 2
+      fi
+    done
+    sleep 15
+  done
+  if [[ -z "$web_ip" ]]; then
+    echo "bmc flashed but redfish did not come back with working credentials"
+    exit 2
+  fi
   exit 0
 else
   echo "bmc came back at '$new_version', expected '$target'"
