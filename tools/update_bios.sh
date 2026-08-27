@@ -220,7 +220,7 @@ echo "uploading $(basename "$ima") to $bmc_ip"
 resp="$(curl -sk -H "Expect:" -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" -F "fwimage=@${ima}" \
   "https://$bmc_ip/$api_prefix/maintenance/BIOS/firmware")"
 echo "$resp"
-if ! echo "$resp" | grep -qE '"(cc|ok)"[ :]*0'; then
+if ! echo "$resp" | grep -qE '"(cc|ok)"[ :]*0|"response"[ :]*1'; then
   echo "bmc did not accept the bios image upload"
   exit 2
 fi
