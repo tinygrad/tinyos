@@ -19,12 +19,12 @@ bash /opt/tinybox/tools/update_bios.sh
 exit_code=$?
 set -e
 
-# the bios update is staged and the bmc flashes it once the host is off,
-# then powers the host back on. shut down gracefully to trigger it
+# the bios update is staged; the reboot contains the shutdown transition the
+# bmc needs to start the flash, and the host comes back up on the new bios
 if [[ "$exit_code" -eq 75 ]]; then
-  display_text "bios update staged,shutting down"
+  display_text "bios update staged,restarting"
   sync
-  systemctl poweroff
+  systemctl reboot
   exit 75
 fi
 

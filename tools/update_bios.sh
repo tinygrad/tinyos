@@ -205,8 +205,9 @@ resp="$(curl -sk -X POST -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" \
   "https://$bmc_ip/$api_prefix/maintenance/BIOS/upgrade")"
 echo "$resp"
 
-# update is staged now. the bmc flashes when the host powers off, then powers
-# it back on. completion is verified by the bios version check on next boot
+# update is staged now. the caller reboots the host, the bmc observes the
+# shutdown transition, flashes, and the host comes back up on the new bios.
+# completion is verified by the bios version check on next boot
 touch "$stamp"
-echo "bios update staged for flash on host shutdown"
+echo "bios update staged, host reboot needed for the flash"
 exit 75
