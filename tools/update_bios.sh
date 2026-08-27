@@ -198,11 +198,16 @@ if [[ "$code" == "404" ]]; then
 fi
 
 # log in and capture the session cookies and csrf token
-login="$(curl -sk -D - -H "Content-Type: application/json" -X POST "https://$bmc_ip/api/session" \
-  -d "{\"username\":\"admin\",\"password\":\"$password\"}")"
+login="$(curl -sk -D - -X POST "https://$bmc_ip/api/session" \
+  --data-urlencode "username=admin" --data-urlencode "password=$password")"
+login_body="${login#*$'\r\n\r\n'}"
 cookie="$(echo "$login" | grep -io '^Set-Cookie: *[^;]*' | cut -d' ' -f2- | paste -sd'; ' -)"
 csrf="$(echo "$login" | grep -io '^X-CSRFTOKEN: *\S*' | cut -d' ' -f2- | tr -d '\r')"
-if [[ -z "$cookie" || "$login" != *'"ok"*0'* ]]; then
+if [[ -z "$csrf" ]]; then
+  csrf="$(echo "$login_body" | jq -r '.CSRFToken // empty' 2>/dev/null)"
+fi
+login_ok="$(echo "$login_body" | jq -r '.ok // empty' 2>/dev/null)"
+if [[ -z "$cookie" || -z "$csrf" || "$login_ok" != "0" ]]; then
   echo "could not log in to the bmc web api:"
   echo "$login" | tail -n 20 | head -c 1000
   echo
