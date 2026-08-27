@@ -65,12 +65,13 @@ if [[ -n "$min_bmc" ]]; then
     echo "bmc at '$bmc_version', must be at least $min_bmc before flashing bios"
     exit 1
   fi
+  echo "bmc at $bmc_version, min $min_bmc ok"
 fi
 
 # find a route to the bmc, retrying while it comes up. the bmc web service can
 # take minutes to start after a bmc flash in an earlier stage
 bmc_ip=""
-for _ in $(seq 1 40); do
+for round in $(seq 1 40); do
   # the bmc's usb host interface (cdc-ether/rndis gadget) gives a point to point link
   for iface_path in /sys/class/net/*; do
     iface="${iface_path##*/}"
@@ -98,6 +99,7 @@ for _ in $(seq 1 40); do
   if [[ -n "$bmc_ip" ]]; then
     break
   fi
+  echo "waiting for bmc web service, round $round"
   sleep 15
 done
 
@@ -118,6 +120,7 @@ for candidate in "${candidates[@]}"; do
   code=$(curl -skm 5 -o /dev/null -w "%{http_code}" -u "admin:$candidate" "https://$bmc_ip/redfish/v1/Managers")
   if [[ "$code" == "200" ]]; then
     password="$candidate"
+    echo "logged in to bmc"
     break
   else
     echo "credential candidate failed with http $code"
@@ -186,6 +189,8 @@ if [[ -z "$cookie" || "$login" != *'"ok"*0'* ]]; then
 fi
 
 # upload the image (the bmc web server rejects Expect: 100-continue)
+# this takes a while, the image is tens of megabytes over a usb nic
+echo "uploading $(basename "$ima") to $bmc_ip"
 resp="$(curl -sk -H "Expect:" -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" -F "fwimage=@${ima}" \
   "https://$bmc_ip/$api_prefix/maintenance/BIOS/firmware")"
 echo "$resp"
@@ -196,10 +201,12 @@ fi
 
 # preserve the bios configuration, then stage the update to flash after the
 # host shuts down instead of letting an immediate flash cut power mid boot
+echo "setting preserve bios configuration"
 resp="$(curl -sk -X POST -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" \
   -H "Content-Type: text/plain;charset=UTF-8" -d '{"action":2}' \
   "https://$bmc_ip/$api_prefix/maintenance/BIOS/configuration")"
 echo "$resp"
+echo "staging update for flash on host shutdown"
 resp="$(curl -sk -X POST -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" \
   -H "Content-Type: text/plain;charset=UTF-8" -d '{"action":1}' \
   "https://$bmc_ip/$api_prefix/maintenance/BIOS/upgrade")"
