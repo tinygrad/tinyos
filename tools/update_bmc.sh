@@ -38,9 +38,25 @@ if [[ "$current_norm" == "$target_norm" ]] || [[ "$(printf '%s\n%s\n' "$target_n
   exit 0
 fi
 
+function rebind_usb_iface() {
+  local iface="$1" driver="$2" usb_if
+  usb_if="$(readlink -f "/sys/class/net/$iface/device")"
+  usb_if="${usb_if##*/}"
+  if [[ -z "$usb_if" || ! -e "/sys/bus/usb/drivers/$driver/$usb_if" ]]; then
+    return
+  fi
+
+  echo "rebinding stale bmc usb interface $iface"
+  echo "$usb_if" > "/sys/bus/usb/drivers/$driver/unbind"
+  sleep 2
+  echo "$usb_if" > "/sys/bus/usb/drivers/$driver/bind"
+  sleep 2
+}
+
 # find a route to the bmc, retrying while it comes up. the bmc web service can
 # take minutes to start after a bmc flash in an earlier stage
 bmc_ip=""
+usb_rebound=0
 for round in $(seq 1 40); do
   # the bmc's usb host interface (cdc-ether/rndis gadget) gives a point to point link
   for iface_path in /sys/class/net/*; do
@@ -48,6 +64,11 @@ for round in $(seq 1 40); do
     driver="$(ethtool -i "$iface" 2>/dev/null | awk '/^driver:/{print $2}')"
     if [[ "$driver" == "cdc_ether" || "$driver" == "rndis_host" ]]; then
       ip link set dev "$iface" up || true
+      if [[ "$usb_rebound" -eq 0 && -r "$iface_path/carrier" && "$(<"$iface_path/carrier")" == "0" ]]; then
+        rebind_usb_iface "$iface" "$driver"
+        usb_rebound=1
+        ip link set dev "$iface" up || true
+      fi
       ip addr replace 169.254.0.18/16 dev "$iface"
       if curl -skm 5 -o /dev/null "https://169.254.0.17/redfish/v1"; then
         bmc_ip="169.254.0.17"
@@ -241,6 +262,7 @@ if [[ "$(norm_ver "$new_version")" == "$target_norm" ]]; then
   # the new bmc the box does not boot on the old bios, so do not return until
   # redfish answers with working credentials
   web_ip=""
+  usb_rebound=0
   for round in $(seq 1 80); do
     # the usb host interface may have flapped when the bmc rebooted
     for iface_path in /sys/class/net/*; do
@@ -248,6 +270,11 @@ if [[ "$(norm_ver "$new_version")" == "$target_norm" ]]; then
       driver="$(ethtool -i "$iface" 2>/dev/null | awk '/^driver:/{print $2}')"
       if [[ "$driver" == "cdc_ether" || "$driver" == "rndis_host" ]]; then
         ip link set dev "$iface" up || true
+        if [[ "$usb_rebound" -eq 0 && -r "$iface_path/carrier" && "$(<"$iface_path/carrier")" == "0" ]]; then
+          rebind_usb_iface "$iface" "$driver"
+          usb_rebound=1
+          ip link set dev "$iface" up || true
+        fi
         ip addr replace 169.254.0.18/16 dev "$iface" || true
       fi
     done
