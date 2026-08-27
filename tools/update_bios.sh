@@ -161,88 +161,52 @@ if [[ -z "$ima" ]]; then
 fi
 echo "flashing $ima"
 
-# figure out which update mechanism this bmc supports
-usvc="$(curl -skm 10 -u "admin:$password" "https://$bmc_ip/redfish/v1/UpdateService")"
-push_uri="$(echo "$usvc" | jq -r '.MultipartHttpPushUri // empty')"
-simple_uri="$(echo "$usvc" | jq -r '.Actions["#UpdateService.SimpleUpdate"].target // empty')"
+# use the bmc web api, same as the web gui. the gui flow is:
+# upload -> configuration {"action":2} (preserve bios configuration)
+# -> upgrade {"action":1} (flash after manually shutdown server)
+# the bmc then waits for the host to power off, flashes, and powers it back on
 
-# find the bios firmware inventory member to target, if the bmc exposes one
-bios_target="$(curl -skm 10 -u "admin:$password" "https://$bmc_ip/redfish/v1/UpdateService/FirmwareInventory" \
-  | jq -r '.Members[]?["@odata.id"] // empty' | grep -i bios | head -n1)"
-echo "bios target: ${bios_target:-none}"
+# figure out the api prefix, some builds serve the endpoints under /api/asrr
+api_prefix="api"
+code=$(curl -skm 10 -o /dev/null -w "%{http_code}" -u "admin:$password" "https://$bmc_ip/api/maintenance/BIOS/status")
+if [[ "$code" == "404" ]]; then
+  api_prefix="api/asrr"
+fi
 
-# the new bios only runs after a host reboot, report that to the caller
-function flash_done() {
-  echo "bios flashed to $target, reboot the host to apply"
-  exit 75
-}
-
-task=""
-if [[ -n "$push_uri" ]]; then
-  # push the image over redfish
-  # the bmc web server rejects Expect: 100-continue, which curl sends on large multipart posts
-  echo "using redfish multipart push"
-  targets_json="[]"
-  if [[ -n "$bios_target" ]]; then
-    targets_json="[\"$bios_target\"]"
-  fi
-  # this ami build rejects @Redfish.OperationApplyTime on upload. without it the
-  # bmc flashes the bios spi now, and the new bios only runs on the next host reboot
-  resp="$(curl -sk -H "Expect:" -u "admin:$password" \
-    -F "UpdateParameters={\"Targets\":$targets_json};type=application/json" \
-    -F 'OemParameters={"ImageType":"BIOS"};type=application/json' \
-    -F "UpdateFile=@${ima};type=application/octet-stream" \
-    "https://$bmc_ip$push_uri")"
-  echo "$resp"
-  task="$(echo "$resp" | grep -o '/redfish/v1/TaskService/Tasks/[A-Za-z0-9_-]*' | head -n1)"
-  if [[ -z "$task" ]]; then
-    echo "bmc did not accept the bios update"
-    exit 2
-  fi
-  touch "$stamp"
-elif [[ -n "$simple_uri" ]]; then
-  # serve the image over http on the host and have the bmc pull it
-  echo "using redfish simpleupdate"
-  if [[ "$bmc_ip" == "169.254.0.17" ]]; then
-    host_ip="169.254.0.18"
-  else
-    host_ip="$(ip route get "$bmc_ip" | grep -oP 'src \K\S+' | head -n1)"
-  fi
-  port=8471
-  python3 -m http.server "$port" --bind "$host_ip" --directory "$(dirname "$ima")" >/dev/null 2>&1 &
-  http_pid="$!"
-  sleep 1
-  resp="$(curl -sk -H "Content-Type: application/json" -u "admin:$password" \
-    -X POST "https://$bmc_ip$simple_uri" \
-    -d "{\"ImageURI\":\"http://$host_ip:$port/$(basename "$ima")\",\"TransferProtocol\":\"HTTP\"}")"
-  echo "$resp"
-  task="$(echo "$resp" | grep -o '/redfish/v1/TaskService/Tasks/[A-Za-z0-9_-]*' | head -n1)"
-  if [[ -z "$task" ]]; then
-    echo "bmc did not accept the bios update"
-    exit 2
-  fi
-  touch "$stamp"
-else
-  # do not fall back to the proprietary ami web api: its bios flash action
-  # cannot be confirmed to stage the update for the next power off, and it may
-  # power the host off to flash. only deferred apply is safe here
-  echo "bmc supports no redfish update mechanism for bios, not flashing"
+# log in and capture the session cookies and csrf token
+login="$(curl -sk -D - -H "Content-Type: application/json" -X POST "https://$bmc_ip/api/session" \
+  -d "{\"username\":\"admin\",\"password\":\"$password\"}")"
+cookie="$(echo "$login" | grep -io '^Set-Cookie: *[^;]*' | cut -d' ' -f2- | paste -sd'; ' -)"
+csrf="$(echo "$login" | grep -io '^X-CSRFTOKEN: *\S*' | cut -d' ' -f2- | tr -d '\r')"
+if [[ -z "$cookie" || "$login" != *'"ok"*0'* ]]; then
+  echo "could not log in to the bmc web api:"
+  echo "$login" | tail -n 20 | head -c 1000
+  echo
   exit 1
 fi
 
-# wait for the flash to finish
-if [[ -n "$task" ]]; then
-  for _ in $(seq 1 120); do
-    state="$(curl -skm 10 -u "admin:$password" "https://$bmc_ip$task" 2>/dev/null | jq -r '.TaskState // empty')"
-    if [[ "$state" == "Completed" ]]; then
-      break
-    elif [[ -n "$state" && "$state" != "Running" && "$state" != "New" && "$state" != "Starting" && "$state" != "Pending" ]]; then
-      echo "bios flash task failed with state $state"
-      rm -f "$stamp"
-      exit 2
-    fi
-    sleep 10
-  done
+# upload the image (the bmc web server rejects Expect: 100-continue)
+resp="$(curl -sk -H "Expect:" -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" -F "fwimage=@${ima}" \
+  "https://$bmc_ip/$api_prefix/maintenance/BIOS/firmware")"
+echo "$resp"
+if ! echo "$resp" | grep -qE '"(cc|ok)"[ :]*0'; then
+  echo "bmc did not accept the bios image upload"
+  exit 2
 fi
 
-flash_done
+# preserve the bios configuration, then stage the update to flash after the
+# host shuts down instead of letting an immediate flash cut power mid boot
+resp="$(curl -sk -X POST -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" \
+  -H "Content-Type: text/plain;charset=UTF-8" -d '{"action":2}' \
+  "https://$bmc_ip/$api_prefix/maintenance/BIOS/configuration")"
+echo "$resp"
+resp="$(curl -sk -X POST -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" \
+  -H "Content-Type: text/plain;charset=UTF-8" -d '{"action":1}' \
+  "https://$bmc_ip/$api_prefix/maintenance/BIOS/upgrade")"
+echo "$resp"
+
+# update is staged now. the bmc flashes when the host powers off, then powers
+# it back on. completion is verified by the bios version check on next boot
+touch "$stamp"
+echo "bios update staged for flash on host shutdown"
+exit 75
