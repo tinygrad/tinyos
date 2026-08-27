@@ -89,7 +89,7 @@ for round in $(seq 1 40); do
 
   # fall back to the bmc lan ip
   if [[ -z "$bmc_ip" ]]; then
-    lan_ip="$(ipmitool lan print 2>/dev/null | awk -F: '/^IP Address[ ]+/{gsub(/ /, "", $2); print $2; exit}')"
+    lan_ip="$(ipmitool lan print 2>/dev/null | awk -F: '/^IP Address[[:space:]]*:/{gsub(/ /, "", $2); print $2; exit}')"
     if [[ -n "$lan_ip" && "$lan_ip" != "0.0.0.0" ]] && curl -skm 5 -o /dev/null "https://$lan_ip/redfish/v1"; then
       bmc_ip="$lan_ip"
       echo "using bmc lan ip $bmc_ip"
