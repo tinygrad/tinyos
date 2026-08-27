@@ -39,7 +39,7 @@ if [[ "$exit_code" -eq 75 ]]; then
     fi
   done
   if [[ "$reset_ok" -ne 1 ]]; then
-    display_text "bios staged, bmc resetfailed,flash pending"
+    display_text "bios staged,bmc reset failed,flash pending"
     exit 2
   fi
   sync
