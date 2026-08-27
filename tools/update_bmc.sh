@@ -234,11 +234,12 @@ if [[ "$(norm_ver "$new_version")" == "$target_norm" ]]; then
     ipmitool user set password 2 "$BMC_PASSWORD" || true
   fi
 
-  # the bmc web service comes up minutes after ipmi. later stages flash the bios
-  # through it, and with the new bmc the box does not boot on the old bios, so
-  # do not return until redfish answers with working credentials
+  # the bmc web service comes up minutes after ipmi, and slower still on the
+  # first boot after a flash. later stages flash the bios through it, and with
+  # the new bmc the box does not boot on the old bios, so do not return until
+  # redfish answers with working credentials
   web_ip=""
-  for _ in $(seq 1 40); do
+  for round in $(seq 1 80); do
     # the usb host interface may have flapped when the bmc rebooted
     for iface_path in /sys/class/net/*; do
       iface="${iface_path##*/}"
@@ -248,6 +249,12 @@ if [[ "$(norm_ver "$new_version")" == "$target_norm" ]]; then
         ip addr replace 169.254.0.18/16 dev "$iface" || true
       fi
     done
+
+    # keep reapplying the stored password. the flash may reset accounts, and the
+    # bmc user database is not necessarily ready the moment ipmi starts answering
+    if [[ -n "${BMC_PASSWORD:-}" ]]; then
+      ipmitool user set password 2 "$BMC_PASSWORD" >/dev/null 2>&1 || true
+    fi
 
     # the lan ip may have changed too if the flash reset it to dhcp
     ips=("169.254.0.17")
@@ -263,6 +270,7 @@ if [[ "$(norm_ver "$new_version")" == "$target_norm" ]]; then
         break 2
       fi
     done
+    echo "waiting for bmc web service, round $round, http $code"
     sleep 15
   done
   if [[ -z "$web_ip" ]]; then
