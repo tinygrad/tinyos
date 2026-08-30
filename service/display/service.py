@@ -3,141 +3,51 @@ sys.path.insert(0, "/opt/tinybox/tinyturing/")
 sys.path.insert(0, "/opt/tinybox/service/display/")
 
 from socketserver import UnixStreamServer, StreamRequestHandler
-import threading, time, signal, os, logging, math, subprocess, socket
+import threading, time, signal, os, logging, subprocess, socket
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] <%(filename)s:%(lineno)d::%(funcName)s> - %(message)s")
 from enum import Enum
 from queue import Queue
 
 from tinyturing.display import Display, WIDTH, HEIGHT
-from tinyturing.components import Anchor, Component, ComponentParent
-from tinyturing.components import Text, Image, MultiCollidingDVDImage, AnimatedText, Rectangle, LineGraph, VerticalProgressBar, HorizontalProgressBar
+from tinyturing.components import Text, AnimatedText
+from tinyturing.screens import StatusScreen, SleepScreen, WelcomeScreen
 from stats import Stats
 
-class StatusScreen(Component):
-  def __init__(self, gpu_count:int):
-    self.gpu_count = gpu_count
-    gpu_bars_space = (6 - gpu_count) * 64
-    self.gpu_bars = [VerticalProgressBar(50, 430, x=30 + 64 * i, y=HEIGHT // 2) for i in range(gpu_count)]
-    self.gpu_mem_bars = [HorizontalProgressBar(160, 5, x=425 - gpu_bars_space, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(gpu_count)]
-    self.gpu_mem_bar_backgrounds = [Rectangle(160, 5, color=0x323232ff, x=425 - gpu_bars_space, y=100 + 7 * i, anchor=Anchor.MIDDLE_LEFT) for i in range(gpu_count)]
+def read_bmc_password():
+  # read bmc password from /root/.bmc_password
+  if not os.path.exists("/root/.bmc_password"):
+    logging.warning("BMC password file not found")
+    return None
+  try:
+    with open("/root/.bmc_password", "r") as f:
+      return f.read().strip().split("=")[1].strip()
+  except:
+    logging.warning("Failed to read BMC password")
+    return None
 
-    self.vertical_separator = Rectangle(1, 280, x=WIDTH // 2 - gpu_bars_space, y=HEIGHT // 2)
-    self.horizontal_separator = Rectangle(280 + gpu_bars_space, 1, x=WIDTH // 2 + WIDTH // 4  - gpu_bars_space // 2, y=HEIGHT // 2)
+def get_bmc_ip():
+  bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
+  return next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
 
-    bar_width = (6 - gpu_count) + 2
-    self.cpu_bars = [VerticalProgressBar(bar_width, 117, x=604 + (bar_width + 1) * i - gpu_bars_space, y=84) for i in range(64)]
+def get_local_ip():
+  try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("10.254.254.254", 1))
+    return s.getsockname()[0]
+  except:
+    logging.warning("Failed to get local IP address")
+    return "N/A"
 
-    self.rolling_power_draw = 0
-    self.power_draw_text = Text("0W", style="mono", x=425 - gpu_bars_space, y=57, anchor=Anchor.MIDDLE_LEFT)
-    self.rolling_disk_io = 0
-    self.disk_io_text = Text("0MB/s", style="mono", x=WIDTH - 5, y=190, anchor=Anchor.MIDDLE_RIGHT)
+def make_sleep_screen():
+  return SleepScreen("/opt/tinybox/service/display/logo.png", read_bmc_password(), get_bmc_ip(), get_local_ip())
 
-    self.line_graph = LineGraph(370 + gpu_bars_space, 190, x=610 - gpu_bars_space // 2, y=360)
-
-  def update(self, gpu_utilizations: list[float], gpu_memory_utilizations: list[float], cpu_utilizations: list[float], gpu_power_draws: list[int], cpu_power_draw: float, disk_io: tuple[int, int]):
-    for i, bar in enumerate(self.gpu_bars): bar.value = gpu_utilizations[i]
-    for i, bar in enumerate(self.gpu_mem_bars): bar.value = gpu_memory_utilizations[i]
-    for i, bar in enumerate(self.cpu_bars): bar.value = cpu_utilizations[i]
-
-    self.rolling_power_draw = math.floor(0.8 * self.rolling_power_draw + 0.2 * sum(gpu_power_draws, cpu_power_draw))
-    self.power_draw_text.text = f"{self.rolling_power_draw}W"
-
-    self.rolling_disk_io = math.floor(0.8 * self.rolling_disk_io + 0.2 * sum(disk_io))
-    self.disk_io_text.text = f"{self.rolling_disk_io}MB/s"
-
-    self.line_graph.add_data(self.rolling_power_draw)
-
-  def blit(self, display:Display):
-    for bar in self.gpu_bars: bar.blit(display)
-    for bar in self.gpu_mem_bar_backgrounds: bar.blit(display)
-    for bar in self.gpu_mem_bars: bar.blit(display)
-    self.vertical_separator.blit(display)
-    self.horizontal_separator.blit(display)
-    for bar in self.cpu_bars: bar.blit(display)
-    self.power_draw_text.blit(display)
-    self.disk_io_text.blit(display)
-    self.line_graph.blit(display)
-
-class SleepScreen(Component):
-  def __init__(self):
-    # read bmc password from /root/.bmc_password
-    if os.path.exists("/root/.bmc_password"):
-      try:
-        with open("/root/.bmc_password", "r") as f:
-          bmc_password = f.read().strip().split("=")[1].strip()
-        self.bmc_password = Text(f"BMC PW: {bmc_password}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
-      except: logging.warning("Failed to read BMC password")
-    else: logging.warning("BMC password file not found")
-
-    # bmc ip
-    bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
-    bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
-
-    if hasattr(self, "bmc_password"): self.bmc_ip = Text(f"BMC: {bmc_ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_password, Anchor.TOP_CENTER))
-    else: self.bmc_ip = Text(f"BMC: {bmc_ip}", "mono", x=WIDTH//2, y=HEIGHT, anchor=Anchor.BOTTOM_CENTER)
-
-    # ip
-    try:
-      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-      s.connect(("10.254.254.254", 1))
-      ip = s.getsockname()[0]
-    except:
-      logging.warning("Failed to get local IP address")
-      ip = "N/A"
-
-    self.ip = Text(f"IP: {ip}", "mono", anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.bmc_ip, Anchor.TOP_CENTER))
-
-    # seperator line
-    self.line = Rectangle(WIDTH - WIDTH // 5, 2, y=-8, anchor=Anchor.BOTTOM_CENTER, parent=ComponentParent(self.ip, Anchor.TOP_CENTER))
-
-    # bouncing logo
-    offset = -2 if hasattr(self, "bmc_password") else 62
-    self.logo = MultiCollidingDVDImage([
-      "/opt/tinybox/service/display/logo.png",
-    ], [
-      (400, 154),
-    ], width=WIDTH, height=HEIGHT - (196 - offset), y=-2)
-
-  def blit(self, display:Display):
-    self.logo.blit(display)
-    if hasattr(self, "bmc_password"):
-      self.bmc_password.blit(display)
-    self.bmc_ip.blit(display)
-    self.ip.blit(display)
-    self.line.blit(display)
-
-class WelcomeScreen(Component):
-  def __init__(self):
-    self.qr = Image("/opt/tinybox/service/display/docs_qr.png", (300, 300), y=HEIGHT // 2, anchor=Anchor.MIDDLE_LEFT)
-    self.desc1 = Text("Scan for Docs", "sans", anchor=Anchor.TOP_LEFT, parent=ComponentParent(self.qr, Anchor.TOP_RIGHT))
-
-    # read bmc password from /root/.bmc_password
-    if os.path.exists("/root/.bmc_password"):
-      try:
-        with open("/root/.bmc_password", "r") as f:
-          bmc_password = f.read().strip().split("=")[1].strip()
-        self.bmc_password = Text(bmc_password, "mono", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.qr, Anchor.BOTTOM_RIGHT))
-        # try setting the bmc password
-        try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
-        except: logging.warning("Failed to set BMC password")
-      except: logging.warning("Failed to read BMC password")
-    else: logging.warning("BMC password file not found")
-
-    bmc_lan_info = subprocess.run(["ipmitool", "lan", "print"], capture_output=True).stdout.decode().split("\n")
-    bmc_ip = next((line.split()[3] for line in bmc_lan_info if "IP Address  " in line), "N/A")
-
-    self.bmc_ip = Text(bmc_ip, "mono", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.qr, Anchor.BOTTOM_RIGHT))
-    if hasattr(self, "bmc_password"):
-      self.bmc_ip.parent = ComponentParent(self.bmc_password, Anchor.TOP_LEFT)
-      self.desc2 = Text("BMC IP & Passwd", "sans", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.bmc_ip, Anchor.TOP_LEFT))
-    else: self.desc2 = Text("BMC IP", "sans", anchor=Anchor.BOTTOM_LEFT, parent=ComponentParent(self.bmc_ip, Anchor.TOP_LEFT))
-
-  def blit(self, display:Display):
-    self.qr.blit(display)
-    self.desc1.blit(display)
-    if hasattr(self, "bmc_password"): self.bmc_password.blit(display)
-    self.bmc_ip.blit(display)
-    self.desc2.blit(display)
+def make_welcome_screen():
+  bmc_password = read_bmc_password()
+  if bmc_password is not None:
+    # try setting the bmc password
+    try: subprocess.run(["ipmitool", "user", "set", "password", "2", bmc_password])
+    except: logging.warning("Failed to set BMC password")
+  return WelcomeScreen("/opt/tinybox/service/display/docs_qr.png", bmc_password, get_bmc_ip())
 
 def uptime():
   with open("/proc/uptime", "r") as f:
@@ -169,10 +79,10 @@ def display_thread():
       # see if we need to switch to the welcome state
       if os.path.exists("/home/tiny/.before_firstsetup"):
         display_state = DisplayState.WELCOME
-        to_display = WelcomeScreen()
+        to_display = make_welcome_screen()
       else:
         display_state = DisplayState.SLEEP
-        to_display = SleepScreen()
+        to_display = make_sleep_screen()
     else:
       display_state = DisplayState.STARTUP
       to_display = AnimatedText([" .....", ". ....", ".. ...", "... ..", ".... .", "..... "], "sans", bounce=True, x=WIDTH // 2, y=HEIGHT // 2)
@@ -208,11 +118,11 @@ def display_thread():
           if os.path.exists("/home/tiny/.before_firstsetup"):
             if display_state != DisplayState.WELCOME:
               display_state = DisplayState.WELCOME
-              to_display = WelcomeScreen()
+              to_display = make_welcome_screen()
           else:
             if display_state != DisplayState.SLEEP:
               display_state = DisplayState.SLEEP
-              to_display = SleepScreen()
+              to_display = make_sleep_screen()
       else:
         # 10 second timeout from startup to sleep
         if time.monotonic() - start_time > 10 and display_state == DisplayState.STARTUP:
@@ -221,18 +131,18 @@ def display_thread():
           if os.path.exists("/home/tiny/.before_firstsetup"):
             display_state = DisplayState.WELCOME
             display_last_active = time.monotonic()
-            to_display = WelcomeScreen()
+            to_display = make_welcome_screen()
           else:
             display_state = DisplayState.SLEEP
             display_last_active = time.monotonic()
-            to_display = SleepScreen()
+            to_display = make_sleep_screen()
 
         # reset display state if inactive for 30 seconds
         if time.monotonic() - display_last_active > 30 and display_state == DisplayState.STATUS:
           logging.info("Display inactive for 30 seconds, switching back to sleep state")
           display_state = DisplayState.SLEEP
           display_last_active = time.monotonic()
-          to_display = SleepScreen()
+          to_display = make_sleep_screen()
 
         # check if display should be in status state
         gpu_utilizations = stats.gpu.get_gpu_utilizations()
@@ -248,7 +158,7 @@ def display_thread():
           if not os.path.exists("/home/tiny/.before_firstsetup"):
             display_state = DisplayState.SLEEP
             display_last_active = time.monotonic()
-            to_display = SleepScreen()
+            to_display = make_sleep_screen()
 
         display.clear()
         if display_state == DisplayState.STARTUP:
