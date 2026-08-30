@@ -7,7 +7,7 @@ ConditionPathExists=/dev/kfd
 Type=oneshot
 User=root
 Group=root
-ExecStart=/opt/rocm/bin/amd-smi set -o 304
+ExecStart=/usr/local/bin/power-limit 304
 RemainAfterExit=yes
 
 [Install]
