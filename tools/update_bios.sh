@@ -190,28 +190,40 @@ echo "flashing $ima"
 # -> upgrade {"action":1} (flash after manually shutdown server)
 # the bmc then waits for the host to power off, flashes, and powers it back on
 
-# figure out the api prefix, some builds serve the endpoints under /api/asrr
-api_prefix="api"
-code=$(curl -skm 10 -o /dev/null -w "%{http_code}" -u "admin:$password" "https://$bmc_ip/api/maintenance/BIOS/status")
-if [[ "$code" == "404" ]]; then
-  api_prefix="api/asrr"
-fi
-
-# log in and capture the session cookies and csrf token
-login="$(curl -sk -D - -X POST "https://$bmc_ip/api/session" \
-  --data-urlencode "username=admin" --data-urlencode "password=$password")"
-login_body="${login#*$'\r\n\r\n'}"
-cookie="$(echo "$login" | grep -io '^Set-Cookie: *[^;]*' | cut -d' ' -f2- | paste -sd'; ' -)"
-csrf="$(echo "$login" | grep -io '^X-CSRFTOKEN: *\S*' | cut -d' ' -f2- | tr -d '\r')"
-if [[ -z "$csrf" ]]; then
-  csrf="$(echo "$login_body" | jq -r '.CSRFToken // empty' 2>/dev/null)"
-fi
-login_ok="$(echo "$login_body" | jq -r '.ok // empty' 2>/dev/null)"
+# log in and capture the session cookies and csrf token. the gui cgi layer
+# can take longer than redfish to start after a bmc reboot, so retry
+login_ok="1"
+for _ in $(seq 1 12); do
+  login="$(curl -sk -D - -X POST "https://$bmc_ip/api/session" \
+    --data-urlencode "username=admin" --data-urlencode "password=$password")"
+  login_body="${login#*$'\r\n\r\n'}"
+  cookie="$(echo "$login" | grep -io '^Set-Cookie: *[^;]*' | cut -d' ' -f2- | paste -sd'; ' -)"
+  csrf="$(echo "$login" | grep -io '^X-CSRFTOKEN: *\S*' | cut -d' ' -f2- | tr -d '\r')"
+  if [[ -z "$csrf" ]]; then
+    csrf="$(echo "$login_body" | jq -r '.CSRFToken // empty' 2>/dev/null)"
+  fi
+  login_ok="$(echo "$login_body" | jq -r '.ok // empty' 2>/dev/null)"
+  if [[ -n "$cookie" && -n "$csrf" && "$login_ok" == "0" ]]; then
+    break
+  fi
+  echo "waiting for bmc web api login"
+  sleep 10
+done
 if [[ -z "$cookie" || -z "$csrf" || "$login_ok" != "0" ]]; then
   echo "could not log in to the bmc web api:"
   echo "$login" | tail -n 20 | head -c 1000
   echo
   exit 1
+fi
+
+# figure out the api prefix with an authenticated probe, some builds serve
+# the endpoints under /api/asrr
+api_prefix="api"
+code=$(curl -skm 10 -o /dev/null -w "%{http_code}" -H "X-CSRFTOKEN: $csrf" -H "Cookie: $cookie" \
+  "https://$bmc_ip/api/maintenance/BIOS/status")
+if [[ "$code" == "404" ]]; then
+  api_prefix="api/asrr"
+  echo "using /api/asrr endpoint prefix"
 fi
 
 # upload the image (the bmc web server rejects Expect: 100-continue)
