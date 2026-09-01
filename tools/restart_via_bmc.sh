@@ -44,14 +44,19 @@ if [[ -z "$bmc_addr" ]]; then
 fi
 
 member="$(curl -skm 10 -u "admin:$password" "https://$bmc_addr/redfish/v1/Systems" | jq -r '.Members[0]["@odata.id"] // empty')"
-rc=$(curl -skm 10 -o /dev/null -w "%{http_code}" -u "admin:$password" \
-  -H "Content-Type: application/json" -X POST \
-  "https://$bmc_addr${member:-/redfish/v1/Systems/Self}/Actions/ComputerSystem.Reset" \
-  -d '{"ResetType":"GracefulRestart"}')
-if [[ "$rc" == "200" || "$rc" == "204" ]]; then
-  echo "graceful restart requested, bmc will shut the host down and bring it back"
-  exit 0
-else
-  echo "reset request failed with http $rc"
-  exit 1
-fi
+sync
+# some builds do not implement GracefulRestart, fall back to ForceRestart.
+# ForceRestart is not os graceful, but it is bmc issued so the staged bios
+# flash runs during the transition and the host comes back up on its own
+for reset_type in GracefulRestart ForceRestart; do
+  rc=$(curl -skm 10 -o /dev/null -w "%{http_code}" -u "admin:$password" \
+    -H "Content-Type: application/json" -X POST \
+    "https://$bmc_addr${member:-/redfish/v1/Systems/Self}/Actions/ComputerSystem.Reset" \
+    -d "{\"ResetType\":\"$reset_type\"}")
+  if [[ "$rc" == "200" || "$rc" == "204" ]]; then
+    echo "$reset_type requested, bmc will restart the host and bring it back"
+    exit 0
+  fi
+done
+echo "reset request failed with http $rc"
+exit 1
